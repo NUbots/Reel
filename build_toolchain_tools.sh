@@ -9,7 +9,7 @@ GENERATE="${PREFIX}/generate"
 SOURCE="${GENERATE}/src"
 TAR="${GENERATE}/tar"
 BUILD="${GENERATE}/build"
-BUILD_LOGS="${BUILD}/logs"
+BUILD_LOGS="${GENERATE}/build_logs"
 
 ARCH=x86_64
 TARGET=amd64-linux-musl
