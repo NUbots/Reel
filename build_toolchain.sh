@@ -13,13 +13,14 @@ PREFIX="$(pwd)/toolchain"
 SOURCE="${PREFIX}/src"
 TAR="${SOURCE}/tar"
 BUILD="${SOURCE}/build"
+BUILD_LOGS="${BUILD}/logs"
 
 ARCH=x86_64
 TARGET=amd64-linux-musl
 
 ## We can't exactly build over the tools we are using to build with
 ## so create a new folder to build to
-export BOOTSTRAP_PREFIX="${PREFIX}/bootstrap"
+export BOOTSTRAP_PREFIX="${SOURCE}/bootstrap_tools"
 
 ## Make our directories
 mkdir -p "${PREFIX}"
@@ -27,6 +28,7 @@ mkdir -p "${BOOTSTRAP_PREFIX}"
 mkdir -p "${SOURCE}"
 mkdir -p "${TAR}"
 mkdir -p "${BUILD}"
+mkdir -p "${BUILD_LOGS}"
 
 ## Add a symlink so usr ends up in the same folder
 cd "${PREFIX}"
@@ -49,9 +51,9 @@ wget -N "https://ftpmirror.gnu.org/gnu/gcc/${GCC}/${GCC}.tar.bz2"
 wget -N "https://ftpmirror.gnu.org/gnu/binutils/${BINUTILS}.tar.bz2"
 
 ## Extract source packages
-cd "${BUILD}"
 if [ ! -d "${BUILD}/${GCC}" ]
 then
+    cd "${BUILD}"
     echo "Extracting gcc ..."
     tar xf "${TAR}/${GCC}.tar.bz2"
 
@@ -64,6 +66,7 @@ fi
 
 if [ ! -d "${BUILD}/${BINUTILS}" ]
 then
+    cd "${BUILD}"
     echo "Extracting binutils ..."
     tar xf "${TAR}/${BINUTILS}.tar.bz2"
 else
@@ -72,6 +75,7 @@ fi
 
 if [ ! -d "${BUILD}/${MUSL}" ]
 then
+    cd "${BUILD}"
     echo "Extracting musl ..."
     tar xf "${TAR}/${MUSL}.tar.gz"
 else
@@ -81,7 +85,7 @@ fi
 #### BOOTSTRAP MUSL BASED GCC COMPILER ####
 
 ## Build bootstrap musl
-if [ ! -e "${PREFIX}/phase1_musl_complete" ]
+if [ ! -e "${BUILD}/phase1_musl_complete" ]
 then
     echo "Phase 1: Building musl ...."
     cd "${BUILD}"
@@ -90,16 +94,16 @@ then
     CROSS_COMPILE=" " "../${MUSL}/configure" \
         --prefix="${BOOTSTRAP_PREFIX}" \
         --target="${ARCH}" \
-        --disable-shared &> "${PREFIX}/phase1_musl_configure.log"
-    make -j$(nproc) &> "${PREFIX}/phase1_musl_make.log"
-    make install &> "${PREFIX}/phase1_musl_install.log"
-    touch "${PREFIX}/phase1_musl_complete"
+        --disable-shared &> "${BUILD_LOGS}/phase1_musl_configure.log"
+    make -j$(nproc) &> "${BUILD_LOGS}/phase1_musl_make.log"
+    make install &> "${BUILD_LOGS}/phase1_musl_install.log"
+    touch "${BUILD}/phase1_musl_complete"
 else
     echo "Phase 1: musl already built, skipping...."
 fi
 
 ## Build bootstrap binutils
-if [ ! -e "${PREFIX}/phase1_binutils_complete" ]
+if [ ! -e "${BUILD}/phase1_binutils_complete" ]
 then
     echo "Phase 1: Building binutils ...."
     cd "${BUILD}"
@@ -111,17 +115,17 @@ then
         --with-sysroot \
         --disable-nls \
         --disable-bootstrap \
-        --disable-werror &> "${PREFIX}/phase1_binutils_configure.log"
-    make -j$(nproc) &> "${PREFIX}/phase1_binutils_make.log"
-    make install &> "${PREFIX}/phase1_binutils_install.log"
-    touch "${PREFIX}/phase1_binutils_complete"
+        --disable-werror &> "${BUILD_LOGS}/phase1_binutils_configure.log"
+    make -j$(nproc) &> "${BUILD_LOGS}/phase1_binutils_make.log"
+    make install &> "${BUILD_LOGS}/phase1_binutils_install.log"
+    touch "${BUILD}/phase1_binutils_complete"
 else
     echo "Phase 1: binutils already built, skipping...."
 fi
 
 ## Build bootstrap gcc
 ## For bootstrapping we only need c and c++
-if [ ! -e "${PREFIX}/phase1_gcc_complete" ]
+if [ ! -e "${BUILD}/phase1_gcc_complete" ]
 then
     echo "Phase 1: Building gcc ...."
     cd "${BUILD}"
@@ -136,14 +140,14 @@ then
         --disable-multilib \
         --disable-bootstrap \
         --disable-werror \
-        --disable-shared &> "${PREFIX}/phase1_gcc_configure.log"
-    make -j$(nproc) all-gcc &> "${PREFIX}/phase1_gcc_make_gccc.log"
-    make -j$(nproc) all-target-libgcc &> "${PREFIX}/phase1_gcc_make_libgcc.log"
-    make -j$(nproc) all-target-libstdc++-v3 &> "${PREFIX}/phase1_gcc_make_stdc++.log"
-    make install-gcc &> "${PREFIX}/phase1_gcc_install_gcc.log"
-    make install-target-libgcc &> "${PREFIX}/phase1_gcc_install_libgcc.log"
-    make install-target-libstdc++-v3 &> "${PREFIX}/phase1_gcc_install_stdc++.log"
-    touch "${PREFIX}/phase1_gcc_complete"
+        --disable-shared &> "${BUILD_LOGS}/phase1_gcc_configure.log"
+    make -j$(nproc) all-gcc &> "${BUILD_LOGS}/phase1_gcc_make_gccc.log"
+    make -j$(nproc) all-target-libgcc &> "${BUILD_LOGS}/phase1_gcc_make_libgcc.log"
+    make -j$(nproc) all-target-libstdc++-v3 &> "${BUILD_LOGS}/phase1_gcc_make_stdc++.log"
+    make install-gcc &> "${BUILD_LOGS}/phase1_gcc_install_gcc.log"
+    make install-target-libgcc &> "${BUILD_LOGS}/phase1_gcc_install_libgcc.log"
+    make install-target-libstdc++-v3 &> "${BUILD_LOGS}/phase1_gcc_install_stdc++.log"
+    touch "${BUILD}/phase1_gcc_complete"
 else
     echo "Phase 1: gcc already built, skipping...."
 fi
@@ -158,7 +162,7 @@ export CFLAGS="$CFLAGS -static --sysroot=$BOOTSTRAP_PREFIX"
 export CXXFLAGS="$CXXFLAGS -static --sysroot=$BOOTSTRAP_PREFIX"
 
 ## Build final musl
-if [ ! -e "${PREFIX}/phase2_musl_complete" ]
+if [ ! -e "${BUILD}/phase2_musl_complete" ]
 then
     echo "Phase 2: Building musl ...."
     cd "${BUILD}"
@@ -168,16 +172,16 @@ then
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --syslibdir="${PREFIX}/lib" \
-        --disable-shared &> "${PREFIX}/phase2_musl_configure.log"
-    make -j$(nproc) &> "${PREFIX}/phase2_musl_make.log"
-    make install &> "${PREFIX}/phase2_musl_install.log"
-    touch "${PREFIX}/phase2_musl_complete"
+        --disable-shared &> "${BUILD_LOGS}/phase2_musl_configure.log"
+    make -j$(nproc) &> "${BUILD_LOGS}/phase2_musl_make.log"
+    make install &> "${BUILD_LOGS}/phase2_musl_install.log"
+    touch "${BUILD}/phase2_musl_complete"
 else
     echo "Phase 2: musl already built, skipping...."
 fi
 
 ## Build final binutils
-if [ ! -e "${PREFIX}/phase2_binutils_complete" ]
+if [ ! -e "${BUILD}/phase2_binutils_complete" ]
 then
     echo "Phase 2: Building binutils ...."
     cd "${BUILD}"
@@ -189,17 +193,17 @@ then
         --with-sysroot \
         --disable-nls \
         --disable-bootstrap \
-        --disable-werror &> "${PREFIX}/phase2_binutils_configure.log"
-    make -j$(nproc) &> "${PREFIX}/phase2_binutils_make.log"
-    make install &> "${PREFIX}/phase2_binutils_install.log"
-    touch "${PREFIX}/phase2_binutils_complete"
+        --disable-werror &> "${BUILD_LOGS}/phase2_binutils_configure.log"
+    make -j$(nproc) &> "${BUILD_LOGS}/phase2_binutils_make.log"
+    make install &> "${BUILD_LOGS}/phase2_binutils_install.log"
+    touch "${BUILD}/phase2_binutils_complete"
 else
     echo "Phase 2: binutils already built, skipping...."
 fi
 
 ## Build final gcc
 ## This time we build c, c++ and fortran
-if [ ! -e "${PREFIX}/phase2_gcc_complete" ]
+if [ ! -e "${BUILD}/phase2_gcc_complete" ]
 then
     echo "Phase 2: Building gcc ...."
     cd "${BUILD}"
@@ -216,14 +220,14 @@ then
         --disable-multilib \
         --disable-bootstrap \
         --disable-werror \
-        --disable-shared &> "${PREFIX}/phase2_gcc_configure.log"
-    make -j$(nproc) all-gcc &> "${PREFIX}/phase2_gcc_make_gcc.log"
-    make -j$(nproc) all-target-libgcc &> "${PREFIX}/phase2_gcc_make_libgcc.log"
-    make -j$(nproc) all-target-libstdc++-v3 &> "${PREFIX}/phase2_gcc_make_stdc++.log"
-    make install-gcc &> "${PREFIX}/phase2_gcc_install_gcc.log"
-    make install-target-libgcc &> "${PREFIX}/phase2_gcc_install_libgcc.log"
-    make install-target-libstdc++-v3 &> "${PREFIX}/phase2_gcc_install_stdc++.log"
-    touch "${PREFIX}/phase2_gcc_complete"
+        --disable-shared &> "${BUILD_LOGS}/phase2_gcc_configure.log"
+    make -j$(nproc) all-gcc &> "${BUILD_LOGS}/phase2_gcc_make_gcc.log"
+    make -j$(nproc) all-target-libgcc &> "${BUILD_LOGS}/phase2_gcc_make_libgcc.log"
+    make -j$(nproc) all-target-libstdc++-v3 &> "${BUILD_LOGS}/phase2_gcc_make_stdc++.log"
+    make install-gcc &> "${BUILD_LOGS}/phase2_gcc_install_gcc.log"
+    make install-target-libgcc &> "${BUILD_LOGS}/phase2_gcc_install_libgcc.log"
+    make install-target-libstdc++-v3 &> "${BUILD_LOGS}/phase2_gcc_install_stdc++.log"
+    touch "${BUILD}/phase2_gcc_complete"
 else
     echo "Phase 2: gcc already built, skipping...."
 fi

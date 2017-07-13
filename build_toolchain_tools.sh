@@ -8,6 +8,7 @@ PREFIX="$(pwd)/toolchain"
 SOURCE="${PREFIX}/src"
 TAR="${SOURCE}/tar"
 BUILD="${SOURCE}/build"
+BUILD_LOGS="${BUILD}/logs"
 
 ARCH=x86_64
 TARGET=amd64-linux-musl
@@ -26,45 +27,45 @@ MAKE_PKG="make-${MAKE_VER}"
 
 ## Download our source packages
 cd "${TAR}"
-wget -N "http://ftp.jaist.ac.jp/pub/GNU/make/${MAKE_PKG}.tar.gz"
-wget -N "https://ftp.gnu.org/gnu/m4/${M4}.tar.xz"
-wget -N "https://ftp.gnu.org/gnu/autoconf/${AUTOCONF}.tar.xz"
-wget -N "https://ftp.gnu.org/gnu/automake/${AUTOMAKE}.tar.xz"
-wget -N "https://ftp.gnu.org/gnu/libtool/${LIBTOOL}.tar.xz"
+wget -N "https://ftpmirror.gnu.org/gnu/make/${MAKE_PKG}.tar.gz"
+wget -N "https://ftpmirror.gnu.org/gnu/m4/${M4}.tar.xz"
+wget -N "https://ftpmirror.gnu.org/gnu/autoconf/${AUTOCONF}.tar.xz"
+wget -N "https://ftpmirror.gnu.org/gnu/automake/${AUTOMAKE}.tar.xz"
+wget -N "https://ftpmirror.gnu.org/gnu/libtool/${LIBTOOL}.tar.xz"
 
 ## Extract source packages
-cd "${BUILD}"
 echo "Extracting make ..."
 if [ ! -d "${BUILD}/${MAKE_PKG}" ]
 then
+    cd "${BUILD}"
     tar xf "${TAR}/${MAKE_PKG}.tar.gz"
 fi
 
-cd "${BUILD}"
 echo "Extracting m4 ..."
 if [ ! -d "${BUILD}/${M4}" ]
 then
+    cd "${BUILD}"
     tar xf "${TAR}/${M4}.tar.xz"
 fi
 
-cd "${BUILD}"
 echo "Extracting autoconf ..."
 if [ ! -d "${BUILD}/${AUTOCONF}" ]
 then
+    cd "${BUILD}"
     tar xf "${TAR}/${AUTOCONF}.tar.xz"
 fi
 
-cd "${BUILD}"
 echo "Extracting automake ..."
 if [ ! -d "${BUILD}/${AUTOMAKE}" ]
 then
+    cd "${BUILD}"
     tar xf "${TAR}/${AUTOMAKE}.tar.xz"
 fi
 
-cd "${BUILD}"
 echo "Extracting libtool ..."
 if [ ! -d "${BUILD}/${LIBTOOL}" ]
 then
+    cd "${BUILD}"
     tar xf "${TAR}/${LIBTOOL}.tar.xz"
 fi
 
@@ -80,7 +81,7 @@ export M4="${PREFIX}/bin/m4"
 export MAKE="${PREFIX}/bin/make"
 
 ## Build make
-if [ ! -e "${PREFIX}/phase3_make_complete" ]
+if [ ! -e "${BUILD}/phase3_make_complete" ]
 then
     echo "Phase 3: Building make ...."
     cd "${BUILD}"
@@ -90,16 +91,16 @@ then
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" \
-        --disable-nls &> "${PREFIX}/phase3_make_configure.log"
-    sh "build.sh" &> "${PREFIX}/phase3_make_build.log"
-    ./make install &> "${PREFIX}/phase3_make_install.log"
-    touch "${PREFIX}/phase3_make_complete"
+        --disable-nls &> "${BUILD_LOGS}/phase3_make_configure.log"
+    sh "build.sh" &> "${BUILD_LOGS}/phase3_make_build.log"
+    ./make install &> "${BUILD_LOGS}/phase3_make_install.log"
+    touch "${BUILD}/phase3_make_complete"
 else
     echo "Phase 3: make already built, skipping...."
 fi
 
 ## Build m4
-if [ ! -e "${PREFIX}/phase3_m4_complete" ]
+if [ ! -e "${BUILD}/phase3_m4_complete" ]
 then
     echo "Phase 3: Building m4 ...."
     cd "${BUILD}"
@@ -114,16 +115,16 @@ then
         --enable-changeword \
         --with-packager="NUbots" \
         --with-packager-version="0.1" \
-        --with-syscmd-shell="/bin/bash" &> "${PREFIX}/phase3_m4_configure.log"
-    "${MAKE}" -j$(nproc) &> "${PREFIX}/phase3_m4_make.log"
-    "${MAKE}" install &> "${PREFIX}/phase3_m4_install.log"
-    touch "${PREFIX}/phase3_m4_complete"
+        --with-syscmd-shell="/bin/bash" &> "${BUILD_LOGS}/phase3_m4_configure.log"
+    "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_m4_make.log"
+    "${MAKE}" install &> "${BUILD_LOGS}/phase3_m4_install.log"
+    touch "${BUILD}/phase3_m4_complete"
 else
     echo "Phase 3: m4 already built, skipping...."
 fi
 
 ## Build autoconf
-if [ ! -e "${PREFIX}/phase3_autoconf_complete" ]
+if [ ! -e "${BUILD}/phase3_autoconf_complete" ]
 then
     echo "Phase 3: Building autoconf ...."
     cd "${BUILD}"
@@ -132,16 +133,16 @@ then
     CROSS_COMPILE=" " "../${AUTOCONF}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
-        --host="${ARCH}" &> "${PREFIX}/phase3_autoconf_configure.log"
-    "${MAKE}" -j$(nproc) &> "${PREFIX}/phase3_autoconf_make.log"
-    "${MAKE}" install &> "${PREFIX}/phase3_autoconf_install.log"
-    touch "${PREFIX}/phase3_autoconf_complete"
+        --host="${ARCH}" &> "${BUILD_LOGS}/phase3_autoconf_configure.log"
+    "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_autoconf_make.log"
+    "${MAKE}" install &> "${BUILD_LOGS}/phase3_autoconf_install.log"
+    touch "${BUILD}/phase3_autoconf_complete"
 else
     echo "Phase 3: autoconf already built, skipping...."
 fi
 
 ## Build automake
-if [ ! -e "${PREFIX}/phase3_automake_complete" ]
+if [ ! -e "${BUILD}/phase3_automake_complete" ]
 then
     echo "Phase 3: Building automake ...."
     cd "${BUILD}"
@@ -150,16 +151,16 @@ then
     CROSS_COMPILE=" " "../${AUTOMAKE}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
-        --host="${ARCH}" &> "${PREFIX}/phase3_automake_configure.log"
-    "${MAKE}" -j$(nproc) &> "${PREFIX}/phase3_automake_make.log"
-    "${MAKE}" install &> "${PREFIX}/phase3_automake_install.log"
-    touch "${PREFIX}/phase3_automake_complete"
+        --host="${ARCH}" &> "${BUILD_LOGS}/phase3_automake_configure.log"
+    "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_automake_make.log"
+    "${MAKE}" install &> "${BUILD_LOGS}/phase3_automake_install.log"
+    touch "${BUILD}/phase3_automake_complete"
 else
     echo "Phase 3: automake already built, skipping...."
 fi
 
 ## Build libtool
-if [ ! -e "${PREFIX}/phase3_libtool_complete" ]
+if [ ! -e "${BUILD}/phase3_libtool_complete" ]
 then
     echo "Phase 3: Building libtool ...."
     cd "${BUILD}"
@@ -170,10 +171,10 @@ then
         --target="${ARCH}" \
         --host="${ARCH}" \
         --enable-static \
-        --with-sysroot="${PREFIX}" &> "${PREFIX}/phase3_libtool_configure.log"
-    "${MAKE}" -j$(nproc) &> "${PREFIX}/phase3_libtool_make.log"
-    "${MAKE}" install &> "${PREFIX}/phase3_libtool_install.log"
-    touch "${PREFIX}/phase3_libtool_complete"
+        --with-sysroot="${PREFIX}" &> "${BUILD_LOGS}/phase3_libtool_configure.log"
+    "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_libtool_make.log"
+    "${MAKE}" install &> "${BUILD_LOGS}/phase3_libtool_install.log"
+    touch "${BUILD}/phase3_libtool_complete"
 else
     echo "Phase 3: libtool already built, skipping...."
 fi
