@@ -5,9 +5,10 @@ set -e
 
 ## Set our environment variables
 PREFIX="$(pwd)/toolchain"
-SOURCE="${PREFIX}/src"
-TAR="${SOURCE}/tar"
-BUILD="${SOURCE}/build"
+GENERATE="${PREFIX}/generate"
+SOURCE="${GENERATE}/src"
+TAR="${GENERATE}/tar"
+BUILD="${GENERATE}/build"
 BUILD_LOGS="${BUILD}/logs"
 
 ARCH=x86_64
@@ -35,37 +36,37 @@ wget -N "https://ftpmirror.gnu.org/gnu/libtool/${LIBTOOL}.tar.xz"
 
 ## Extract source packages
 echo "Extracting make ..."
-if [ ! -d "${BUILD}/${MAKE_PKG}" ]
+if [ ! -d "${SOURCE}/${MAKE_PKG}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     tar xf "${TAR}/${MAKE_PKG}.tar.gz"
 fi
 
 echo "Extracting m4 ..."
-if [ ! -d "${BUILD}/${M4}" ]
+if [ ! -d "${SOURCE}/${M4}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     tar xf "${TAR}/${M4}.tar.xz"
 fi
 
 echo "Extracting autoconf ..."
-if [ ! -d "${BUILD}/${AUTOCONF}" ]
+if [ ! -d "${SOURCE}/${AUTOCONF}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     tar xf "${TAR}/${AUTOCONF}.tar.xz"
 fi
 
 echo "Extracting automake ..."
-if [ ! -d "${BUILD}/${AUTOMAKE}" ]
+if [ ! -d "${SOURCE}/${AUTOMAKE}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     tar xf "${TAR}/${AUTOMAKE}.tar.xz"
 fi
 
 echo "Extracting libtool ..."
-if [ ! -d "${BUILD}/${LIBTOOL}" ]
+if [ ! -d "${SOURCE}/${LIBTOOL}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     tar xf "${TAR}/${LIBTOOL}.tar.xz"
 fi
 
@@ -87,7 +88,7 @@ then
     cd "${BUILD}"
     mkdir -p build-make
     cd build-make
-    CROSS_COMPILE=" " "../${MAKE_PKG}/configure" \
+    CROSS_COMPILE=" " "${SOURCE}/${MAKE_PKG}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" \
@@ -106,7 +107,7 @@ then
     cd "${BUILD}"
     mkdir -p build-m4
     cd build-m4
-    CROSS_COMPILE=" " "../${M4}/configure" \
+    CROSS_COMPILE=" " "${SOURCE}/${M4}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" \
@@ -130,7 +131,7 @@ then
     cd "${BUILD}"
     mkdir -p build-autoconf
     cd build-autoconf
-    CROSS_COMPILE=" " "../${AUTOCONF}/configure" \
+    CROSS_COMPILE=" " "${SOURCE}/${AUTOCONF}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" &> "${BUILD_LOGS}/phase3_autoconf_configure.log"
@@ -148,7 +149,7 @@ then
     cd "${BUILD}"
     mkdir -p build-automake
     cd build-automake
-    CROSS_COMPILE=" " "../${AUTOMAKE}/configure" \
+    CROSS_COMPILE=" " "${SOURCE}/${AUTOMAKE}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" &> "${BUILD_LOGS}/phase3_automake_configure.log"
@@ -166,7 +167,7 @@ then
     cd "${BUILD}"
     mkdir -p build-libtool
     cd build-libtool
-    CROSS_COMPILE=" " "../${LIBTOOL}/configure" \
+    CROSS_COMPILE=" " "${SOURCE}/${LIBTOOL}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" \

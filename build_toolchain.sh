@@ -10,9 +10,10 @@ set -e
 
 ## Set our environment variables
 PREFIX="$(pwd)/toolchain"
-SOURCE="${PREFIX}/src"
-TAR="${SOURCE}/tar"
-BUILD="${SOURCE}/build"
+GENERATE="${PREFIX}/generate"
+SOURCE="${GENERATE}/src"
+TAR="${GENERATE}/tar"
+BUILD="${GENERATE}/build"
 BUILD_LOGS="${BUILD}/logs"
 
 ARCH=x86_64
@@ -20,13 +21,14 @@ TARGET=amd64-linux-musl
 
 ## We can't exactly build over the tools we are using to build with
 ## so create a new folder to build to
-export BOOTSTRAP_PREFIX="${SOURCE}/bootstrap_tools"
+export BOOTSTRAP_PREFIX="${GENERATE}/bootstrap_tools"
 
 ## Make our directories
 mkdir -p "${PREFIX}"
 mkdir -p "${BOOTSTRAP_PREFIX}"
 mkdir -p "${SOURCE}"
 mkdir -p "${TAR}"
+mkdir -p "${GENERATE}"
 mkdir -p "${BUILD}"
 mkdir -p "${BUILD_LOGS}"
 
@@ -51,31 +53,31 @@ wget -N "https://ftpmirror.gnu.org/gnu/gcc/${GCC}/${GCC}.tar.bz2"
 wget -N "https://ftpmirror.gnu.org/gnu/binutils/${BINUTILS}.tar.bz2"
 
 ## Extract source packages
-if [ ! -d "${BUILD}/${GCC}" ]
+if [ ! -d "${SOURCE}/${GCC}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     echo "Extracting gcc ..."
     tar xf "${TAR}/${GCC}.tar.bz2"
 
     # Get gcc to download its extras
-    cd "${BUILD}/${GCC}"
+    cd "${SOURCE}/${GCC}"
     ./contrib/download_prerequisites
 else
     echo "gcc already extracted, skipping ..."
 fi
 
-if [ ! -d "${BUILD}/${BINUTILS}" ]
+if [ ! -d "${SOURCE}/${BINUTILS}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     echo "Extracting binutils ..."
     tar xf "${TAR}/${BINUTILS}.tar.bz2"
 else
     echo "binutils already extracted, skipping ..."
 fi
 
-if [ ! -d "${BUILD}/${MUSL}" ]
+if [ ! -d "${SOURCE}/${MUSL}" ]
 then
-    cd "${BUILD}"
+    cd "${SOURCE}"
     echo "Extracting musl ..."
     tar xf "${TAR}/${MUSL}.tar.gz"
 else
@@ -91,7 +93,7 @@ then
     cd "${BUILD}"
     mkdir -p build-musl-bootstrap
     cd build-musl-bootstrap
-    CROSS_COMPILE=" " "../${MUSL}/configure" \
+    CROSS_COMPILE=" " "${SOURCE}/${MUSL}/configure" \
         --prefix="${BOOTSTRAP_PREFIX}" \
         --target="${ARCH}" \
         --disable-shared &> "${BUILD_LOGS}/phase1_musl_configure.log"
@@ -109,7 +111,7 @@ then
     cd "${BUILD}"
     mkdir -p build-binutils-bootstrap
     cd build-binutils-bootstrap
-    "../${BINUTILS}/configure" \
+    "${SOURCE}/${BINUTILS}/configure" \
         --prefix="${BOOTSTRAP_PREFIX}" \
         --target="${TARGET}" \
         --with-sysroot \
@@ -131,7 +133,7 @@ then
     cd "${BUILD}"
     mkdir -p build-gcc-bootstrap
     cd build-gcc-bootstrap
-    "../${GCC}/configure" \
+    "${SOURCE}/${GCC}/configure" \
         --prefix="${BOOTSTRAP_PREFIX}" \
         --target="${TARGET}" \
         --enable-languages=c,c++ \
@@ -168,7 +170,7 @@ then
     cd "${BUILD}"
     mkdir -p build-musl
     cd build-musl
-    CROSS_COMPILE="$TARGET-" "../${MUSL}/configure" \
+    CROSS_COMPILE="$TARGET-" "${SOURCE}/${MUSL}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --syslibdir="${PREFIX}/lib" \
@@ -187,7 +189,7 @@ then
     cd "${BUILD}"
     mkdir -p build-binutils
     cd build-binutils
-    "../${BINUTILS}/configure" \
+    "${SOURCE}/${BINUTILS}/configure" \
         --prefix="${PREFIX}" \
         --target="${TARGET}" \
         --with-sysroot \
@@ -209,7 +211,7 @@ then
     cd "${BUILD}"
     mkdir -p build-gcc
     cd build-gcc
-    "../${GCC}/configure" \
+    "${SOURCE}/${GCC}/configure" \
         --prefix="${PREFIX}" \
         --target="${TARGET}" \
         --enable-languages=c,c++,fortran \
