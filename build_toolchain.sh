@@ -197,7 +197,7 @@ then
         --disable-bootstrap \
         --disable-werror &> "${BUILD_LOGS}/phase2_binutils_configure.log"
     make -j$(nproc) &> "${BUILD_LOGS}/phase2_binutils_make.log"
-    make install &> "${BUILD_LOGS}/phase2_binutils_install.log"
+    make install-strip &> "${BUILD_LOGS}/phase2_binutils_install.log"
     touch "${BUILD}/phase2_binutils_complete"
 else
     echo "Phase 2: binutils already built, skipping...."
@@ -226,10 +226,35 @@ then
     make -j$(nproc) all-gcc &> "${BUILD_LOGS}/phase2_gcc_make_gcc.log"
     make -j$(nproc) all-target-libgcc &> "${BUILD_LOGS}/phase2_gcc_make_libgcc.log"
     make -j$(nproc) all-target-libstdc++-v3 &> "${BUILD_LOGS}/phase2_gcc_make_stdc++.log"
-    make install-gcc &> "${BUILD_LOGS}/phase2_gcc_install_gcc.log"
-    make install-target-libgcc &> "${BUILD_LOGS}/phase2_gcc_install_libgcc.log"
-    make install-target-libstdc++-v3 &> "${BUILD_LOGS}/phase2_gcc_install_stdc++.log"
+    make install-strip-gcc &> "${BUILD_LOGS}/phase2_gcc_install_gcc.log"
+    make install-strip-target-libgcc &> "${BUILD_LOGS}/phase2_gcc_install_libgcc.log"
+    make install-strip-target-libstdc++-v3 &> "${BUILD_LOGS}/phase2_gcc_install_stdc++.log"
     touch "${BUILD}/phase2_gcc_complete"
 else
     echo "Phase 2: gcc already built, skipping...."
 fi
+
+# Install the dependencies that gcc needed for building, other things probably need them too
+if [ ! -e "${BUILD}/phase2_post-gcc_complete" ]
+then
+    echo "Phase 2: post-gcc installations ...."
+
+    cd "${BUILD}/build-gcc/gmp"
+    make install-strip &> "${BUILD_LOGS}/phase2_install_gmp.log"
+
+    cd "${BUILD}/build-gcc/mpfr"
+    make install-strip &> "${BUILD_LOGS}/phase2_install_mpfr.log"
+
+    cd "${BUILD}/build-gcc/mpc"
+    make install-strip &> "${BUILD_LOGS}/phase2_install_mpc.log"
+
+    cd "${BUILD}/build-gcc/isl"
+    make install-strip &> "${BUILD_LOGS}/phase2_install_isl.log"
+
+    touch "${BUILD}/phase2_post-gcc_complete"
+else
+    echo "Phase 2: post-gcc installations already completed, skipping...."
+fi
+
+echo "All phases completed successfully."
+
