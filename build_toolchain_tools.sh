@@ -16,7 +16,7 @@ TARGET=amd64-linux-musl
 
 # Set package versions
 M4_VER="1.4.18"
-M4="m4-${M4_VER}"
+M4_PKG="m4-${M4_VER}"
 AUTOCONF_VER="2.69"
 AUTOCONF="autoconf-${AUTOCONF_VER}"
 AUTOMAKE_VER="1.15.1"
@@ -29,7 +29,7 @@ MAKE_PKG="make-${MAKE_VER}"
 ## Download our source packages
 cd "${TAR}"
 wget -N "https://ftpmirror.gnu.org/gnu/make/${MAKE_PKG}.tar.gz"
-wget -N "https://ftpmirror.gnu.org/gnu/m4/${M4}.tar.xz"
+wget -N "https://ftpmirror.gnu.org/gnu/m4/${M4_PKG}.tar.xz"
 wget -N "https://ftpmirror.gnu.org/gnu/autoconf/${AUTOCONF}.tar.xz"
 wget -N "https://ftpmirror.gnu.org/gnu/automake/${AUTOMAKE}.tar.xz"
 wget -N "https://ftpmirror.gnu.org/gnu/libtool/${LIBTOOL}.tar.xz"
@@ -43,10 +43,10 @@ then
 fi
 
 echo "Extracting m4 ..."
-if [ ! -d "${SOURCE}/${M4}" ]
+if [ ! -d "${SOURCE}/${M4_PKG}" ]
 then
     cd "${SOURCE}"
-    tar xf "${TAR}/${M4}.tar.xz"
+    tar xf "${TAR}/${M4_PKG}.tar.xz"
 fi
 
 echo "Extracting autoconf ..."
@@ -78,12 +78,14 @@ export CFLAGS="$CFLAGS -static --sysroot=${PREFIX}"
 export CXXFLAGS="$CXXFLAGS -static --sysroot=${PREFIX}"
 export FC="$TARGET-gfortran"
 export FCFLAGS="$FCFLAGS -static --sysroot=${PREFIX}"
+export LDFLAGS="-Wl,--no-export-dynamic -Wl,--no-dynamic-linker -Wl,-static"
 export M4="${PREFIX}/bin/m4"
-export MAKE="${PREFIX}/bin/make"
 
 ## Build make
 if [ ! -e "${BUILD}/phase3_make_complete" ]
 then
+    export MAKE="${BUILD}/build-make/make"
+
     echo "Phase 3: Building make ...."
     cd "${BUILD}"
     mkdir -p build-make
@@ -92,13 +94,16 @@ then
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" \
+        --without-guile \
         --disable-nls &> "${BUILD_LOGS}/phase3_make_configure.log"
     sh "build.sh" &> "${BUILD_LOGS}/phase3_make_build.log"
-    ./make install &> "${BUILD_LOGS}/phase3_make_install.log"
+    "${BUILD}/build-make/make" install-strip &> "${BUILD_LOGS}/phase3_make_install.log"
     touch "${BUILD}/phase3_make_complete"
 else
     echo "Phase 3: make already built, skipping...."
 fi
+
+export MAKE="${PREFIX}/bin/make"
 
 ## Build m4
 if [ ! -e "${BUILD}/phase3_m4_complete" ]
@@ -107,7 +112,7 @@ then
     cd "${BUILD}"
     mkdir -p build-m4
     cd build-m4
-    CROSS_COMPILE=" " "${SOURCE}/${M4}/configure" \
+    CROSS_COMPILE=" " "${SOURCE}/${M4_PKG}/configure" \
         --prefix="${PREFIX}" \
         --target="${ARCH}" \
         --host="${ARCH}" \
@@ -118,7 +123,7 @@ then
         --with-packager-version="0.1" \
         --with-syscmd-shell="/bin/bash" &> "${BUILD_LOGS}/phase3_m4_configure.log"
     "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_m4_make.log"
-    "${MAKE}" install &> "${BUILD_LOGS}/phase3_m4_install.log"
+    "${MAKE}" install-strip &> "${BUILD_LOGS}/phase3_m4_install.log"
     touch "${BUILD}/phase3_m4_complete"
 else
     echo "Phase 3: m4 already built, skipping...."
@@ -136,7 +141,7 @@ then
         --target="${ARCH}" \
         --host="${ARCH}" &> "${BUILD_LOGS}/phase3_autoconf_configure.log"
     "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_autoconf_make.log"
-    "${MAKE}" install &> "${BUILD_LOGS}/phase3_autoconf_install.log"
+    "${MAKE}" install-strip &> "${BUILD_LOGS}/phase3_autoconf_install.log"
     touch "${BUILD}/phase3_autoconf_complete"
 else
     echo "Phase 3: autoconf already built, skipping...."
@@ -154,7 +159,7 @@ then
         --target="${ARCH}" \
         --host="${ARCH}" &> "${BUILD_LOGS}/phase3_automake_configure.log"
     "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_automake_make.log"
-    "${MAKE}" install &> "${BUILD_LOGS}/phase3_automake_install.log"
+    "${MAKE}" install-strip &> "${BUILD_LOGS}/phase3_automake_install.log"
     touch "${BUILD}/phase3_automake_complete"
 else
     echo "Phase 3: automake already built, skipping...."
@@ -174,8 +179,10 @@ then
         --enable-static \
         --with-sysroot="${PREFIX}" &> "${BUILD_LOGS}/phase3_libtool_configure.log"
     "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_libtool_make.log"
-    "${MAKE}" install &> "${BUILD_LOGS}/phase3_libtool_install.log"
+    "${MAKE}" install-strip &> "${BUILD_LOGS}/phase3_libtool_install.log"
     touch "${BUILD}/phase3_libtool_complete"
 else
     echo "Phase 3: libtool already built, skipping...."
 fi
+
+echo "Phase 3 tools built successfully."
