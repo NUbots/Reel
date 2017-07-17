@@ -215,8 +215,6 @@ then
         --prefix="${PREFIX}" \
         --target="${TARGET}" \
         --enable-languages=c,c++,fortran \
-        --enable-gold \
-        --enable-bfd \
         --with-sysroot="${PREFIX}" \
         --disable-nls \
         --disable-multilib \
