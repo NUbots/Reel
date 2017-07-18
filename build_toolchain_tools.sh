@@ -15,16 +15,22 @@ ARCH=x86_64
 TARGET=amd64-linux-musl
 
 # Set package versions
-M4_VER="1.4.18"
-M4_PKG="m4-${M4_VER}"
+CMAKE_VER="3.8.2"
+CMAKE="cmake-3.8.2"
 AUTOCONF_VER="2.69"
 AUTOCONF="autoconf-${AUTOCONF_VER}"
 AUTOMAKE_VER="1.15.1"
 AUTOMAKE="automake-${AUTOMAKE_VER}"
 LIBTOOL_VER="2.4.6"
 LIBTOOL="libtool-${LIBTOOL_VER}"
+M4_VER="1.4.18"
+M4_PKG="m4-${M4_VER}"
 MAKE_VER="4.2"
 MAKE_PKG="make-${MAKE_VER}"
+NCURSES_VER="6.0"
+NCURSES="ncurses-${NCURSES_VER}"
+OPENSSL_VER="1.1.0f"
+OPENSSL="openssl-${OPENSSL_VER}"
 
 ## Download our source packages
 cd "${TAR}"
@@ -33,6 +39,9 @@ wget -N "https://ftpmirror.gnu.org/gnu/m4/${M4_PKG}.tar.xz"
 wget -N "https://ftpmirror.gnu.org/gnu/autoconf/${AUTOCONF}.tar.xz"
 wget -N "https://ftpmirror.gnu.org/gnu/automake/${AUTOMAKE}.tar.xz"
 wget -N "https://ftpmirror.gnu.org/gnu/libtool/${LIBTOOL}.tar.xz"
+wget -N "https://ftpmirror.gnu.org/gnu/ncurses/${NCURSES}.tar.gz"
+wget -N "https://www.openssl.org/source/${OPENSSL}.tar.gz"
+wget -N "https://cmake.org/files/v3.8/${CMAKE}.tar.gz"
 
 ## Extract source packages
 echo "Extracting make ..."
@@ -68,6 +77,27 @@ if [ ! -d "${SOURCE}/${LIBTOOL}" ]
 then
     cd "${SOURCE}"
     tar xf "${TAR}/${LIBTOOL}.tar.xz"
+fi
+
+echo "Extracting ncurses ..."
+if [ ! -d "${SOURCE}/${NCURSES}" ]
+then
+    cd "${SOURCE}"
+    tar xf "${TAR}/${NCURSES}.tar.xz"
+fi
+
+echo "Extracting openssl ..."
+if [ ! -d "${SOURCE}/${OPENSSL}" ]
+then
+    cd "${SOURCE}"
+    tar xf "${TAR}/${OPENSSL}.tar.gz"
+fi
+
+echo "Extracting cmake ..."
+if [ ! -d "${SOURCE}/${CMAKE}" ]
+then
+    cd "${SOURCE}"
+    tar xf "${TAR}/${CMAKE}.tar.xz"
 fi
 
 ## Update our path to use the new compilers
@@ -183,6 +213,85 @@ then
     touch "${BUILD}/phase3_libtool_complete"
 else
     echo "Phase 3: libtool already built, skipping...."
+fi
+
+## Build ncurses
+if [ ! -e "${BUILD}/phase3_ncurses_complete" ]
+then
+    echo "Phase 3: Building ncurses ...."
+    cd "${BUILD}"
+    mkdir -p build-ncurses
+    cd build-ncurses
+    CROSS_COMPILE=" " "${SOURCE}/${NCURSES}/configure" \
+        --prefix="${PREFIX}" \
+        --target="${ARCH}" \
+        --host="${ARCH}" \
+        --enable-static \
+        --with-sysroot="${PREFIX}" \
+        --with-build-cc="/usr/bin/gcc" \
+        --with-normal \
+        --with-debug \
+        --with-profile \
+        --with-termlib \
+        --with-ticlib \
+        --with-gpm \
+        --enable-sp-funcs \
+        --enable-const \
+        --enable-ext-colors \
+        --enable-ext-mouse \
+        --enable-ext-putwin \
+        --enable-no-padding \
+        --enable-sigwinch \
+        --enable-tcap-names &> "${BUILD_LOGS}/phase3_ncurses_configure.log"
+    cd progs
+    "${MAKE}" sources &> "${BUILD_LOGS}/phase3_ncurses_make_progs.log"
+    #"${MAKE}" install &> "${BUILD_LOGS}/phase3_ncurses_install_progs.log"
+    cd ..
+    "${MAKE}" sources -j$(nproc) &> "${BUILD_LOGS}/phase3_ncurses_make.log"
+    "${MAKE}" install &> "${BUILD_LOGS}/phase3_ncurses_install.log"
+    touch "${BUILD}/phase3_ncurses_complete"
+else
+    echo "Phase 3: ncurses already built, skipping...."
+fi
+
+## Build openssl
+if [ ! -e "${BUILD}/phase3_openssl_complete" ]
+then
+    echo "Phase 3: Building openssl ...."
+    cd "${BUILD}"
+    mkdir -p build-openssl
+    cd build-openssl
+    CROSS_COMPILE=" " "${SOURCE}/${OPENSSL}/config" \
+        --prefix="${PREFIX}" \
+        --release \
+        no-async \
+        no-shared &> "${BUILD_LOGS}/phase3_openssl_configure.log"
+    "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_openssl_make.log"
+    "${MAKE}" install &> "${BUILD_LOGS}/phase3_openssl_install.log"
+    touch "${BUILD}/phase3_openssl_complete"
+else
+    echo "Phase 3: openssl already built, skipping...."
+fi
+
+## Build cmake
+if [ ! -e "${BUILD}/phase3_cmake_complete" ]
+then
+    echo "Phase 3: Building cmake ...."
+    cd "${BUILD}"
+    mkdir -p build-cmake
+    cd build-cmake
+    CROSS_COMPILE=" " \
+    CFLAGS="$CFLAGS -isystem ${PREFIX}/include/ncurses" \
+    CXXFLAGS="$CXXFLAGS -isystem ${PREFIX}/include/ncurses" \
+    "${SOURCE}/${CMAKE}/bootstrap" \
+        --prefix="${PREFIX}" \
+        --parallel="$(nproc)" \
+        --no-qt-gui &> "${BUILD_LOGS}/phase3_cmake_bootstrap.log"
+    "${MAKE}" -j$(nproc) &> "${BUILD_LOGS}/phase3_cmake_make.log"
+    "${MAKE}" install-strip &> "${BUILD_LOGS}/phase3_cmake_install.log"
+    touch "${BUILD}/phase3_cmake_complete"
+else
+    echo "Phase 3: cmake already built, skipping...."
 fi
 
 echo "Phase 3 tools built successfully."
