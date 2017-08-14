@@ -45,12 +45,15 @@ BINUTILS_VER="2.28"
 BINUTILS="binutils-${BINUTILS_VER}"
 GCC_VER="7.1.0"
 GCC="gcc-${GCC_VER}"
+LIBBACKTRACE_VER="master"
+LIBBACKTRACE="libbacktrace-${LIBBACKTRACE_VER}"
 
 ## Download our source packages
 cd "${TAR}"
 wget -N "https://www.musl-libc.org/releases/${MUSL}.tar.gz"
 wget -N "https://ftpmirror.gnu.org/gnu/gcc/${GCC}/${GCC}.tar.bz2"
 wget -N "https://ftpmirror.gnu.org/gnu/binutils/${BINUTILS}.tar.bz2"
+wget -N "https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz" -O "${LIBBACKTRACE}.tar.gz"
 
 ## Extract source packages
 if [ ! -d "${SOURCE}/${GCC}" ]
@@ -82,6 +85,15 @@ then
     tar xf "${TAR}/${MUSL}.tar.gz"
 else
     echo "musl already extracted, skipping ..."
+fi
+
+if [ ! -d "${SOURCE}/${LIBBACKTRACE}" ]
+then
+    cd "${SOURCE}"
+    echo "Extracting libbacktrace ..."
+    tar xf "${TAR}/${LIBBACKTRACE}.tar.gz"
+else
+    echo "libbacktrace already extracted, skipping ..."
 fi
 
 #### BOOTSTRAP MUSL BASED GCC COMPILER ####
@@ -249,9 +261,30 @@ then
     cd "${BUILD}/build-gcc/isl"
     make install-strip &> "${BUILD_LOGS}/phase2_install_isl.log"
 
+    cd "${BUILD}/build-gcc"
+    make install-strip-target-libgomp &> "${BUILD_LOGS}/phase2_install_libgomp.log"
+
     touch "${BUILD}/phase2_post-gcc_complete"
 else
     echo "Phase 2: post-gcc installations already completed, skipping...."
+fi
+
+## Build libbacktrace
+if [ ! -e "${BUILD}/phase2_libbacktrace_complete" ]
+then
+    echo "Phase 2: Building libbacktrace ...."
+    cd "${BUILD}"
+    mkdir -p build-libbacktrace
+    cd build-libbacktrace
+    "${SOURCE}/${LIBBACKTRACE}/configure" \
+        --prefix="${PREFIX}" \
+        --enable-static \
+        --disable-shared &> "${BUILD_LOGS}/phase2_libbacktrace_configure.log"
+    make -j$(nproc) all &> "${BUILD_LOGS}/phase2_libbacktrace_make.log"
+    make install-strip &> "${BUILD_LOGS}/phase2_libbacktrace_install.log"
+    touch "${BUILD}/phase2_libbacktrace_complete"
+else
+    echo "Phase 2: libbacktrace already built, skipping...."
 fi
 
 echo "All phases completed successfully."
