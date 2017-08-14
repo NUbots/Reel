@@ -83,7 +83,7 @@ echo "Extracting ncurses ..."
 if [ ! -d "${SOURCE}/${NCURSES}" ]
 then
     cd "${SOURCE}"
-    tar xf "${TAR}/${NCURSES}.tar.xz"
+    tar xf "${TAR}/${NCURSES}.tar.gz"
 fi
 
 echo "Extracting openssl ..."
@@ -97,7 +97,7 @@ echo "Extracting cmake ..."
 if [ ! -d "${SOURCE}/${CMAKE}" ]
 then
     cd "${SOURCE}"
-    tar xf "${TAR}/${CMAKE}.tar.xz"
+    tar xf "${TAR}/${CMAKE}.tar.gz"
 fi
 
 ## Update our path to use the new compilers
