@@ -26,14 +26,14 @@ def download(url, dest):
 
             # If we were modified after we don't need to download again
             if l_modified > r_modified:
-                cprint(dest + ' not modified... Skipping...', 'green', attrs=['bold'])
+                cprint('{} not modified... Skipping...'.format(dest), 'green', attrs=['bold'])
                 return
 
         # If there is an etag we can use we can check that hasn't changed
         elif 'Etag' in h:
             pass
 
-    cprint('Downloading ' + dest, 'green', attrs=['bold'])
+    cprint('Downloading {}'.format(dest), 'green', attrs=['bold'])
 
     # Do our get request
     r = requests.get(url, allow_redirects=True, stream=True)

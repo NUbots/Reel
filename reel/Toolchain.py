@@ -3,6 +3,7 @@
 import os
 
 from .download import download
+from .build import build
 from .extract import extract
 from .Library import Library
 
@@ -54,6 +55,33 @@ class Toolchain:
                 dest=os.path.join(self.src_path, 'binutils'))
         extract(path=os.path.join(self.archive_path, 'libbacktrace.tar.gz'),
                 dest=os.path.join(self.src_path, 'libbacktrace'))
+
+        bootstrap_prefix = os.path.abspath(os.path.join(self.build_path, 'bootstrap_prefix'))
+
+        # Bootstrap musl
+        build(toolchain=self,
+              src='musl',
+              build='bootstrap_musl',
+              args=['--prefix={}'.format(bootstrap_prefix),
+                    '--target=x86_64',
+                    '--disable-shared'],
+              env={'CROSS_COMPILE': ' '})
+
+        # Bootstrap binutils
+        build(toolchain=self,
+              src='binutils',
+              build='bootstrap_binutils',
+              args=['--prefix={}'.format(bootstrap_prefix),
+                    '--target=amd64-linux-musl',
+                    '--with-sysroot',
+                    '--disable-nls',
+                    '--disable-bootstrap',
+                    '--disable-werror'])
+
+
+        # TODO create bootstrap binutils and build boostrap binutils
+
+        # TODO create bootstrap gcc and build bootstrap gcc
 
         # TODO build our gcc toolchain
 
