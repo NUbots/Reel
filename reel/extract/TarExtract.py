@@ -6,15 +6,15 @@ from termcolor import cprint
 from tqdm import tqdm
 
 class TarExtract:
-    def __init__(self, **kwargs):
+    def __init__(self, **build_args):
         pass
 
-    def extract(self, **kwargs):
+    def extract(self, **state):
 
         # Get our archive and output location
-        archive = kwargs['archive']
+        archive = state['archive']
         basename = os.path.basename(archive)
-        dest = os.path.join(kwargs['sources_dir'], basename[:basename.rindex('.t')])
+        dest = os.path.join(state['sources_dir'], basename[:basename.rindex('.t')])
 
         # If our archive is newer than our folder extract
         if not os.path.exists(dest) or os.path.getmtime(archive) > os.path.getmtime(dest):

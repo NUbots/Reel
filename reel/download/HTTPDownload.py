@@ -23,7 +23,7 @@ class HTTPDownload:
         filename = rfc6266.parse_requests_response(head).filename_unsafe
 
         # Work out our output path
-        output_file = os.path.join(kwargs['archive_dir'], filename)
+        output_file = os.path.join(kwargs['archives_dir'], filename)
 
         # If our file exists compare the last modified of our file vs the one on the server
         if os.path.exists(output_file):
@@ -41,7 +41,7 @@ class HTTPDownload:
                     return { 'archive': output_file }
 
             # If there is an etag we can use we can check that hasn't changed
-            elif 'Etag' in h:
+            elif 'Etag' in headers:
                 pass
 
         cprint('Downloading {}'.format(filename), 'green', attrs=['bold'])

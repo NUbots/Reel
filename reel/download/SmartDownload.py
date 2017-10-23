@@ -3,20 +3,20 @@
 from .HTTPDownload import HTTPDownload
 
 class SmartDownload:
-    def __init__(self, **kwargs):
+    def __init__(self, **build_args):
 
         # Start without a downloader
         self._downloader = None
 
-        url = kwargs.get('url')
+        url = build_args.get('url')
 
         # If we have a URL
         if url is not None:
 
             # If we have a http, https use our HTTP downloader
             if url.startswith('http://') or url.startswith('https://'):
-                self._downloader = HTTPDownload(**kwargs)
+                self._downloader = HTTPDownload(**build_args)
 
 
-    def download(self, **kwargs):
-        return self._downloader.download(**kwargs)
+    def download(self, **state):
+        return self._downloader.download(**state)

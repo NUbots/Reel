@@ -6,10 +6,7 @@ from collections import OrderedDict
 from functools import partial
 
 class Library:
-    def __init__(self, name, toolchain, *phase_handlers, **kwargs):
-
-        # The name of this library
-        self.name = name
+    def __init__(self, toolchain, *phase_handlers, **kwargs):
 
         # Our toolchain object
         self.toolchain = toolchain
@@ -49,19 +46,14 @@ class Library:
 
     def build(self):
 
-        state = {
-            'prefix_dir': self.toolchain.prefix_dir,
-            'working_dir': self.toolchain.working_dir,
-            'archive_dir': self.toolchain.archive_dir,
-            'sources_dir': self.toolchain.sources_dir,
-            'build_dir': self.toolchain.build_dir,
-            'logs_dir': self.toolchain.logs_dir,
-        }
+        state = self.toolchain.state.copy()
 
         for p, f in self.phase.items():
             if f is not None:
-                cprint('{} {}'.format(p.capitalize(), self.name), 'green', attrs=['bold'])
-                state.update(f(**state))
+                cprint('Running phase {}'.format(p))
+                new_state = f(**state)
+                if new_state is not None:
+                    state.update(new_state)
 
         # # Work out where our files go
         # # TODO these don't have extensions at the moment
