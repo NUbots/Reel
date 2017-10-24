@@ -36,12 +36,13 @@ class Toolchain:
 
         # Global directories
         self.toolchain_dir = 'toolchain'
-        self.archives_dir = os.path.join(self.toolchain_dir, 'archive')
-        self.sources_dir = os.path.join(self.toolchain_dir, 'src')
+        self.setup_dir = os.path.join(self.toolchain_dir, 'setup')
+        self.archives_dir = os.path.join(self.setup_dir, 'archive')
+        self.sources_dir = os.path.join(self.setup_dir, 'src')
 
         # Toolchain directories
         self.prefix_dir = os.path.join(self.toolchain_dir, self.name)
-        self.working_dir = os.path.join(self.prefix_dir, 'toolchain_build')
+        self.working_dir = os.path.join(self.setup_dir, self.name if self.name else 'root')
         self.builds_dir = os.path.join(self.working_dir, 'build')
         self.logs_dir = os.path.join(self.working_dir, 'log')
 
@@ -52,6 +53,7 @@ class Toolchain:
             'arch': self.arch,
             'target_triple': self.triple,
             'toolchain_dir': self.toolchain_dir,
+            'setup_dir': self.setup_dir,
             'archives_dir': self.archives_dir,
             'sources_dir': self.sources_dir,
             'prefix_dir': os.path.abspath(self.prefix_dir),
@@ -82,7 +84,9 @@ class Toolchain:
                 'CROSS_COMPILE': ' ',
             }
 
-            build_env = build_toolchain.env if build_toolchain else {}
+            build_env = build_toolchain.env if build_toolchain else {
+                'CROSS_COMPILE': ' '
+            }
 
             # Add our cross compiling tools
             self.add_library(url='https://www.musl-libc.org/releases/musl-1.1.17.tar.gz',
