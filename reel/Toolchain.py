@@ -142,7 +142,15 @@ class Toolchain:
 
         # Make our directories if they do not already exist
         os.makedirs(self.prefix_dir, exist_ok=True)
-        os.makedirs(os.path.join(self.prefix_dir, 'usr'), exist_ok=True)
+
+        if os.path.exists(os.path.join(self.state['prefix_dir'], 'usr')):
+            if not os.path.islink(os.path.join(self.state['prefix_dir'], 'usr')):
+                os.path.unlink(os.path.join(self.state['prefix_dir'], 'usr'))
+                os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
+
+        else:
+            os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
+
         os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.archives_dir, exist_ok=True)
         os.makedirs(self.sources_dir, exist_ok=True)
