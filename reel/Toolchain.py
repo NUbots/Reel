@@ -75,7 +75,7 @@ class Toolchain:
         else:
             # This env data
             self.env = {
-                'PATH': '{}/bin{}{}'.format(self.prefix_dir, os.pathsep, os.environ.get('PATH', '')),
+                'PATH': '{}/bin{}{}'.format(self.state['prefix_dir'], os.pathsep, os.environ.get('PATH', '')),
                 'CC': '{}-gcc'.format(self.triple),
                 'CXX': '{}-g++'.format(self.triple),
                 'FC': '{}-gfortran'.format(self.triple),
