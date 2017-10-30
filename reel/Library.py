@@ -11,6 +11,9 @@ class Library:
         # Our toolchain object
         self.toolchain = toolchain
 
+        # Our name
+        self.name = kwargs.get('name')
+
         # Our phase handler instances
         self.handlers = []
 
@@ -45,6 +48,8 @@ class Library:
 
 
     def build(self):
+
+        cprint('Building library {0} for {1}'.format(self.name, self.toolchain.name), 'blue', attrs=['bold'])
 
         state = self.toolchain.state.copy()
 

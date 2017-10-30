@@ -7,32 +7,37 @@ class Reel:
 
     def add_build_tools(self, toolchain):
 
-        toolchain.add_library(url='https://ftpmirror.gnu.org/gnu/make/make-4.2.tar.gz',
+        toolchain.add_library(name='make',
+                              url='https://ftpmirror.gnu.org/gnu/make/make-4.2.tar.gz',
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"',
                                               '--without-guile',
                                               '--disable-nls'])
 
-        toolchain.add_library(url='https://ftpmirror.gnu.org/gnu/m4/m4-1.4.18.tar.xz',
-                              configure_args=['--target="{arch}"'
-                                              '--host="{arch}"'
-                                              '--enable-threads=posix'
-                                              '--enable-c++'
-                                              '--enable-changeword'
-                                              '--with-packager="Reel"'
-                                              '--with-packager-version="0.1"'
+        toolchain.add_library(name='m4',
+                              url='https://ftpmirror.gnu.org/gnu/m4/m4-1.4.18.tar.xz',
+                              configure_args=['--target="{arch}"',
+                                              '--host="{arch}"',
+                                              '--enable-threads=posix',
+                                              '--enable-c++',
+                                              '--enable-changeword',
+                                              '--with-packager="Reel"',
+                                              '--with-packager-version="0.1"',
                                               '--with-syscmd-shell="/bin/bash"'])
 
-        toolchain.add_library(url='https://ftpmirror.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz',
+        toolchain.add_library(name='autoconf',
+                              url='https://ftpmirror.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz',
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"'])
 
-        toolchain.add_library(url='https://ftpmirror.gnu.org/gnu/automake/automake-1.15.1.tar.xz',
+        toolchain.add_library(name='automake',
+                              url='https://ftpmirror.gnu.org/gnu/automake/automake-1.15.1.tar.xz',
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"'])
 
 
-        toolchain.add_library(url='https://ftpmirror.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz',
+        toolchain.add_library(name='libtool',
+                              url='https://ftpmirror.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz',
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"',
                                               '--enable-static',
@@ -40,7 +45,8 @@ class Reel:
 
 
 
-        toolchain.add_library(url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
+        toolchain.add_library(name='ncurses',
+                              url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"',
                                               '--enable-static',
@@ -111,7 +117,7 @@ class Reel:
             self.toolchains.append(bootstrap_toolchain)
 
             # Make our real toolchain
-            self.toolchain = Toolchain(name='', build_toolchain=bootstrap_toolchain)
+            self.toolchain = Toolchain(name='full', build_toolchain=bootstrap_toolchain)
             self.toolchains.append(self.toolchain)
 
             self.add_build_tools(self.toolchain)

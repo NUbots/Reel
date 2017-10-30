@@ -3,6 +3,7 @@
 import os
 import platform
 import subprocess
+from termcolor import cprint
 
 from .download import SmartDownload
 from .extract import SmartExtract
@@ -89,13 +90,15 @@ class Toolchain:
             }
 
             # Add our cross compiling tools
-            self.add_library(url='https://www.musl-libc.org/releases/musl-1.1.17.tar.gz',
+            self.add_library(name='musl',
+                             url='https://www.musl-libc.org/releases/musl-1.1.17.tar.gz',
                              configure_args=['--target={arch}',
                                              '--syslibdir={prefix_dir}/lib',
                                              '--disable-shared'],
                              env=build_env)
 
-            self.add_library(url='https://ftpmirror.gnu.org/gnu/binutils/binutils-2.29.tar.xz',
+            self.add_library(name='binutils',
+                             url='https://ftpmirror.gnu.org/gnu/binutils/binutils-2.29.tar.xz',
                              configure_args=['--target={target_triple}',
                                              '--with-sysroot',
                                              '--disable-nls',
@@ -105,6 +108,7 @@ class Toolchain:
                              env=build_env)
 
             self.add_library(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
+                             name='gcc7',
                              url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
                              configure_args=['--target="{target_triple}"',
                                              '--enable-languages=c,c++,fortran',
@@ -122,7 +126,8 @@ class Toolchain:
                                               'install-strip-target-libstdc++-v3'],
                              env=build_env)
 
-            self.add_library(url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
+            self.add_library(name='libbacktrace',
+                             url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
                              configure_args=['--enable-static',
                                              '--disable-shared'],
                              install_targets=['install-strip'],
@@ -143,6 +148,8 @@ class Toolchain:
         os.makedirs(self.sources_dir, exist_ok=True)
         os.makedirs(self.builds_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
+
+        cprint('Building toolchain {0} for {1}'.format(self.name, self.triple), 'blue', attrs=['bold'])
 
         # Build all our libraries
         for l in self.libraries:
