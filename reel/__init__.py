@@ -51,7 +51,7 @@ class Reel:
                                               '--host="{arch}"',
                                               '--enable-static',
                                               '--with-sysroot="{prefix_dir}"',
-                                              '--with-build-cc="{CC}"',
+                                              '--with-build-cc="$CC"',
                                               '--with-normal',
                                               '--with-debug',
                                               '--with-profile',
@@ -85,8 +85,8 @@ class Reel:
         self.toolchain = None
 
         # OSX can't handle musl based programs yet so downgrade
-        if platform.system() is 'Darwin' and toolchain_level is 'FULL':
-            toolchain_level = 'HOSTED'
+        if platform.system() == 'Darwin' and toolchain_level == 'FULL':
+            toolchain_level = 'SYSTEM'
 
         # With a system root toolchain we use the system compiler and build the tools
         if toolchain_level is 'SYSTEM':
@@ -96,35 +96,27 @@ class Reel:
             self.toolchains.append(self.toolchain)
 
             # Add system tools
-            self.add_build_tools(toolchain)
-
-        # We build our own compiler but just using the system toolchain
-        elif toolchain_level is 'HOSTED':
-
-            # Just use the system toolchain
-            self.toolchain = Toolchain(name='')
-            self.toolchains.append(self.toolchain)
-
-            # Add system tools
-            self.add_build_tools(toolchain)
-
+            self.add_build_tools(self.toolchain)
 
         # With a built root toolchain, we build and self host our compiler
         elif toolchain_level is 'FULL':
 
+            # Declare our system toolchain
+            system_toolchain = Toolchain(name='', system=True)
+
             # Make our bootstrap toolchain
-            bootstrap_toolchain = Toolchain(name='bootstrap')
+            bootstrap_toolchain = Toolchain(name='bootstrap', parent_toolchain=system_toolchain)
             self.toolchains.append(bootstrap_toolchain)
 
             # Make our real toolchain
-            self.toolchain = Toolchain(name='full', build_toolchain=bootstrap_toolchain)
+            self.toolchain = Toolchain(name='', parent_toolchain=bootstrap_toolchain)
             self.toolchains.append(self.toolchain)
 
             self.add_build_tools(self.toolchain)
 
-    def add_toolchain(self, name):
+    def add_toolchain(self, name, triple='', arch=''):
         # Create a new toolchain and return it and build using our toolchain
-        t = Toolchain(name, build_with=self.toolchain)
+        t = Toolchain(name, triple=triple, arch=arch, parent_toolchain=self.toolchain)
         self.toolchains.append(t)
         return t
 

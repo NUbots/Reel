@@ -50,7 +50,8 @@ class AutotoolsBuild:
                             env=self.env,
                             stdout=logfile,
                             stderr=logfile)
-            process.wait()
+            if process.wait() != 0:
+                raise Exception('Failed to configure')
 
         return { 'build': build_path, 'logs': logs_path }
 
@@ -73,7 +74,9 @@ class AutotoolsBuild:
                                 env=self.env,
                                 stdout=logfile,
                                 stderr=logfile)
-                process.wait()
+
+                if process.wait() != 0:
+                    raise Exception('Failed to run make'.format())
 
         # Otherwise run make for each of our targets
         for target in self.make_targets:
@@ -86,7 +89,8 @@ class AutotoolsBuild:
                                 env=self.env,
                                 stdout=logfile,
                                 stderr=logfile)
-                process.wait()
+                if process.wait() != 0:
+                    raise Exception('Failed to run make {}'.format(target))
 
 
     def install(self, **state):
@@ -107,4 +111,6 @@ class AutotoolsBuild:
                                 env=self.env,
                                 stdout=logfile,
                                 stderr=logfile)
-                process.wait()
+
+                if process.wait() != 0:
+                    raise Exception('Failed to run make {}'.format(target))
