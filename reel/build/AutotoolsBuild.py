@@ -9,9 +9,11 @@ class AutotoolsBuild:
 
         # Grab our configure args if they exist
         self.configure_args = build_args.get('configure_args', [])
+        self.build_args = build_args.get('build_args', [])
+        self.install_args = build_args.get('install_args', [])
 
         # Grab our make and install targets
-        self.make_targets = build_args.get('make_targets', [])
+        self.build_targets = build_args.get('build_targets', [])
         self.install_targets = build_args.get('install_targets', ['install'])
 
         # Add our prefix to the args
@@ -64,8 +66,8 @@ class AutotoolsBuild:
         build_path = state['build']
 
         # If we have no targets, just run make
-        if len(self.make_targets) == 0:
-            print(' $ {}'.format(' '.join(['make', '-j{}'.format(multiprocessing.cpu_count())])))
+        if len(self.build_targets) == 0:
+            print(' $ {}'.format(' '.join(['make', '-j{} {}'.format(multiprocessing.cpu_count(), ' '.join(a.format(**state) for a in self.build_args))])))
             with open(os.path.join(logs_path, '{}_make.log'.format(base_src)), 'w') as logfile:
                 cmd = 'make -j{}'.format(multiprocessing.cpu_count()),
                 process = Popen(args=cmd,
@@ -79,8 +81,8 @@ class AutotoolsBuild:
                     raise Exception('Failed to run make'.format())
 
         # Otherwise run make for each of our targets
-        for target in self.make_targets:
-            print(' $ {}'.format(' '.join(['make', '-j{}'.format(multiprocessing.cpu_count()), target])))
+        for target in self.build_targets:
+            print(' $ {}'.format(' '.join(['make', '-j{} {}'.format(multiprocessing.cpu_count(), ' '.join(a.format(**state) for a in self.build_args)), target])))
             with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
                 cmd = 'make -j{} {}'.format(multiprocessing.cpu_count(), target)
                 process = Popen(args=cmd,

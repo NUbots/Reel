@@ -74,6 +74,7 @@ class Toolchain:
 
             # Update our path to include where we build binaries too
             self.env['PATH'] = '{}/bin{}{}'.format(self.state['prefix_dir'], os.pathsep, self.env['PATH'])
+            self.env['CROSS_COMPILE'] = ''
 
         # Otherwise we need to build our compiler
         else:
@@ -87,12 +88,15 @@ class Toolchain:
                 'CC': '{}-gcc'.format(self.triple),
                 'CXX': '{}-g++'.format(self.triple),
                 'FC': '{}-gfortran'.format(self.triple),
+                'AR': '{}-ar'.format(self.triple),
+                'RANLIB': '{}-ranlib'.format(self.triple),
+                'NM': '{}-nm'.format(self.triple),
                 'CFLAGS': c_flags,
                 'CXXFLAGS': cxx_flags,
                 'FCFLAGS': fc_flags,
 
                 # Let all makes know they should treat this as a cross compilation
-                'CROSS_COMPILE': ' ',
+                'CROSS_COMPILE': '{}-'.format(self.triple),
             })
 
             # If we are not the system compiler, we are building a compiler
@@ -116,19 +120,29 @@ class Toolchain:
                                           '--disable-bootstrap',
                                           '--disable-werror',
                                           '--disable-shared'],
-                          make_targets=['all-gcc',
-                                        'all-target-libgcc',
-                                        'all-target-libstdc++-v3'],
-                          install_targets=['install-strip-gcc',
-                                           'install-strip-target-libgcc',
-                                           'install-strip-target-libstdc++-v3'])
+                          build_targets=['all-gcc'],
+                          install_targets=['install-strip-gcc'])
 
             # Add the libraries we will need to build with
             self.add_library(name='musl',
-                             url='https://www.musl-libc.org/releases/musl-1.1.17.tar.gz',
+                             url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
                              configure_args=['--target={arch}',
                                              '--syslibdir={prefix_dir}/lib',
                                              '--disable-shared'])
+
+            self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
+                          name='gcc7',
+                          url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
+                          configure_args=['--target="{target_triple}"',
+                                          '--enable-languages=c,c++,fortran',
+                                          '--with-sysroot="{prefix_dir}"',
+                                          '--disable-nls',
+                                          '--disable-multilib',
+                                          '--disable-bootstrap',
+                                          '--disable-werror',
+                                          '--disable-shared'],
+                          build_targets=['all-target-libgcc', 'all-target-libstdc++-v3'],
+                          install_targets=['install-strip-target-libgcc', 'install-strip-target-libstdc++-v3'])
 
             self.add_library(name='libbacktrace',
                              url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
@@ -173,6 +187,12 @@ class Toolchain:
 
         else:
             os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
+
+        for d in ['bin', 'include', 'lib']:
+          try:
+            os.makedirs(os.path.join(self.state['prefix_dir'], d), exist_ok=True)
+          except:
+            pass
 
         os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.archives_dir, exist_ok=True)
