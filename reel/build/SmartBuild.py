@@ -19,10 +19,18 @@ class SmartBuild:
         if os.path.isfile(os.path.join(source, 'configure')):
             self.build_tool = AutotoolsBuild(**self.build_args)
 
+        # If we have a repo that has autogen but no configure yet
+        elif os.path.isfile(os.path.join(source, 'autogen.sh')):
+            # TODO
+            pass
+
         # Then check for CMakeLists.txt
         elif os.path.isfile(os.path.join(source, 'CMakeLists.txt')):
             # TODO
             pass
+
+        # Bjam
+        # Bazel
 
         # Then check for a Makefile
         elif os.path.isfile(os.path.join(source, 'Makefile')):
