@@ -48,6 +48,7 @@ class Reel:
 
         toolchain.add_library(name='ncurses',
                               url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
+                              env={'CPPFLAGS': '-P'},
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"',
                                               '--enable-static',
