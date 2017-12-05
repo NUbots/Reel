@@ -151,7 +151,8 @@ class Toolchain:
 
             self.add_library(name='libbacktrace',
                          url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
-                         configure_args=['--enable-static',
+                         configure_args=['--target={target_triple}',
+                                         '--enable-static',
                                          '--disable-shared'],
                          install_targets=['install-strip'])
 
