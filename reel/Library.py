@@ -49,7 +49,8 @@ class Library:
 
     def build(self):
 
-        cprint('Building library {0} for {1}'.format(self.name, self.toolchain.name), 'blue', attrs=['bold'])
+        cprint('Building library {0} of {1}'.format(self.name, self.toolchain.state['toolchain_name']),
+               'blue', attrs=['bold'])
 
         state = self.toolchain.state.copy()
 
