@@ -17,9 +17,10 @@ class Toolchain:
     def __init__(self,
                  name,
                  triple='',
-                 c_flags='',
-                 cxx_flags='',
-                 fc_flags='',
+                 c_flags=[],
+                 cxx_flags=[],
+                 fc_flags=[],
+                 static=False,
                  parent_toolchain=None):
 
         self.name = name
@@ -39,6 +40,12 @@ class Toolchain:
 
         # Our arch is the first part of the triple
         self.arch = triple.split('-')[0]
+
+        # If we are doing a static build, add -static to our flags
+        if static:
+            c_flags.insert(0, '-static')
+            cxx_flags.insert(0, '-static')
+            fc_flags.insert(0, '-static')
 
         # Global directories
         self.toolchain_dir = 'toolchain'
@@ -76,14 +83,17 @@ class Toolchain:
             self.env['PATH'] = '{}{}{}'.format(os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep,
                                                self.env['PATH'])
             self.env['CROSS_COMPILE'] = ''
-            self.env['CFLAGS'] = '-static {}'.format(c_flags)
-            self.env['CXXFLAGS'] = '-static {}'.format(cxx_flags)
-            self.env['FCFLAGS'] = '-static {}'.format(fc_flags)
+            self.env['CFLAGS'] = ' '.join(c_flags)
+            self.env['CXXFLAGS'] = ' '.join(cxx_flags)
+            self.env['FCFLAGS'] = ' '.join(fc_flags)
 
         # Otherwise we need to build our compiler
         else:
             # Take our environment from our parent toolchain and update it
             self.env = self.parent_toolchain.env.copy()
+
+            c_flags = c_flags
+
             self.env.update({
                 # Extend the path
                 'PATH': '{}{}{}'.format(os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep,
@@ -112,7 +122,9 @@ class Toolchain:
                                           '--with-sysroot',
                                           '--disable-nls',
                                           '--disable-bootstrap',
-                                          '--disable-werror'],
+                                          '--disable-werror',
+                                          '--enable-shared',
+                                          '--enable-static'],
                           install_targets=['install-strip'])
 
             self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
@@ -125,7 +137,8 @@ class Toolchain:
                                           '--disable-multilib',
                                           '--disable-bootstrap',
                                           '--disable-werror',
-                                          '--disable-shared'],
+                                          '--enable-shared',
+                                          '--enable-static'],
                           build_targets=['all-gcc'],
                           install_targets=['install-strip-gcc'])
 
@@ -133,7 +146,8 @@ class Toolchain:
                              url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
                              configure_args=['--target={arch}',
                                              '--syslibdir={prefix_dir}/lib',
-                                             '--disable-shared'])
+                                             '--enable-shared'
+                                             '--enable-static'])
 
             self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
                           name='gcc7',
@@ -145,7 +159,8 @@ class Toolchain:
                                           '--disable-multilib',
                                           '--disable-bootstrap',
                                           '--disable-werror',
-                                          '--disable-shared'],
+                                          '--enable-shared',
+                                          '--enable-static'],
                           build_targets=['all-target-libgcc', 'all-target-libstdc++-v3'],
                           install_targets=['install-strip-target-libgcc', 'install-strip-target-libstdc++-v3'])
 
@@ -153,7 +168,8 @@ class Toolchain:
                          url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
                          configure_args=['--target={target_triple}',
                                          '--enable-static',
-                                         '--disable-shared'],
+                                         '--enable-shared'
+                                         '--enable-static'],
                          install_targets=['install-strip'])
 
 

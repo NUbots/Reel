@@ -105,7 +105,7 @@ class Reel:
             system_toolchain = Toolchain(name='')
 
             # Make our bootstrap toolchain
-            bootstrap_toolchain = Toolchain(name='bootstrap', parent_toolchain=system_toolchain)
+            bootstrap_toolchain = Toolchain(name='bootstrap', static=True, parent_toolchain=system_toolchain)
             self.toolchains.append(bootstrap_toolchain)
 
             # Make our real toolchain
