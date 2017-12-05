@@ -92,8 +92,6 @@ class Toolchain:
             # Take our environment from our parent toolchain and update it
             self.env = self.parent_toolchain.env.copy()
 
-            c_flags = c_flags
-
             self.env.update({
                 # Extend the path
                 'PATH': '{}{}{}'.format(os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep,
