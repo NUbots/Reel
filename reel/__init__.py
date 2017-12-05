@@ -92,7 +92,7 @@ class Reel:
         if toolchain_level is 'SYSTEM':
 
             # Just use the system toolchain
-            self.toolchain = Toolchain(name='', system=True)
+            self.toolchain = Toolchain(name='')
             self.toolchains.append(self.toolchain)
 
             # Add system tools
@@ -102,21 +102,22 @@ class Reel:
         elif toolchain_level is 'FULL':
 
             # Declare our system toolchain
-            system_toolchain = Toolchain(name='', system=True)
+            system_toolchain = Toolchain(name='')
 
             # Make our bootstrap toolchain
-            bootstrap_phase1_toolchain = Toolchain(name='bootstrap', phase=1, parent_toolchain=system_toolchain)
-            self.toolchains.append(bootstrap_phase1_toolchain)
+            bootstrap_toolchain = Toolchain(name='bootstrap', parent_toolchain=system_toolchain)
+            self.toolchains.append(bootstrap_toolchain)
 
             # Make our real toolchain
-            self.toolchain = Toolchain(name='', phase=2, parent_toolchain=bootstrap_phase1_toolchain)
+            self.toolchain = Toolchain(name='',  parent_toolchain=bootstrap_toolchain)
             self.toolchains.append(self.toolchain)
 
+            # The final toolchain gets all the tools
             self.add_build_tools(self.toolchain)
 
-    def add_toolchain(self, name, phase=2, triple='', arch=''):
+    def add_toolchain(self, name, triple=''):
         # Create a new toolchain and return it and build using our toolchain
-        t = Toolchain(name, phase=phase, triple=triple, arch=arch, parent_toolchain=self.toolchain)
+        t = Toolchain(name, triple=triple, parent_toolchain=self.toolchain)
         self.toolchains.append(t)
         return t
 
