@@ -114,9 +114,9 @@ class Reel:
 
             self.add_build_tools(self.toolchain)
 
-    def add_toolchain(self, name, triple='', arch=''):
+    def add_toolchain(self, name, phase=2, triple='', arch=''):
         # Create a new toolchain and return it and build using our toolchain
-        t = Toolchain(name, phase=2, triple=triple, arch=arch, parent_toolchain=self.toolchain)
+        t = Toolchain(name, phase=phase, triple=triple, arch=arch, parent_toolchain=self.toolchain)
         self.toolchains.append(t)
         return t
 
