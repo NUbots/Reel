@@ -104,9 +104,9 @@ class Toolchain:
                 'AR': '{}-ar'.format(self.triple),
                 'RANLIB': '{}-ranlib'.format(self.triple),
                 'NM': '{}-nm'.format(self.triple),
-                'CFLAGS': '{} --sysroot={} {}'.format(self.env['CFLAGS'], self.state['prefix_dir'], c_flags),
-                'CXXFLAGS': '{} --sysroot={} {}'.format(self.env['CXXFLAGS'], self.state['prefix_dir'], cxx_flags),
-                'FCFLAGS': '{} --sysroot={} {}'.format(self.env['FCFLAGS'], self.state['prefix_dir'], fc_flags),
+                'CFLAGS': '--sysroot={} {}'.format(self.state['prefix_dir'], ' '.join(c_flags)),
+                'CXXFLAGS': '--sysroot={} {}'.format(self.state['prefix_dir'], ' '.join(cxx_flags)),
+                'FCFLAGS': '--sysroot={} {}'.format(self.state['prefix_dir'], ' '.join(fc_flags)),
 
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
