@@ -105,18 +105,18 @@ class Reel:
             system_toolchain = Toolchain(name='', system=True)
 
             # Make our bootstrap toolchain
-            bootstrap_toolchain = Toolchain(name='bootstrap', parent_toolchain=system_toolchain)
-            self.toolchains.append(bootstrap_toolchain)
+            bootstrap_phase1_toolchain = Toolchain(name='bootstrap', phase=1, parent_toolchain=system_toolchain)
+            self.toolchains.append(bootstrap_phase1_toolchain)
 
             # Make our real toolchain
-            self.toolchain = Toolchain(name='', parent_toolchain=bootstrap_toolchain)
+            self.toolchain = Toolchain(name='', phase=2, parent_toolchain=bootstrap_phase1_toolchain)
             self.toolchains.append(self.toolchain)
 
             self.add_build_tools(self.toolchain)
 
     def add_toolchain(self, name, triple='', arch=''):
         # Create a new toolchain and return it and build using our toolchain
-        t = Toolchain(name, triple=triple, arch=arch, parent_toolchain=self.toolchain)
+        t = Toolchain(name, phase=2, triple=triple, arch=arch, parent_toolchain=self.toolchain)
         self.toolchains.append(t)
         return t
 

@@ -16,6 +16,7 @@ class Toolchain:
 
     def __init__(self,
                  name,
+                 phase=0,
                  arch=platform.machine(),
                  triple='',
                  c_flags='',
@@ -25,6 +26,7 @@ class Toolchain:
                  parent_toolchain=None):
 
         self.name = name
+        self.phase = phase
         self.parent_toolchain = parent_toolchain
         self.arch = arch
         self.system = system
@@ -55,7 +57,7 @@ class Toolchain:
         self.libraries = []
 
         self.state = {
-            'toolchain_name': self.name,
+            'toolchain_name': self.name if self.name else 'root',
             'arch': self.arch,
             'target_triple': self.triple,
             'toolchain_dir': self.toolchain_dir,
@@ -73,16 +75,21 @@ class Toolchain:
             self.env = dict(os.environ.copy())
 
             # Update our path to include where we build binaries too
-            self.env['PATH'] = '{}/bin{}{}'.format(self.state['prefix_dir'], os.pathsep, self.env['PATH'])
+            self.env['PATH'] = '{}{}{}'.format(os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep,
+                                               self.env['PATH'])
             self.env['CROSS_COMPILE'] = ''
+            self.env['CFLAGS'] = '-static {}'.format(c_flags)
+            self.env['CXXFLAGS'] = '-static {}'.format(cxx_flags)
+            self.env['FCFLAGS'] = '-static {}'.format(fc_flags)
 
         # Otherwise we need to build our compiler
         else:
             # Take our environment from our parent toolchain and update it
-            self.env = parent_toolchain.env.copy()
+            self.env = self.parent_toolchain.env.copy()
             self.env.update({
                 # Extend the path
-                'PATH': '{}/bin{}{}'.format(self.state['prefix_dir'], os.pathsep, parent_toolchain.env['PATH']),
+                'PATH': '{}{}{}'.format(os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep,
+                                        self.parent_toolchain.env['PATH']),
 
                 # Overwrite the compiler and compiler flags
                 'CC': '{}-gcc'.format(self.triple),
@@ -91,60 +98,94 @@ class Toolchain:
                 'AR': '{}-ar'.format(self.triple),
                 'RANLIB': '{}-ranlib'.format(self.triple),
                 'NM': '{}-nm'.format(self.triple),
-                'CFLAGS': c_flags,
-                'CXXFLAGS': cxx_flags,
-                'FCFLAGS': fc_flags,
+                'CFLAGS': '{} --sysroot={} {}'.format(self.env['CFLAGS'], self.state['prefix_dir'], c_flags),
+                'CXXFLAGS': '{} --sysroot={} {}'.format(self.env['CXXFLAGS'], self.state['prefix_dir'], cxx_flags),
+                'FCFLAGS': '{} --sysroot={} {}'.format(self.env['FCFLAGS'], self.state['prefix_dir'], fc_flags),
+                'CPPFLAGS': '-P',
 
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
             })
 
             # If we are not the system compiler, we are building a compiler
-            self.add_tool(name='binutils',
-                          url='https://ftpmirror.gnu.org/gnu/binutils/binutils-2.29.tar.xz',
-                          configure_args=['--target={target_triple}',
-                                          '--with-sysroot',
-                                          '--disable-nls',
-                                          '--disable-bootstrap',
-                                          '--disable-werror'],
-                          install_targets=['install-strip'])
+            if phase == 1:
+                self.add_tool(name='binutils',
+                              url='https://ftpmirror.gnu.org/gnu/binutils/binutils-2.29.tar.xz',
+                              configure_args=['--target={target_triple}',
+                                              '--with-sysroot',
+                                              '--disable-nls',
+                                              '--disable-bootstrap',
+                                              '--disable-werror'],
+                              install_targets=['install-strip'])
 
-            self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
-                          name='gcc7',
-                          url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
-                          configure_args=['--target="{target_triple}"',
-                                          '--enable-languages=c,c++,fortran',
-                                          '--with-sysroot="{prefix_dir}"',
-                                          '--disable-nls',
-                                          '--disable-multilib',
-                                          '--disable-bootstrap',
-                                          '--disable-werror',
-                                          '--disable-shared'],
-                          build_targets=['all-gcc'],
-                          install_targets=['install-strip-gcc'])
+                self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
+                              name='gcc7',
+                              url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
+                              configure_args=['--target="{target_triple}"',
+                                              '--enable-languages=c,c++,fortran',
+                                              '--with-sysroot="{prefix_dir}"',
+                                              '--disable-nls',
+                                              '--disable-multilib',
+                                              '--disable-bootstrap',
+                                              '--disable-werror',
+                                              '--disable-shared'],
+                              build_targets=['all-gcc'],
+                              install_targets=['install-strip-gcc'])
+
+                self.add_library(name='musl',
+                                 url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
+                                 configure_args=['--target={arch}',
+                                                 '--syslibdir={prefix_dir}/lib',
+                                                 '--disable-shared'])
+
+                self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
+                              name='gcc7',
+                              url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
+                              configure_args=['--target="{target_triple}"',
+                                              '--enable-languages=c,c++,fortran',
+                                              '--with-sysroot="{prefix_dir}"',
+                                              '--disable-nls',
+                                              '--disable-multilib',
+                                              '--disable-bootstrap',
+                                              '--disable-werror',
+                                              '--disable-shared'],
+                              build_targets=['all-target-libgcc', 'all-target-libstdc++-v3'],
+                              install_targets=['install-strip-target-libgcc', 'install-strip-target-libstdc++-v3'])
 
             # Add the libraries we will need to build with
-            self.add_library(name='musl',
-                             url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
-                             configure_args=['--target={arch}',
-                                             '--syslibdir={prefix_dir}/lib',
-                                             '--disable-shared'])
+            if phase == 2:
+                self.add_library(name='musl',
+                                 url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
+                                 configure_args=['--target={arch}',
+                                                 '--syslibdir={prefix_dir}/lib',
+                                                 '--disable-shared'])
 
-            self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
-                          name='gcc7',
-                          url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
-                          configure_args=['--target="{target_triple}"',
-                                          '--enable-languages=c,c++,fortran',
-                                          '--with-sysroot="{prefix_dir}"',
-                                          '--disable-nls',
-                                          '--disable-multilib',
-                                          '--disable-bootstrap',
-                                          '--disable-werror',
-                                          '--disable-shared'],
-                          build_targets=['all-target-libgcc', 'all-target-libstdc++-v3'],
-                          install_targets=['install-strip-target-libgcc', 'install-strip-target-libstdc++-v3'])
+                self.add_tool(name='binutils',
+                              url='https://ftpmirror.gnu.org/gnu/binutils/binutils-2.29.tar.xz',
+                              configure_args=['--target={target_triple}',
+                                              '--with-sysroot',
+                                              '--disable-nls',
+                                              '--disable-bootstrap',
+                                              '--disable-werror'],
+                              install_targets=['install-strip'])
 
-            self.add_library(name='libbacktrace',
+                self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
+                              name='gcc7',
+                              url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
+                              configure_args=['--target="{target_triple}"',
+                                              '--enable-languages=c,c++,fortran',
+                                              '--with-sysroot="{prefix_dir}"',
+                                              '--disable-nls',
+                                              '--disable-multilib',
+                                              '--disable-bootstrap',
+                                              '--disable-werror',
+                                              '--disable-shared'],
+                              build_targets=['all-gcc', 'all-target-libgcc', 'all-target-libstdc++-v3'],
+                              install_targets=['install-strip-gcc',
+                                               'install-strip-target-libgcc',
+                                               'install-strip-target-libstdc++-v3'])
+
+                self.add_library(name='libbacktrace',
                              url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
                              configure_args=['--enable-static',
                                              '--disable-shared'],
@@ -200,7 +241,8 @@ class Toolchain:
         os.makedirs(self.builds_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
 
-        cprint('Building toolchain {0} for {1}'.format(self.name, self.triple), 'blue', attrs=['bold'])
+        cprint('Building toolchain {0} for {1}'.format(self.name if self.name else 'root', self.triple),
+               'blue', attrs=['bold'])
 
         # Build all our libraries
         for l in self.libraries:
