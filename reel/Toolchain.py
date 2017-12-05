@@ -101,7 +101,7 @@ class Toolchain:
                 'CFLAGS': '{} --sysroot={} {}'.format(self.env['CFLAGS'], self.state['prefix_dir'], c_flags),
                 'CXXFLAGS': '{} --sysroot={} {}'.format(self.env['CXXFLAGS'], self.state['prefix_dir'], cxx_flags),
                 'FCFLAGS': '{} --sysroot={} {}'.format(self.env['FCFLAGS'], self.state['prefix_dir'], fc_flags),
-                'CPPFLAGS': '-P',
+                'CPPFLAGS': '-P',               # Hack for ncurses
 
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
