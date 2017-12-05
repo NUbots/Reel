@@ -41,6 +41,7 @@ class Reel:
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"',
                                               '--enable-static',
+                                              '--enable-shared',
                                               '--with-sysroot="{prefix_dir}"'])
 
 
@@ -50,6 +51,7 @@ class Reel:
                               configure_args=['--target="{arch}"',
                                               '--host="{arch}"',
                                               '--enable-static',
+                                              '--enable-shared',
                                               '--with-sysroot="{prefix_dir}"',
                                               '--with-build-cc="$CC"',
                                               '--with-normal',
