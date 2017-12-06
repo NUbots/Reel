@@ -41,7 +41,7 @@ class Toolchain:
             self.triple = triple
 
         # Our arch is the first part of the triple
-        self.arch = triple.split('-')[0]
+        self.arch = self.triple.split('-')[0]
 
         # Make sure we are always generating position independent code.
         c_flags.append('-fPIC')
