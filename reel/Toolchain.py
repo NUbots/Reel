@@ -41,6 +41,11 @@ class Toolchain:
         # Our arch is the first part of the triple
         self.arch = triple.split('-')[0]
 
+        # Make sure we are always generating position independent code.
+        c_flags.append('-fPIC')
+        cxx_flags.append('-fPIC')
+        fc_flags.append('-fPIC')
+
         # If we are doing a static build, add -static to our flags
         if static:
             c_flags.insert(0, '-static')
