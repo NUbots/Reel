@@ -127,7 +127,7 @@ class Toolchain:
                                           '--disable-nls',
                                           '--disable-bootstrap',
                                           '--disable-werror',
-                                          '--enable-shared',
+                                          '--enable-shared' if not static else '--disable-shared',
                                           '--enable-static'],
                           install_targets=['install-strip'])
 
@@ -141,7 +141,7 @@ class Toolchain:
                                           '--disable-multilib',
                                           '--disable-bootstrap',
                                           '--disable-werror',
-                                          '--enable-shared',
+                                          '--enable-shared' if not static else '--disable-shared',
                                           '--enable-static'],
                           build_targets=['all-gcc'],
                           install_targets=['install-strip-gcc'])
@@ -150,7 +150,7 @@ class Toolchain:
                              url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
                              configure_args=['--target={arch}',
                                              '--syslibdir={prefix_dir}/lib',
-                                             '--enable-shared'
+                                             '--disable-shared',
                                              '--enable-static'])
 
             self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
@@ -163,18 +163,28 @@ class Toolchain:
                                           '--disable-multilib',
                                           '--disable-bootstrap',
                                           '--disable-werror',
-                                          '--enable-shared',
+                                          '--enable-shared' if not static else '--disable-shared',
                                           '--enable-static'],
                           build_targets=['all-target-libgcc', 'all-target-libstdc++-v3'],
                           install_targets=['install-strip-target-libgcc', 'install-strip-target-libstdc++-v3'])
 
+            if not static:
+                self.add_library(name='musl',
+                                 build_postfix='_shared',
+                                 url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
+                                 configure_args=['--target={arch}',
+                                                 '--syslibdir={prefix_dir}/lib',
+                                                 '--enable-shared',
+                                                 '--disable-static'])
+
             self.add_library(name='libbacktrace',
-                         url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
-                         configure_args=['--target={target_triple}',
-                                         '--enable-static',
-                                         '--enable-shared'
-                                         '--enable-static'],
-                         install_targets=['install-strip'])
+                             url='https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
+                             configure_args=['--host={}'.format(self.parent_toolchain.target_triple),
+                                             '--target={target_triple}',
+                                             '--enable-static',
+                                             '--enable-shared' if not static else '--disable-shared',
+                                             '--enable-static'],
+                             install_targets=['install-strip'])
 
 
     # Build a tool we can run (Use our state but parents env)
