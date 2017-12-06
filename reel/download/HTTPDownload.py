@@ -8,7 +8,7 @@ from dateutil import parser
 from termcolor import cprint
 from tqdm import tqdm
 
-from ..util import indent
+from ..util import indent, get_status, update_status
 
 class HTTPDownload:
     def __init__(self, **kwargs):
@@ -27,6 +27,11 @@ class HTTPDownload:
         # Work out our output path
         output_file = os.path.join(kwargs['archives_dir'], filename)
 
+        status_file = os.path.join(kwargs['status_dir'], '{}.json'.format(filename))
+
+        # Load the status file.
+        status = get_status(status_file)
+
         # If our file exists compare the last modified of our file vs the one on the server
         if os.path.exists(output_file):
 
@@ -44,7 +49,11 @@ class HTTPDownload:
 
             # If there is an etag we can use we can check that hasn't changed
             elif 'Etag' in headers:
-                pass
+                if 'download_etag' not in status or status['download_etag'] != headers['Etag']:
+                    status = update_status(status_file, {'download_etag': headers['Etag']})
+                else:
+                    cprint(indent('URL {} not modified... Skipping...'.format(filename), 8), 'yellow', attrs=['bold'])
+                    return { 'archive': output_file }
 
         cprint(indent('Downloading {}'.format(filename), 8), 'green', attrs=['bold'])
 
