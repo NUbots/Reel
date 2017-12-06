@@ -58,6 +58,7 @@ class Toolchain:
         self.working_dir = os.path.join(self.setup_dir, self.name if self.name else 'root')
         self.builds_dir = os.path.join(self.working_dir, 'build')
         self.logs_dir = os.path.join(self.working_dir, 'log')
+        self.status_dir = os.path.join(self.working_dir, 'status')
 
         self.libraries = []
 
@@ -73,6 +74,7 @@ class Toolchain:
             'working_dir': self.working_dir,
             'builds_dir': self.builds_dir,
             'logs_dir': self.logs_dir,
+            'status_dir': self.status_dir,
         }
 
         # If this is the system toolchain don't build anything but update our env
@@ -218,6 +220,7 @@ class Toolchain:
         os.makedirs(self.sources_dir, exist_ok=True)
         os.makedirs(self.builds_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
+        os.makedirs(self.status_dir, exist_ok=True)
 
         cprint('Building toolchain {0} for {1}'.format(self.name if self.name else 'root', self.triple),
                'blue', attrs=['bold'])
