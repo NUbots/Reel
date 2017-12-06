@@ -6,7 +6,7 @@ from subprocess import Popen
 import multiprocessing
 from termcolor import cprint
 
-from ..util import get_status, update_status
+from ..util import get_status, update_status, indent
 
 class AutotoolsBuild:
     def __init__(self, **build_args):
@@ -53,7 +53,7 @@ class AutotoolsBuild:
             # Open a log file and run configure
             with open(os.path.join(logs_path, '{}_configure.log'.format(base_src)), 'w') as logfile:
                 cmd = '{} {}'.format(os.path.abspath(os.path.join(src_path, 'configure')), ' '.join(args))
-                print(' $ {}'.format(cmd))
+                print(indent(' $ {}'.format(cmd), 8))
                 process = Popen(args=cmd,
                                 shell=True,
                                 cwd=os.path.abspath(build_path),
@@ -67,7 +67,7 @@ class AutotoolsBuild:
                     status = update_status(status_path, {'configure': True})
 
         else:
-            cprint('Configure step for {} complete... Skipping...'.format(base_src), 'yellow', attrs=['bold'])
+            cprint(indent('Configure step for {} complete... Skipping...'.format(base_src), 8), 'yellow', attrs=['bold'])
 
         return { 'build': build_path, 'logs': logs_path }
 
@@ -86,7 +86,7 @@ class AutotoolsBuild:
         # Otherwise run make for each of our targets
         for target in self.build_targets:
             if 'make_{}'.format(target) not in status or not status['make_{}'.format(target)]:
-                print(' $ {}'.format(' '.join(['make', '-j{} {}'.format(multiprocessing.cpu_count(), ' '.join(a.format(**state) for a in self.build_args)), target])))
+                print(indent(' $ {}'.format(' '.join(['make', '-j{} {}'.format(multiprocessing.cpu_count(), ' '.join(a.format(**state) for a in self.build_args)), target])), 8))
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
                     cmd = 'make -j{} {}'.format(multiprocessing.cpu_count(), target)
                     process = Popen(args=cmd,
@@ -102,7 +102,8 @@ class AutotoolsBuild:
                         status = update_status(status_path, {'make_{}'.format(target): True})
 
             else:
-                cprint('Build step {} for {} complete... Skipping...'.format(target, base_src), 'yellow', attrs=['bold'])
+                cprint(indent('Build step {} for {} complete... Skipping...'.format(target, base_src), 8),
+                       'yellow', attrs=['bold'])
 
     def install(self, **state):
 
@@ -118,7 +119,7 @@ class AutotoolsBuild:
         # Open a log file and run make install
         for target in self.install_targets:
             if target not in status or not status[target]:
-                print(' $ {}'.format(' '.join(['make', target])))
+                print(indent(' $ {}'.format(' '.join(['make', target])), 8))
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
                     cmd = 'make {}'.format(target)
                     process = Popen(args=cmd,
@@ -135,4 +136,5 @@ class AutotoolsBuild:
                         status = update_status(status_path, {target: True})
 
             else:
-                cprint('Install step {} for {} complete... Skipping...'.format(target, base_src), 'yellow', attrs=['bold'])
+                cprint(indent('Install step {} for {} complete... Skipping...'.format(target, base_src), 8),
+                       'yellow', attrs=['bold'])

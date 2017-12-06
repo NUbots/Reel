@@ -4,6 +4,8 @@ import os
 from subprocess import Popen
 from functools import partial
 
+from .util import indent
+
 class Shell:
     class Command:
         def execute(self, command, build_args, **state):
@@ -15,7 +17,7 @@ class Shell:
             if 'env' in build_args:
                 env.update(build_args['env'])
 
-            print(' $ {}'.format(command.format(**state)))
+            print(indent(' $ {}'.format(command.format(**state)), 8))
             process = Popen(args=command.format(**state),
                             shell=True,
                             env=env)

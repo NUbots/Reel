@@ -5,6 +5,8 @@ from termcolor import cprint
 from collections import OrderedDict
 from functools import partial
 
+from .util import indent
+
 class Library:
     def __init__(self, toolchain, *phase_handlers, **kwargs):
 
@@ -50,22 +52,13 @@ class Library:
     def build(self):
 
         cprint('Building library {0} of {1}'.format(self.name, self.toolchain.state['toolchain_name']),
-               'blue', attrs=['bold'])
+               'cyan', attrs=['bold'])
 
         state = self.toolchain.state.copy()
 
         for p, f in self.phase.items():
             if f is not None:
-                cprint('Running phase {}'.format(p))
+                cprint(indent('Running phase {} for {}'.format(p, self.name)), 'magenta', attrs=['bold'])
                 new_state = f(**state)
                 if new_state is not None:
                     state.update(new_state)
-
-        # # Work out where our files go
-        # # TODO these don't have extensions at the moment
-        # archive_path = os.path.join(self.toolchain.archive_path, self.name)
-        # src_path = os.path.join(self.toolchain.src_path, self.name)
-
-        # # Download our archive
-        # download(self.url, archive_path)
-        # extract(archive_path, src_path)

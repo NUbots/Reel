@@ -8,6 +8,8 @@ from dateutil import parser
 from termcolor import cprint
 from tqdm import tqdm
 
+from ..util import indent
+
 class HTTPDownload:
     def __init__(self, **kwargs):
         self.url = kwargs['url']
@@ -37,14 +39,14 @@ class HTTPDownload:
 
                 # If we were modified after we don't need to download again
                 if l_modified > r_modified:
-                    cprint('URL {} not modified... Skipping...'.format(filename), 'yellow', attrs=['bold'])
+                    cprint(indent('URL {} not modified... Skipping...'.format(filename)), 'yellow', attrs=['bold'])
                     return { 'archive': output_file }
 
             # If there is an etag we can use we can check that hasn't changed
             elif 'Etag' in headers:
                 pass
 
-        cprint('Downloading {}'.format(filename), 'green', attrs=['bold'])
+        cprint(indent('Downloading {}'.format(filename)), 'green', attrs=['bold'])
 
         # Do our get request
         r = requests.get(self.url, allow_redirects=True, stream=True)

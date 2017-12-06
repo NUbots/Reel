@@ -3,6 +3,9 @@
 import os
 import json
 
+def indent(s, length=4):
+    return '\n'.join([(' ' * length) + l for l in s.splitlines()])
+
 def get_status(status_file):
     # Make sure we have our status file.
     if not os.path.isfile(status_file):
