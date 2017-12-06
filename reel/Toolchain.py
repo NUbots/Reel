@@ -141,7 +141,9 @@ class Toolchain:
                           install_targets=['install-strip'])
 
             self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
-                          Shell(post_install=''),
+                          Shell(post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
+                                             ' |  sed "s@/lib/ld-*@{prefix_dir}/lib/ld-@g"'
+                                             ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'),
                           name='gcc7',
                           url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
