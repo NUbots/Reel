@@ -2,9 +2,13 @@
 
 import os
 import json
+import textwrap
 
 def indent(s, length=4):
     return '\n'.join([(' ' * length) + l for l in s.splitlines()])
+
+def dedent(s):
+    return textwrap.dedent(s)
 
 def get_status(status_file):
     # Make sure we have our status file.
@@ -23,4 +27,3 @@ def update_status(status_file, args):
         json.dump(status, f, indent=4, separators=(',', ': '), sort_keys=True)
 
     return status
-
