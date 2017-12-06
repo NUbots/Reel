@@ -19,7 +19,7 @@ class TarExtract:
         dest = os.path.join(state['sources_dir'], basename[:basename.rindex('.t')])
 
         # If our archive is newer than our folder extract
-        if not os.path.exists(dest) or os.path.getmtime(archive) > os.path.getmtime(dest):
+        if not os.path.exists(dest) or os.path.getmtime(archive) >= os.path.getmtime(dest):
             cprint(indent('Extracting {} to {}'.format(basename, dest), 8), 'green', attrs=['bold'])
             with tarfile.open(archive, 'r') as tf:
 
