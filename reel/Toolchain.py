@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import platform
 import subprocess
 from termcolor import cprint
 
@@ -12,7 +11,6 @@ from .Shell import Shell
 
 from .Library import Library
 
-from .util import dedent
 
 class Toolchain:
 
@@ -30,10 +28,11 @@ class Toolchain:
 
         # If we don't have a triple, work out the systems one
         if not triple:
-            self.triple = subprocess.check_output(['cc', '-dumpmachine']).decode('utf-8').strip()
+            self.triple = subprocess.check_output(
+                ['cc', '-dumpmachine']).decode('utf-8').strip()
 
             # Non system toolchains are musl based
-            if parent_toolchain != None:
+            if parent_toolchain is not None:
                 self.triple = self.triple.replace('gnu', 'musl')
 
         # Otherwise use the one provided
@@ -67,7 +66,8 @@ class Toolchain:
 
         # Toolchain directories
         self.prefix_dir = os.path.join(self.toolchain_dir, self.name)
-        self.working_dir = os.path.join(self.setup_dir, self.name if self.name else 'root')
+        self.working_dir = os.path.join(
+            self.setup_dir, self.name if self.name else 'root')
         self.builds_dir = os.path.join(self.working_dir, 'build')
         self.logs_dir = os.path.join(self.working_dir, 'log')
         self.status_dir = os.path.join(self.working_dir, 'status')
@@ -90,7 +90,7 @@ class Toolchain:
         }
 
         # If this is the system toolchain don't build anything but update our env
-        if parent_toolchain == None:
+        if parent_toolchain is None:
             self.env = dict(os.environ.copy())
 
             # Update our path to include where we build binaries too
@@ -126,11 +126,11 @@ class Toolchain:
                 'CROSS_COMPILE': '{}-'.format(self.triple),
             })
 
-            # If we are not the system compiler, we are building a compiler
             self.add_tool(name='binutils',
                           url='https://ftpmirror.gnu.org/gnu/binutils/binutils-2.29.tar.xz',
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
-                                          '--build={}'.format(self.parent_toolchain.triple),
+                                          '--build={}'.format(
+                                              self.parent_toolchain.triple),
                                           '--target={target_triple}',
                                           '--with-sysroot',
                                           '--disable-nls',
@@ -141,10 +141,12 @@ class Toolchain:
                           install_targets=['install-strip'])
 
             self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
+                          Shell(post_install=''),
                           name='gcc7',
                           url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
-                                          '--build={}'.format(self.parent_toolchain.triple),
+                                          '--build={}'.format(
+                                              self.parent_toolchain.triple),
                                           '--target={target_triple}',
                                           '--enable-languages=c,c++,fortran',
                                           '--with-sysroot="{prefix_dir}"',
@@ -175,7 +177,8 @@ class Toolchain:
                           name='gcc7',
                           url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
-                                          '--build={}'.format(self.parent_toolchain.triple),
+                                          '--build={}'.format(
+                                              self.parent_toolchain.triple),
                                           '--target={target_triple}',
                                           '--enable-languages=c,c++,fortran',
                                           '--with-sysroot="{prefix_dir}"',
@@ -185,7 +188,8 @@ class Toolchain:
                                           '--disable-werror',
                                           '--enable-shared' if not static else '--disable-shared',
                                           '--enable-static'],
-                          build_targets=['all-target-libgcc', 'all-target-libstdc++-v3'],
+                          build_targets=['all-target-libgcc',
+                                         'all-target-libstdc++-v3'],
                           install_targets=['install-strip-target-libgcc', 'install-strip-target-libstdc++-v3'])
 
             if not static:
@@ -200,12 +204,12 @@ class Toolchain:
             self.add_library(name='libbacktrace',
                              url='https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
                              configure_args=['--host={target_triple}',
-                                             '--build={}'.format(self.parent_toolchain.triple),
+                                             '--build={}'.format(
+                                                 self.parent_toolchain.triple),
                                              '--enable-static',
                                              '--enable-shared' if not static else '--disable-shared',
                                              '--enable-static'],
                              install_targets=['install-strip'])
-
 
     # Build a tool we can run (Use our state but parents env)
     def add_tool(self, *args, **kwargs):
@@ -216,8 +220,8 @@ class Toolchain:
             env.update(kwargs['env'])
         kwargs['env'] = env
 
-        self.libraries.append(Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
-
+        self.libraries.append(
+            Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
 
     # Build a library using our toolchain
     def add_library(self, *args, **kwargs):
@@ -228,8 +232,8 @@ class Toolchain:
             env.update(kwargs['env'])
         kwargs['env'] = env
 
-        self.libraries.append(Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
-
+        self.libraries.append(
+            Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
 
     def build(self):
 
@@ -239,16 +243,16 @@ class Toolchain:
         if os.path.exists(os.path.join(self.state['prefix_dir'], 'usr')):
             if not os.path.islink(os.path.join(self.state['prefix_dir'], 'usr')):
                 os.path.unlink(os.path.join(self.state['prefix_dir'], 'usr'))
-                os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
+                os.symlink(self.state['prefix_dir'], os.path.join(
+                    self.state['prefix_dir'], 'usr'))
 
         else:
-            os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
+            os.symlink(self.state['prefix_dir'], os.path.join(
+                self.state['prefix_dir'], 'usr'))
 
         for d in ['bin', 'include', 'lib']:
-            try:
-                os.makedirs(os.path.join(self.state['prefix_dir'], d), exist_ok=True)
-            except:
-                pass
+            os.makedirs(os.path.join(
+                self.state['prefix_dir'], d), exist_ok=True)
 
         os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.archives_dir, exist_ok=True)

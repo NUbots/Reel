@@ -3,10 +3,10 @@
 import platform
 from .Toolchain import Toolchain
 
+
 class Reel:
 
     def add_build_tools(self, toolchain):
-
         toolchain.add_library(name='make',
                               url='https://ftpmirror.gnu.org/gnu/make/make-4.2.tar.gz',
                               configure_args=['--host={arch}',
@@ -35,7 +35,6 @@ class Reel:
                               configure_args=['--host={arch}',
                                               '--build={arch}'])
 
-
         toolchain.add_library(name='libtool',
                               url='https://ftpmirror.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz',
                               configure_args=['--host={arch}',
@@ -43,8 +42,6 @@ class Reel:
                                               '--enable-static',
                                               '--enable-shared',
                                               '--with-sysroot="{prefix_dir}"'])
-
-
 
         toolchain.add_library(name='ncurses',
                               url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
@@ -70,7 +67,6 @@ class Reel:
                                               '--enable-sigwinch',
                                               '--enable-tcap-names'])
 
-
         # toolchain.add_library(url='https://cmake.org/files/v3.10/cmake-3.10.0-rc3.tar.gz')
         # CFLAGS="$CFLAGS -isystem {prefix_dir}/include/ncurses" \
         # CXXFLAGS="$CXXFLAGS -isystem {prefix_dir}/include/ncurses" \
@@ -78,11 +74,9 @@ class Reel:
         #     --parallel="$(nproc)" \
         #     --no-qt-gui
 
-
         # toolchain.add_library(url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
 
     def __init__(self, toolchain_level='FULL'):
-
         self.toolchains = []
         self.libraries = []
         self.toolchain = None
@@ -108,11 +102,13 @@ class Reel:
             system_toolchain = Toolchain(name='')
 
             # Make our bootstrap toolchain
-            bootstrap_toolchain = Toolchain(name='bootstrap', static=True, parent_toolchain=system_toolchain)
+            bootstrap_toolchain = Toolchain(
+                name='bootstrap', static=True, parent_toolchain=system_toolchain)
             self.toolchains.append(bootstrap_toolchain)
 
             # Make our real toolchain
-            self.toolchain = Toolchain(name='',  parent_toolchain=bootstrap_toolchain)
+            self.toolchain = Toolchain(
+                name='', parent_toolchain=bootstrap_toolchain)
             self.toolchains.append(self.toolchain)
 
             # The final toolchain gets all the tools
@@ -128,4 +124,3 @@ class Reel:
         # Build our toolchains
         for t in self.toolchains:
             t.build()
-

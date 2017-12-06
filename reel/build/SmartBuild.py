@@ -4,6 +4,7 @@ import os
 
 from .AutotoolsBuild import AutotoolsBuild
 
+
 class SmartBuild:
     def __init__(self, **build_args):
 
@@ -42,7 +43,6 @@ class SmartBuild:
     def build(self, **state):
 
         return self.build_tool.build(**state)
-
 
     def install(self, **state):
 

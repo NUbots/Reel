@@ -6,6 +6,7 @@ from functools import partial
 
 from .util import indent
 
+
 class Shell:
     class Command:
         def execute(self, command, build_args, **state):

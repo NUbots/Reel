@@ -2,6 +2,7 @@
 
 from .HTTPDownload import HTTPDownload
 
+
 class SmartDownload:
     def __init__(self, **build_args):
 
@@ -16,7 +17,6 @@ class SmartDownload:
             # If we have a http, https use our HTTP downloader
             if url.startswith('http://') or url.startswith('https://'):
                 self._downloader = HTTPDownload(**build_args)
-
 
     def download(self, **state):
         return self._downloader.download(**state)

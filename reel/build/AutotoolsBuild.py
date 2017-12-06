@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import os
-import json
 from subprocess import Popen
 import multiprocessing
 from termcolor import cprint
 
 from ..util import get_status, update_status, indent
+
 
 class AutotoolsBuild:
     def __init__(self, **build_args):
@@ -39,7 +39,8 @@ class AutotoolsBuild:
         args = [c.format(**state) for c in self.configure_args]
 
         # Work out our real full paths
-        src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
+        src_path, base_src, logs_path, build_path, status_path = self.get_paths(
+            state)
 
         # Load the status file.
         status = get_status(status_path)
@@ -51,7 +52,8 @@ class AutotoolsBuild:
 
             # Open a log file and run configure
             with open(os.path.join(logs_path, '{}_configure.log'.format(base_src)), 'w') as logfile:
-                cmd = '{} {}'.format(os.path.abspath(os.path.join(src_path, 'configure')), ' '.join(args))
+                cmd = '{} {}'.format(os.path.abspath(
+                    os.path.join(src_path, 'configure')), ' '.join(args))
                 print(indent(' $ {}'.format(cmd), 8))
                 process = Popen(args=cmd,
                                 shell=True,
@@ -66,15 +68,16 @@ class AutotoolsBuild:
                     status = update_status(status_path, {'configure': True})
 
         else:
-            cprint(indent('Configure step for {} complete... Skipping...'.format(base_src), 8), 'yellow', attrs=['bold'])
+            cprint(indent('Configure step for {} complete... Skipping...'.format(
+                base_src), 8), 'yellow', attrs=['bold'])
 
-        return { 'build': build_path, 'logs': logs_path }
-
+        return {'build': build_path, 'logs': logs_path}
 
     def build(self, **state):
 
         # Work out our real full paths
-        src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
+        src_path, base_src, logs_path, build_path, status_path = self.get_paths(
+            state)
 
         # Load the status file.
         status = get_status(status_path)
@@ -82,9 +85,11 @@ class AutotoolsBuild:
         # Otherwise run make for each of our targets
         for target in self.build_targets:
             if 'make_{}'.format(target) not in status or not status['make_{}'.format(target)]:
-                print(indent(' $ {}'.format(' '.join(['make', '-j{} {}'.format(multiprocessing.cpu_count(), ' '.join(a.format(**state) for a in self.build_args)), target])), 8))
+                print(indent(' $ {}'.format(' '.join(['make', '-j{} {}'.format(multiprocessing.cpu_count(
+                ), ' '.join(a.format(**state) for a in self.build_args)), target])), 8))
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
-                    cmd = 'make -j{} {}'.format(multiprocessing.cpu_count(), target)
+                    cmd = 'make -j{} {}'.format(
+                        multiprocessing.cpu_count(), target)
                     process = Popen(args=cmd,
                                     shell=True,
                                     cwd=os.path.abspath(build_path),
@@ -95,7 +100,8 @@ class AutotoolsBuild:
                         raise Exception('Failed to run make {}'.format(target))
 
                     else:
-                        status = update_status(status_path, {'make_{}'.format(target): True})
+                        status = update_status(
+                            status_path, {'make_{}'.format(target): True})
 
             else:
                 cprint(indent('Build step {} for {} complete... Skipping...'.format(target, base_src), 8),
@@ -104,7 +110,8 @@ class AutotoolsBuild:
     def install(self, **state):
 
         # Work out our real full paths
-        src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
+        src_path, base_src, logs_path, build_path, status_path = self.get_paths(
+            state)
 
         # Load the status file.
         status = get_status(status_path)
@@ -134,9 +141,11 @@ class AutotoolsBuild:
 
     def get_paths(self, state):
         src_path = state['source']
-        base_src = '{}{}'.format(os.path.basename(src_path), self.build_postfix)
+        base_src = '{}{}'.format(
+            os.path.basename(src_path), self.build_postfix)
         logs_path = os.path.join(state['logs_dir'], base_src)
         build_path = os.path.join(state['builds_dir'], base_src)
-        status_path = os.path.join(state['status_dir'], '{}.json'.format(base_src))
+        status_path = os.path.join(
+            state['status_dir'], '{}.json'.format(base_src))
 
         return src_path, base_src, logs_path, build_path, status_path
