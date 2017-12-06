@@ -12,6 +12,8 @@ from .Shell import Shell
 
 from .Library import Library
 
+from .util import dedent
+
 class Toolchain:
 
     def __init__(self,
@@ -45,6 +47,11 @@ class Toolchain:
         c_flags.append('-fPIC')
         cxx_flags.append('-fPIC')
         fc_flags.append('-fPIC')
+
+        # Make sure we are always generating position independent code.
+        # c_flags.append('-Wl,--dynamic-linker=/lib/ld-uClibc.so.0')
+        # cxx_flags.append('-Wl,--dynamic-linker=/lib/ld-uClibc.so.0')
+        # fc_flags.append('-Wl,--dynamic-linker=/lib/ld-uClibc.so.0')
 
         # If we are doing a static build, add -static to our flags
         if static:
@@ -153,6 +160,14 @@ class Toolchain:
                                              '--disable-shared',
                                              '--enable-static'])
 
+            # specfile_cmd = dedent("""\
+            #                       SPECFILE=`dirname $({gcc} -print-libgcc-file-name)`/specs &&
+            #                       {gcc} -dumpspecs > $SPECFILE &&
+            #                       sed 's@^/lib/ld-.+?.so.2@/tools&@g' $SPECFILE > tempspecfile &&
+            #                       mv -vf tempspecfile $SPECFILE
+            #                       """)
+
+            self.add_tool(Shell(post_install='cd {source} && ./contrib/download_prerequisites'),
                           name='gcc7',
                           url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
                           configure_args=['--target="{target_triple}"',
