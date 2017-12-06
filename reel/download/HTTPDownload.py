@@ -39,14 +39,14 @@ class HTTPDownload:
 
                 # If we were modified after we don't need to download again
                 if l_modified > r_modified:
-                    cprint(indent('URL {} not modified... Skipping...'.format(filename)), 'yellow', attrs=['bold'])
+                    cprint(indent('URL {} not modified... Skipping...'.format(filename), 8), 'yellow', attrs=['bold'])
                     return { 'archive': output_file }
 
             # If there is an etag we can use we can check that hasn't changed
             elif 'Etag' in headers:
                 pass
 
-        cprint(indent('Downloading {}'.format(filename)), 'green', attrs=['bold'])
+        cprint(indent('Downloading {}'.format(filename), 8), 'green', attrs=['bold'])
 
         # Do our get request
         r = requests.get(self.url, allow_redirects=True, stream=True)
