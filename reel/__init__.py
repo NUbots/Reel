@@ -9,15 +9,15 @@ class Reel:
 
         toolchain.add_library(name='make',
                               url='https://ftpmirror.gnu.org/gnu/make/make-4.2.tar.gz',
-                              configure_args=['--host="{target_triple}"',
-                                              '--build="{target_triple}"',
+                              configure_args=['--host={arch}',
+                                              '--build={arch}',
                                               '--without-guile',
                                               '--disable-nls'])
 
         toolchain.add_library(name='m4',
                               url='https://ftpmirror.gnu.org/gnu/m4/m4-1.4.18.tar.xz',
-                              configure_args=['--host="{target_triple}"',
-                                              '--build="{target_triple}"',
+                              configure_args=['--host={arch}',
+                                              '--build={arch}',
                                               '--enable-threads=posix',
                                               '--enable-c++',
                                               '--enable-changeword',
@@ -27,19 +27,19 @@ class Reel:
 
         toolchain.add_library(name='autoconf',
                               url='https://ftpmirror.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz',
-                              configure_args=['--host="{target_triple}"',
-                                              '--build="{target_triple}"'])
+                              configure_args=['--host={arch}',
+                                              '--build={arch}'])
 
         toolchain.add_library(name='automake',
                               url='https://ftpmirror.gnu.org/gnu/automake/automake-1.15.1.tar.xz',
-                              configure_args=['--host="{target_triple}"',
-                                              '--build="{target_triple}"'])
+                              configure_args=['--host={arch}',
+                                              '--build={arch}'])
 
 
         toolchain.add_library(name='libtool',
                               url='https://ftpmirror.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz',
-                              configure_args=['--host="{target_triple}"',
-                                              '--build="{target_triple}"',
+                              configure_args=['--host={arch}',
+                                              '--build={arch}',
                                               '--enable-static',
                                               '--enable-shared',
                                               '--with-sysroot="{prefix_dir}"'])
@@ -49,8 +49,8 @@ class Reel:
         toolchain.add_library(name='ncurses',
                               url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
                               env={'CPPFLAGS': '-P'},
-                              configure_args=['--host="{target_triple}"',
-                                              '--build="{target_triple}"',
+                              configure_args=['--host={arch}',
+                                              '--build={arch}',
                                               '--enable-static',
                                               '--enable-shared',
                                               '--with-sysroot="{prefix_dir}"',
