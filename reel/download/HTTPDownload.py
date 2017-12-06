@@ -37,7 +37,7 @@ class HTTPDownload:
 
                 # If we were modified after we don't need to download again
                 if l_modified > r_modified:
-                    cprint('{} not modified... Skipping...'.format(filename), 'green', attrs=['bold'])
+                    cprint('URL {} not modified... Skipping...'.format(filename), 'yellow', attrs=['bold'])
                     return { 'archive': output_file }
 
             # If there is an etag we can use we can check that hasn't changed

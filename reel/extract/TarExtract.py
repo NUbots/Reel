@@ -31,6 +31,6 @@ class TarExtract:
                         f.name = os.path.relpath(f.name, prefix)
                         tf.extract(f, dest)
         else:
-            cprint('Archive {} already extracted... Skipping...'.format(basename), 'green', attrs=['bold'])
+            cprint('Archive {} already extracted... Skipping...'.format(basename), 'yellow', attrs=['bold'])
 
         return {'source': dest}
