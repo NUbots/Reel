@@ -193,7 +193,7 @@ class Toolchain:
 
             self.add_library(name='libbacktrace',
                              url='https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
-                             configure_args=['--host={}'.format(self.parent_toolchain.target_triple),
+                             configure_args=['--host={}'.format(self.parent_toolchain.triple),
                                              '--target={target_triple}',
                                              '--enable-static',
                                              '--enable-shared' if not static else '--disable-shared',
