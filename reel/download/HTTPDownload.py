@@ -56,10 +56,10 @@ class HTTPDownload:
 
         # Get the file
         with open(output_file, 'wb') as f:
-            progress = tqdm(r.iter_content(32*1024), total=total_size, unit='B', unit_scale=True)
-            for data in progress:
-                f.write(data)
-                progress.update(len(data))
+            with tqdm(total=total_size, unit='B', unit_scale=True) as progress:
+                for data in r.iter_content(32*1024):
+                    f.write(data)
+                    progress.update(len(data))
 
         # Return our updates to state
         return { 'archive': output_file }
