@@ -193,7 +193,7 @@ class Toolchain:
 
             self.add_library(name='libbacktrace',
                              url='https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
-                             configure_args=['--host={}'.format(self.parent_toolchain.triple),
+                             configure_args=['--host={target_triple}',
                                              '--target={target_triple}',
                                              '--enable-static',
                                              '--enable-shared' if not static else '--disable-shared',
@@ -239,10 +239,10 @@ class Toolchain:
             os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
 
         for d in ['bin', 'include', 'lib']:
-          try:
-            os.makedirs(os.path.join(self.state['prefix_dir'], d), exist_ok=True)
-          except:
-            pass
+            try:
+                os.makedirs(os.path.join(self.state['prefix_dir'], d), exist_ok=True)
+            except:
+                pass
 
         os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.archives_dir, exist_ok=True)
