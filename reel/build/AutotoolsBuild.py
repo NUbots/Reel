@@ -21,8 +21,10 @@ class AutotoolsBuild:
         self.build_targets = build_args.get('build_targets', ['all'])
         self.install_targets = build_args.get('install_targets', ['install'])
 
-        # Add our prefix to the args
+        # Add our prefix to the args so it installs in the right spot
         self.configure_args.append('--prefix={prefix_dir}')
+
+        # TODO add our build and host to the args
 
         # Build our environment variables
         self.env = dict(os.environ)
