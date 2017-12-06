@@ -153,7 +153,6 @@ class Toolchain:
                                              '--disable-shared',
                                              '--enable-static'])
 
-            self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
                           name='gcc7',
                           url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
                           configure_args=['--target="{target_triple}"',
