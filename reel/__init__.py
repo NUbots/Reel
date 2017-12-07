@@ -2,6 +2,7 @@
 
 import platform
 from .Toolchain import Toolchain
+from .Shell import Shell
 
 
 class Reel:
@@ -67,14 +68,25 @@ class Reel:
                                               '--enable-sigwinch',
                                               '--enable-tcap-names'])
 
-        # toolchain.add_library(url='https://cmake.org/files/v3.10/cmake-3.10.0-rc3.tar.gz')
-        # CFLAGS="$CFLAGS -isystem {prefix_dir}/include/ncurses" \
-        # CXXFLAGS="$CXXFLAGS -isystem {prefix_dir}/include/ncurses" \
-        # "${SOURCE}/${CMAKE}/bootstrap" \
-        #     --parallel="$(nproc)" \
-        #     --no-qt-gui
+        # Building ninja is a little weird
+        toolchain.add_library(Shell(configure='mkdir -p {builds_dir}/$(basename {source}) && cp -r {source}/* {builds_dir}/$(basename {source})'),
+                              Shell(
+                                  build='cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'),
+                              Shell(
+                                  install='cd {builds_dir}/$(basename {source}) && cp ninja {prefix_dir}/bin'),
+                              name='ninja',
+                              url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
 
-        # toolchain.add_library(url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
+        # Bootstrapping cmake is a little weird too
+        toolchain.add_library(Shell(configure='mkdir -p {builds_dir}/$(basename {source})'
+                                              ' && cd {builds_dir}/$(basename {source})'
+                                              ' && {source}/bootstrap --prefix={prefix_dir} --no-qt-gui'),
+                              Shell(build='cd {builds_dir}/$(basename {source})'
+                                          ' && make'),
+                              Shell(install='cd {builds_dir}/$(basename {source})'
+                                            ' && make install'),
+                              name='cmake',
+                              url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz')
 
     def __init__(self, toolchain_level='FULL', gnu_mirror='https://ftpmirror.gnu.org/gnu'):
         self.toolchains = []

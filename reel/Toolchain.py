@@ -48,11 +48,6 @@ class Toolchain:
         cxx_flags.append('-fPIC')
         fc_flags.append('-fPIC')
 
-        # Make sure we are always generating position independent code.
-        # c_flags.append('-Wl,--dynamic-linker=/lib/ld-uClibc.so.0')
-        # cxx_flags.append('-Wl,--dynamic-linker=/lib/ld-uClibc.so.0')
-        # fc_flags.append('-Wl,--dynamic-linker=/lib/ld-uClibc.so.0')
-
         # If we are doing a static build, add -static to our flags
         if static:
             c_flags.insert(0, '-static')
