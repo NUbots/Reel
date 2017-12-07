@@ -22,28 +22,28 @@ r.build()
 # python3
 # libasound2
 # libusb
-#protobuf
-#zlib
-#bzip2
-#xml2
-#nuclear
-#openblas
-#libsvm
-#armadillo
-#tcmalloc
-#yaml-cpp
-#fftw3
-#fftw3f
-#jpeg-turbo
-#fmt
-#portaudio
-#eigen3
-#boost (damn :'( )
-#espeak
-#fswatch
-#catch
-#ffi
-#glib2
-#aravis
-#libpcre
-#libmount
+# protobuf
+# zlib
+# bzip2
+# xml2
+# nuclear
+# openblas
+# libsvm
+# armadillo
+# tcmalloc
+# yaml-cpp
+# fftw3
+# fftw3f
+# jpeg-turbo
+# fmt
+# portaudio
+# eigen3
+# boost (damn :'( )
+# espeak
+# fswatch
+# catch
+# ffi
+# glib2
+# aravis
+# libpcre
+# libmount
