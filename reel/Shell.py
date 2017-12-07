@@ -4,12 +4,12 @@ import os
 from subprocess import Popen
 from functools import partial
 
-from .util import indent
+from .util import indent, get_status, update_status
 
 
 class Shell:
     class Command:
-        def execute(self, command, build_args, **state):
+        def execute(self, phase, command, build_args, **state):
 
             # Build our environment variables
             env = dict(os.environ)
@@ -18,11 +18,32 @@ class Shell:
             if 'env' in build_args:
                 env.update(build_args['env'])
 
-            print(indent(' $ {}'.format(command.format(**state)), 8))
-            process = Popen(args=command.format(**state),
-                            shell=True,
-                            env=env)
-            process.wait()
+            if 'source' in state:
+                src_path = state['source']
+                base_src = os.path.basename(src_path)
+                status_path = os.path.join(state['status_dir'], '{}.json'.format(base_src))
+
+            else:
+                src_path = state['archive']
+                base_src = os.path.basename(src_path)
+                status_path = os.path.join(state['status_dir'], '{}.json'.format(base_src))
+
+            # Load the status file.
+            status = get_status(status_path)
+
+            with open(os.path.join(state['logs_dir'], '{}_{}.log'.format(base_src, phase)), 'w') as logfile:
+                print(indent(' $ {}'.format(command.format(**state)), 8))
+                process = Popen(args=command.format(**state),
+                                shell=True,
+                                env=env,
+                                stdout=logfile,
+                                stderr=logfile)
+
+                if process.wait() != 0:
+                    raise Exception('Failed to run phase {}'.format(phase))
+
+                else:
+                    status = update_status(status_path, {phase: True})
 
     def __init__(self, **commands):
         self.commands = commands
@@ -32,6 +53,6 @@ class Shell:
         v = Shell.Command()
 
         for k in self.commands:
-            setattr(v, k, partial(v.execute, self.commands[k], build_args))
+            setattr(v, k, partial(v.execute, k, self.commands[k], build_args))
 
         return v
