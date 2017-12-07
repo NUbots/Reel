@@ -142,9 +142,6 @@ class Toolchain:
                                                '    sed -e "/m64=/s/lib64/lib/" -i {source}/gcc/config/i386/t-linux64'
                                                '  ;;'
                                                'esac'),
-                          Shell(post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
-                                             ' |  sed "s@/lib/ld-*@{prefix_dir}/lib/ld-@g"'
-                                             ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'),
                           name='gcc7',
                           url='{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
@@ -169,7 +166,10 @@ class Toolchain:
                                              '--disable-shared',
                                              '--enable-static'])
 
-            self.add_tool(Shell(post_install='cd {source} && ./contrib/download_prerequisites'),
+            self.add_tool(Shell(post_install='SPECS=$(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
+                                             ' && {prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
+                                             ' |  sed "s@/lib/ld-*@{prefix_dir}/lib/ld-@g"'
+                                             ' > $SPECS'),
                           name='gcc7',
                           url='{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
