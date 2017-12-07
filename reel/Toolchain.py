@@ -137,6 +137,11 @@ class Toolchain:
                           install_targets=['install-strip'])
 
             self.add_tool(Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
+                          Shell(pre_configure= 'case $(uname -m) in'
+                                               '  x86_64)'
+                                               '    sed -e "/m64=/s/lib64/lib/" -i {source}/gcc/config/i386/t-linux64'
+                                               '  ;;'
+                                               'esac'),
                           Shell(post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
                                              ' |  sed "s@/lib/ld-*@{prefix_dir}/lib/ld-@g"'
                                              ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'),
