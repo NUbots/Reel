@@ -164,13 +164,6 @@ class Toolchain:
                                              '--disable-shared',
                                              '--enable-static'])
 
-            # specfile_cmd = dedent("""\
-            #                       SPECFILE=`dirname $({gcc} -print-libgcc-file-name)`/specs &&
-            #                       {gcc} -dumpspecs > $SPECFILE &&
-            #                       sed 's@^/lib/ld-.+?.so.2@/tools&@g' $SPECFILE > tempspecfile &&
-            #                       mv -vf tempspecfile $SPECFILE
-            #                       """)
-
             self.add_tool(Shell(post_install='cd {source} && ./contrib/download_prerequisites'),
                           name='gcc7',
                           url='{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
