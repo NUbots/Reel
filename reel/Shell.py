@@ -3,6 +3,7 @@
 import os
 from subprocess import Popen
 from functools import partial
+from termcolor import cprint
 
 from .util import indent, get_status, update_status
 
@@ -31,19 +32,24 @@ class Shell:
             # Load the status file.
             status = get_status(status_path)
 
-            with open(os.path.join(state['logs_dir'], '{}_{}.log'.format(base_src, phase)), 'w') as logfile:
-                print(indent(' $ {}'.format(command.format(**state)), 8))
-                process = Popen(args=command.format(**state),
-                                shell=True,
-                                env=env,
-                                stdout=logfile,
-                                stderr=logfile)
+            if phase not in status or not status[phase]:
+                with open(os.path.join(state['logs_dir'], '{}_{}.log'.format(base_src, phase)), 'w') as logfile:
+                    print(indent(' $ {}'.format(command.format(**state)), 8))
+                    process = Popen(args=command.format(**state),
+                                    shell=True,
+                                    env=env,
+                                    stdout=logfile,
+                                    stderr=logfile)
 
-                if process.wait() != 0:
-                    raise Exception('Failed to run phase {}'.format(phase))
+                    if process.wait() != 0:
+                        raise Exception('Failed to run phase {}'.format(phase))
 
-                else:
-                    status = update_status(status_path, {phase: True})
+                    else:
+                        status = update_status(status_path, {phase: True})
+
+            else:
+                cprint(indent('{} step for {} complete... Skipping...'.format(phase,
+                    base_src), 8), 'yellow', attrs=['bold'])
 
     def __init__(self, **commands):
         self.commands = commands
