@@ -69,18 +69,43 @@ class Reel:
                                               '--enable-tcap-names'])
 
         # Building ninja is a little weird
-        toolchain.add_library(Shell(configure='mkdir -p {builds_dir}/$(basename {source}) && cp -r {source}/* {builds_dir}/$(basename {source})'),
-                              Shell(
-                                  build='cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'),
-                              Shell(
-                                  install='cd {builds_dir}/$(basename {source}) && cp ninja {prefix_dir}/bin'),
-                              name='ninja',
-                              url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
+        # toolchain.add_library(Shell(configure='mkdir -p {builds_dir}/$(basename {source}) && cp -r {source}/* {builds_dir}/$(basename {source})'),
+        #                       Shell(
+        #                           build='cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'),
+        #                       Shell(
+        #                           install='cd {builds_dir}/$(basename {source}) && cp ninja {prefix_dir}/bin'),
+        #                       name='ninja',
+        #                       url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
+
+        toolchain.add_library(name='zlib',
+                              #build_postfix='_shared',
+                              url='http://www.zlib.net/zlib-1.2.11.tar.gz',
+                               configure_args=['--static'])
+
+        toolchain.add_library(Shell(configure='base_dir=$(pwd)'
+                                              ' && mkdir -p {builds_dir}/$(basename {source})'
+                                              ' && cd {builds_dir}/$(basename {source})'
+                                              ' && CROSS_COMPILE=" " $base_dir/{source}/config --prefix={prefix_dir} --libdir=lib --release no-async'),
+                              Shell(build='cd {builds_dir}/$(basename {source})'
+                                          ' && make'),
+                              Shell(install='cd {builds_dir}/$(basename {source})'
+                                            ' && make install'),
+                              name='openssl',
+                              url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz')
+
+        toolchain.add_library(name='curl',
+                              url='https://curl.haxx.se/download/curl-7.57.0.tar.xz',
+                              configure_args=['--host={arch}',
+                                              '--build={arch}',
+                                              '--enable-static',
+                                              '--enable-shared',
+                                              '--with-sysroot="{prefix_dir}"'])
 
         # Bootstrapping cmake is a little weird too
-        toolchain.add_library(Shell(configure='mkdir -p {builds_dir}/$(basename {source})'
+        toolchain.add_library(Shell(configure='base_dir=$(pwd)'
+                                              ' && mkdir -p {builds_dir}/$(basename {source})'
                                               ' && cd {builds_dir}/$(basename {source})'
-                                              ' && {source}/bootstrap --prefix={prefix_dir} --no-qt-gui'),
+                                              ' && $base_dir/{source}/bootstrap --prefix={prefix_dir} --no-qt-gui --system-curl'),
                               Shell(build='cd {builds_dir}/$(basename {source})'
                                           ' && make'),
                               Shell(install='cd {builds_dir}/$(basename {source})'
