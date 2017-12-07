@@ -16,6 +16,7 @@ class Toolchain:
 
     def __init__(self,
                  name,
+                 gnu_mirror,
                  triple='',
                  c_flags=[],
                  cxx_flags=[],
@@ -127,7 +128,7 @@ class Toolchain:
             })
 
             self.add_tool(name='binutils',
-                          url='https://ftpmirror.gnu.org/gnu/binutils/binutils-2.29.tar.xz',
+                          url='{}/binutils/binutils-2.29.tar.xz'.format(gnu_mirror),
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
                                           '--build={}'.format(
                                               self.parent_toolchain.triple),
@@ -145,7 +146,7 @@ class Toolchain:
                                              ' |  sed "s@/lib/ld-*@{prefix_dir}/lib/ld-@g"'
                                              ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'),
                           name='gcc7',
-                          url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
+                          url='{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
                                           '--build={}'.format(
                                               self.parent_toolchain.triple),
@@ -177,7 +178,7 @@ class Toolchain:
 
             self.add_tool(Shell(post_install='cd {source} && ./contrib/download_prerequisites'),
                           name='gcc7',
-                          url='https://ftpmirror.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz',
+                          url='{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
                           configure_args=['--host={}'.format(self.parent_toolchain.triple),
                                           '--build={}'.format(
                                               self.parent_toolchain.triple),

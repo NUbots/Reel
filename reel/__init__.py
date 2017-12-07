@@ -8,14 +8,14 @@ class Reel:
 
     def add_build_tools(self, toolchain):
         toolchain.add_library(name='make',
-                              url='https://ftpmirror.gnu.org/gnu/make/make-4.2.tar.gz',
+                              url='{}/make/make-4.2.tar.gz'.format(self.gnu_mirror),
                               configure_args=['--host={arch}',
                                               '--build={arch}',
                                               '--without-guile',
                                               '--disable-nls'])
 
         toolchain.add_library(name='m4',
-                              url='https://ftpmirror.gnu.org/gnu/m4/m4-1.4.18.tar.xz',
+                              url='{}/m4/m4-1.4.18.tar.xz'.format(self.gnu_mirror),
                               configure_args=['--host={arch}',
                                               '--build={arch}',
                                               '--enable-threads=posix',
@@ -26,17 +26,17 @@ class Reel:
                                               '--with-syscmd-shell="/bin/bash"'])
 
         toolchain.add_library(name='autoconf',
-                              url='https://ftpmirror.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz',
+                              url='{}/autoconf/autoconf-2.69.tar.xz'.format(self.gnu_mirror),
                               configure_args=['--host={arch}',
                                               '--build={arch}'])
 
         toolchain.add_library(name='automake',
-                              url='https://ftpmirror.gnu.org/gnu/automake/automake-1.15.1.tar.xz',
+                              url='{}/automake/automake-1.15.1.tar.xz'.format(self.gnu_mirror),
                               configure_args=['--host={arch}',
                                               '--build={arch}'])
 
         toolchain.add_library(name='libtool',
-                              url='https://ftpmirror.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz',
+                              url='{}/libtool/libtool-2.4.6.tar.xz'.format(self.gnu_mirror),
                               configure_args=['--host={arch}',
                                               '--build={arch}',
                                               '--enable-static',
@@ -44,7 +44,7 @@ class Reel:
                                               '--with-sysroot="{prefix_dir}"'])
 
         toolchain.add_library(name='ncurses',
-                              url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
+                              url='{}/ncurses/ncurses-6.0.tar.gz'.format(self.gnu_mirror),
                               env={'CPPFLAGS': '-P'},
                               configure_args=['--host={arch}',
                                               '--build={arch}',
@@ -76,10 +76,11 @@ class Reel:
 
         # toolchain.add_library(url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
 
-    def __init__(self, toolchain_level='FULL'):
+    def __init__(self, toolchain_level='FULL', gnu_mirror='https://ftpmirror.gnu.org/gnu'):
         self.toolchains = []
         self.libraries = []
         self.toolchain = None
+        self.gnu_mirror = gnu_mirror
 
         # OSX can't handle musl based programs yet so downgrade
         if platform.system() == 'Darwin' and toolchain_level == 'FULL':
@@ -89,7 +90,7 @@ class Reel:
         if toolchain_level is 'SYSTEM':
 
             # Just use the system toolchain
-            self.toolchain = Toolchain(name='')
+            self.toolchain = Toolchain(name='', gnu_mirror=self.gnu_mirror)
             self.toolchains.append(self.toolchain)
 
             # Add system tools
@@ -99,16 +100,16 @@ class Reel:
         elif toolchain_level is 'FULL':
 
             # Declare our system toolchain
-            system_toolchain = Toolchain(name='')
+            system_toolchain = Toolchain(name='', gnu_mirror=self.gnu_mirror)
 
             # Make our bootstrap toolchain
             bootstrap_toolchain = Toolchain(
-                name='bootstrap', static=True, parent_toolchain=system_toolchain)
+                name='bootstrap', gnu_mirror=self.gnu_mirror, static=True, parent_toolchain=system_toolchain)
             self.toolchains.append(bootstrap_toolchain)
 
             # Make our real toolchain
             self.toolchain = Toolchain(
-                name='', parent_toolchain=bootstrap_toolchain)
+                name='', gnu_mirror=self.gnu_mirror, parent_toolchain=bootstrap_toolchain)
             self.toolchains.append(self.toolchain)
 
             # The final toolchain gets all the tools
@@ -116,7 +117,7 @@ class Reel:
 
     def add_toolchain(self, name, triple=''):
         # Create a new toolchain and return it and build using our toolchain
-        t = Toolchain(name, triple=triple, parent_toolchain=self.toolchain)
+        t = Toolchain(name, gnu_mirror=self.gnu_mirror, triple=triple, parent_toolchain=self.toolchain)
         self.toolchains.append(t)
         return t
 

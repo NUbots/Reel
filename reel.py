@@ -2,7 +2,7 @@
 
 from reel import Reel
 
-r = Reel()
+r = Reel(gnu_mirror='http://gnu.uberglobalmirror.com')
 
 r.add_toolchain('nuc7i7bnh', triple='x86_64-linux-musl')
 r.add_toolchain('jetsontx2', triple='aarch64-linux-musl')
