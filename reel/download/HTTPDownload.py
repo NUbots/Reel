@@ -28,8 +28,8 @@ class HTTPDownload:
         # Work out our output path
         output_file = os.path.join(kwargs['archives_dir'], filename)
 
-        status_file = os.path.join(
-            kwargs['status_dir'], '{}.json'.format(filename))
+        status_file = os.path.join(kwargs['status_dir'],
+                                   '{}.json'.format(filename))
 
         # Load the status file.
         status = get_status(status_file)
@@ -42,27 +42,36 @@ class HTTPDownload:
 
                 # Get when the local and remote files were last modified
                 l_modified = os.path.getmtime(output_file)
-                r_modified = time.mktime(parser.parse(
-                    headers['Last-Modified']).timetuple())
+                r_modified = time.mktime(
+                    parser.parse(headers['Last-Modified']).timetuple())
 
                 # If we were modified after we don't need to download again
                 if l_modified > r_modified:
-                    cprint(indent('URL {} not modified... Skipping...'.format(
-                        filename), 8), 'yellow', attrs=['bold'])
+                    cprint(
+                        indent('URL {} not modified... Skipping...'.format(
+                            filename), 8),
+                        'yellow',
+                        attrs=['bold'])
                     return {'archive': output_file}
 
             # If there is an etag we can use we can check that hasn't changed
             elif 'Etag' in headers:
                 if 'download_etag' not in status or status['download_etag'] != headers['Etag']:
-                    status = update_status(
-                        status_file, {'download_etag': headers['Etag']})
+                    status = update_status(status_file, {
+                        'download_etag': headers['Etag']
+                    })
                 else:
-                    cprint(indent('URL {} not modified... Skipping...'.format(
-                        filename), 8), 'yellow', attrs=['bold'])
+                    cprint(
+                        indent('URL {} not modified... Skipping...'.format(
+                            filename), 8),
+                        'yellow',
+                        attrs=['bold'])
                     return {'archive': output_file}
 
-        cprint(indent('Downloading {}'.format(filename), 8),
-               'green', attrs=['bold'])
+        cprint(
+            indent('Downloading {}'.format(filename), 8),
+            'green',
+            attrs=['bold'])
 
         # Do our get request
         r = requests.get(self.url, allow_redirects=True, stream=True)

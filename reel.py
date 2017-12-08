@@ -9,7 +9,6 @@ r.add_toolchain('jetsontx2', triple='aarch64-linux-musl')
 
 r.build()
 
-
 # pkg-config
 # linux-headers-generic
 # nasm
