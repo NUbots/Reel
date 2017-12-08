@@ -156,6 +156,29 @@ class Toolchain:
                 ],
                 install_targets=['install-strip'])
 
+            # We use this gcc build a few times, so make sure args are the same
+            gcc_args = {
+                'url':
+                '{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
+                'env': {
+                    'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
+                    'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
+                    'FCFLAGS_FOR_TARGET': self.env['FCFLAGS'],
+                    'LD_LIBRARY_PATH': os.path.join(self.prefix_dir, 'lib'),
+                },
+                'configure_args': [
+                    '--host={}'.format(
+                        self.parent_toolchain.triple), '--build={}'.format(
+                            self.parent_toolchain.triple),
+                    '--target={target_triple}',
+                    '--enable-languages=c,c++,fortran',
+                    '--with-sysroot="{prefix_dir}"', '--disable-nls',
+                    '--disable-multilib', '--disable-bootstrap',
+                    '--disable-werror', '--enable-shared'
+                    if not static else '--disable-shared', '--enable-static'
+                ]
+            }
+
             # Build gcc so we can build basic c programs (like musl)
             self.add_tool(
                 Shell(post_extract=
@@ -167,23 +190,7 @@ class Toolchain:
                     '  ;;'
                     'esac'),
                 name='gcc7',
-                url='{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
-                env={
-                    'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
-                    'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
-                    'FCFLAGS_FOR_TARGET': self.env['FCFLAGS']
-                },
-                configure_args=[
-                    '--host={}'.format(
-                        self.parent_toolchain.triple), '--build={}'.format(
-                            self.parent_toolchain.triple),
-                    '--target={target_triple}',
-                    '--enable-languages=c,c++,fortran',
-                    '--with-sysroot="{prefix_dir}"', '--disable-nls',
-                    '--disable-multilib', '--disable-bootstrap',
-                    '--disable-werror', '--enable-shared'
-                    if not static else '--disable-shared', '--enable-static'
-                ],
+                **gcc_args,
                 build_targets=['all-gcc'],
                 install_targets=['install-strip-gcc'])
 
@@ -200,33 +207,14 @@ class Toolchain:
             self.add_tool(
                 Shell(
                     post_install=
-                    'SPECS=$(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
-                    ' && {prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
-                    ' |  sed "s@/lib/ld-*@{prefix_dir}/lib/ld-@g"'
-                    ' > $SPECS'),
-                name='gcc7',
-                url='{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
-                env={
-                    'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
-                    'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
-                    'FCFLAGS_FOR_TARGET': self.env['FCFLAGS']
-                },
-                configure_args=[
-                    '--host={}'.format(
-                        self.parent_toolchain.triple), '--build={}'.format(
-                            self.parent_toolchain.triple),
-                    '--target={target_triple}',
-                    '--enable-languages=c,c++,fortran',
-                    '--with-sysroot="{prefix_dir}"', '--disable-nls',
-                    '--disable-multilib', '--disable-bootstrap',
-                    '--disable-werror', '--enable-shared'
-                    if not static else '--disable-shared', '--enable-static'
-                ],
-                build_targets=['all-target-libgcc', 'all-target-libstdc++-v3'],
-                install_targets=[
-                    'install-strip-target-libgcc',
-                    'install-strip-target-libstdc++-v3'
-                ])
+                    '{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
+                    ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
+                    ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
+                ),
+                name='libgcc',
+                **gcc_args,
+                build_targets=['all-target-libgcc'],
+                install_targets=['install-strip-target-libgcc'])
 
             # If we're not building a pure static toolchain, make shared libc
             if not static:
@@ -238,6 +226,21 @@ class Toolchain:
                         '--target={arch}', '--syslibdir={prefix_dir}/lib',
                         '--enable-shared', '--disable-static'
                     ])
+
+            # Build the other gnu libraries
+            self.add_tool(
+                name='gnulibs',
+                **gcc_args,
+                build_targets=[
+                    'all-target-libstdc++-v3', 'all-target-libgfortran',
+                    'all-target-libquadmath', 'all-target-libgomp'
+                ],
+                install_targets=[
+                    'install-strip-target-libstdc++-v3',
+                    'install-strip-target-libgfortran',
+                    'install-strip-target-libquadmath',
+                    'install-strip-target-libgomp'
+                ])
 
             # Libbacktrace is super useful
             self.add_library(
