@@ -3,6 +3,7 @@
 import os
 import subprocess
 from termcolor import cprint
+import multiprocessing
 
 from .download import SmartDownload
 from .extract import SmartExtract
@@ -83,6 +84,7 @@ class Toolchain:
             'builds_dir': self.builds_dir,
             'logs_dir': self.logs_dir,
             'status_dir': self.status_dir,
+            'cpu_count': multiprocessing.cpu_count(),
         }
 
         # If this is the system toolchain don't build anything but update our env

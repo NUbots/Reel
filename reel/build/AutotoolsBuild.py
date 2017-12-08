@@ -2,7 +2,6 @@
 
 import os
 from subprocess import Popen
-import multiprocessing
 from termcolor import cprint
 
 from ..util import get_status, update_status, indent
@@ -97,16 +96,14 @@ class AutotoolsBuild:
             ) not in status or not status['make_{}'.format(target)]:
                 print(
                     indent(' $ {}'.format(' '.join([
-                        'make',
-                        '-j{} {}'.format(multiprocessing.cpu_count(), ' '.join(
+                        'make', '-j{} {}'.format(state['cpu_count'], ' '.join(
                             a.format(**state) for a in self.build_args)),
                         target
                     ])), 8))
                 with open(
                         os.path.join(logs_path, '{}_make_{}.log'.format(
                             base_src, target)), 'w') as logfile:
-                    cmd = 'make -j{} {}'.format(multiprocessing.cpu_count(),
-                                                target)
+                    cmd = 'make -j{} {}'.format(state['cpu_count'], target)
                     process = Popen(
                         args=cmd,
                         shell=True,
