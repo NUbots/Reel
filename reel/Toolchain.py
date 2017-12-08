@@ -299,8 +299,8 @@ class Toolchain:
         os.makedirs(self.status_dir, exist_ok=True)
 
         cprint(
-            'Building toolchain {0} for {1}'.format(self.name if self.name else
-                                                    'root', self.triple),
+            'Building toolchain {0} with architecture {1}'.format(
+                self.name if self.name else 'root', self.triple),
             'red',
             attrs=['bold'])
 

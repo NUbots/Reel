@@ -50,7 +50,7 @@ class Library:
     def build(self):
 
         cprint(
-            'Building library {0} of {1}'.format(
+            'Building library {} for toolchain {}'.format(
                 self.name, self.toolchain.state['toolchain_name']),
             'cyan',
             attrs=['bold'])
@@ -60,7 +60,8 @@ class Library:
         for p, f in self.phase.items():
             if f is not None:
                 cprint(
-                    indent('Running phase {} for {}'.format(p, self.name)),
+                    indent('Running phase {} for library {}'.format(
+                        p, self.name)),
                     'magenta',
                     attrs=['bold'])
                 new_state = f(**state)
