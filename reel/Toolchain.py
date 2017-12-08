@@ -138,6 +138,7 @@ class Toolchain:
             })
             # yapf: enable
 
+            # Build Binutils so we can link, ar, ranlib etc
             self.add_tool(
                 name='binutils',
                 url='{}/binutils/binutils-2.29.tar.xz'.format(gnu_mirror),
@@ -154,6 +155,7 @@ class Toolchain:
                 ],
                 install_targets=['install-strip'])
 
+            # Build gcc so we can build basic c programs (like musl)
             self.add_tool(
                 Shell(post_extract=
                       'cd {source} && ./contrib/download_prerequisites'),
@@ -184,6 +186,7 @@ class Toolchain:
                 build_targets=['all-gcc'],
                 install_targets=['install-strip-gcc'])
 
+            # Build our static musl (our c standard library)
             self.add_library(
                 name='musl',
                 url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
@@ -192,6 +195,7 @@ class Toolchain:
                     '--disable-shared', '--enable-static'
                 ])
 
+            # Build libgcc (our low level api)
             self.add_tool(
                 Shell(
                     post_install=
@@ -223,9 +227,10 @@ class Toolchain:
                     'install-strip-target-libstdc++-v3'
                 ])
 
+            # If we're not building a pure static toolchain, make shared libc
             if not static:
                 self.add_library(
-                    name='musl',
+                    name='musl_shared',
                     build_postfix='_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
                     configure_args=[
@@ -233,6 +238,7 @@ class Toolchain:
                         '--enable-shared', '--disable-static'
                     ])
 
+            # Libbacktrace is super useful
             self.add_library(
                 name='libbacktrace',
                 url=
