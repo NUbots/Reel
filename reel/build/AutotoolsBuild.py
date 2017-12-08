@@ -62,7 +62,8 @@ class AutotoolsBuild:
                     args=cmd,
                     shell=True,
                     cwd=os.path.abspath(build_path),
-                    env=self.env,
+                    env={k: v.format(**state)
+                         for k, v in self.env.items()},
                     stdout=logfile,
                     stderr=logfile)
                 if process.wait() != 0:
@@ -108,7 +109,10 @@ class AutotoolsBuild:
                         args=cmd,
                         shell=True,
                         cwd=os.path.abspath(build_path),
-                        env=self.env,
+                        env={
+                            k: v.format(**state)
+                            for k, v in self.env.items()
+                        },
                         stdout=logfile,
                         stderr=logfile)
                     if process.wait() != 0:
@@ -148,7 +152,10 @@ class AutotoolsBuild:
                         args=cmd,
                         shell=True,
                         cwd=os.path.abspath(build_path),
-                        env=self.env,
+                        env={
+                            k: v.format(**state)
+                            for k, v in self.env.items()
+                        },
                         stdout=logfile,
                         stderr=logfile)
 

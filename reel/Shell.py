@@ -42,7 +42,8 @@ class Shell:
                     process = Popen(
                         args=command.format(**state),
                         shell=True,
-                        env=env,
+                        env={k: v.format(**state)
+                             for (k, v) in env.items()},
                         stdout=logfile,
                         stderr=logfile)
 
