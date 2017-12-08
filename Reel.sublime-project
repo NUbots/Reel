@@ -8,12 +8,11 @@
 	"settings":
 	{
 		"PyYapf":
-        {
-            "yapf_command": "/usr/bin/yapf",
-            "popup_errors": true,
-            "use_entire_file_if_no_selection": true,
-            "on_save": true,
-        },
+		{
+			"on_save": true,
+			"popup_errors": true,
+			"use_entire_file_if_no_selection": true,
+		},
 		"default_line_ending": "unix",
 		"detect_indentation": false,
 		"ensure_newline_at_eof_on_save": true,
