@@ -19,9 +19,9 @@ class Toolchain:
                  name,
                  gnu_mirror,
                  triple='',
-                 c_flags=[],
-                 cxx_flags=[],
-                 fc_flags=[],
+                 c_flags=None,
+                 cxx_flags=None,
+                 fc_flags=None,
                  static=False,
                  parent_toolchain=None):
 
@@ -43,6 +43,15 @@ class Toolchain:
 
         # Our arch is the first part of the triple
         self.arch = self.triple.split('-')[0]
+
+        if c_flags is None:
+            c_flags = []
+
+        if cxx_flags is None:
+            cxx_flags = []
+
+        if fc_flags is None:
+            fc_flags = []
 
         # Make sure we are always generating position independent code.
         c_flags.append('-fPIC')
