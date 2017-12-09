@@ -132,7 +132,7 @@ class Toolchain:
                 'CFLAGS': ' '.join(c_flags),
                 'CXXFLAGS': ' '.join(cxx_flags),
                 'FCFLAGS': ' '.join(fc_flags),
-                'LD_LIBRARY_PATH': os.path.join(self.prefix_dir, 'lib'),
+                'LD_LIBRARY_PATH': os.path.abspath(os.path.join(self.prefix_dir, 'lib')),
 
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
