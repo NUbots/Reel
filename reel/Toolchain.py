@@ -229,6 +229,10 @@ class Toolchain:
 
             # Build the other gnu libraries
             self.add_tool(
+                Shell(pre_build='echo "{build}/gcc/"'
+                      ' && {build}/gcc/xgcc -dumpspecs'
+                      ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
+                      ' > {build}/gcc/specs'),
                 name='gnulibs',
                 **gcc_args,
                 build_targets=[
