@@ -100,8 +100,8 @@ class Reel:
             name='curl',
             url='https://curl.haxx.se/download/curl-7.57.0.tar.xz',
             configure_args=[
-                '--host={arch}', '--build={arch}', '--enable-static',
-                '--enable-shared', '--with-sysroot="{prefix_dir}"',
+                '--host={arch}', '--build={arch}', '--enable-shared',
+                '--enable-static', '--with-sysroot="{prefix_dir}"',
                 '--with-ssl="{prefix_dir}"'
             ])
 
@@ -113,7 +113,7 @@ class Reel:
                   ' && $base_dir/{source}/bootstrap'
                   '    --prefix={prefix_dir}'
                   '    --no-qt-gui'
-                  '    --system-curl'
+                  '    --system-zlib'
                   '    --parallel={cpu_count}'),
             Shell(build='cd {builds_dir}/$(basename {source})'
                   ' && make'),
