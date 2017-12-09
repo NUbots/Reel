@@ -73,10 +73,7 @@ class Reel:
                 'cd {builds_dir}/$(basename {source}) && cp ninja {prefix_dir}/bin'
             ),
             name='ninja',
-            url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz',
-            env={
-                'LD_LIBRARY_PATH': '"{prefix_dir}/lib"'
-            })
+            url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
 
         toolchain.add_library(
             name='zlib',
@@ -102,7 +99,6 @@ class Reel:
         toolchain.add_library(
             name='curl',
             url='https://curl.haxx.se/download/curl-7.57.0.tar.xz',
-            env={'LD_LIBRARY_PATH': '"{prefix_dir}/lib"'},
             configure_args=[
                 '--host={arch}', '--build={arch}', '--enable-static',
                 '--enable-shared', '--with-sysroot="{prefix_dir}"',
@@ -124,10 +120,7 @@ class Reel:
             Shell(install='cd {builds_dir}/$(basename {source})'
                   ' && make install'),
             name='cmake',
-            url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz',
-            env={
-                'LD_LIBRARY_PATH': '"{prefix_dir}/lib"'
-            })
+            url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz')
 
     def __init__(self,
                  toolchain_level='FULL',
