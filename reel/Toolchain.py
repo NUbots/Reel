@@ -232,13 +232,13 @@ class Toolchain:
                 name='gnulibs',
                 **gcc_args,
                 build_targets=[
-                    'all-target-libstdc++-v3', 'all-target-libgfortran',
-                    'all-target-libquadmath', 'all-target-libgomp'
+                    'all-target-libstdc++-v3', 'all-target-libquadmath',
+                    'all-target-libgfortran', 'all-target-libgomp'
                 ],
                 install_targets=[
                     'install-strip-target-libstdc++-v3',
-                    'install-strip-target-libgfortran',
                     'install-strip-target-libquadmath',
+                    'install-strip-target-libgfortran',
                     'install-strip-target-libgomp'
                 ])
 
