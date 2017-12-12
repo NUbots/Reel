@@ -82,20 +82,25 @@ class Reel:
             configure_args=['--static', '--shared'])
 
         toolchain.add_library(
-            Shell(configure='base_dir=$(pwd)'
-                  ' && mkdir -p {builds_dir}/$(basename {source})'
-                  ' && cd {builds_dir}/$(basename {source})'
-                  ' && CROSS_COMPILE=" " '
-                  '    $base_dir/{source}/config'
-                  '    --prefix={prefix_dir} '
-                  '    --libdir=lib'
-                  '    --release no-async'),
+            Shell(
+                configure='base_dir=$(pwd)'
+                ' && mkdir -p {builds_dir}/$(basename {source})'
+                ' && cd {builds_dir}/$(basename {source})'
+                ' && $base_dir/{source}/config'
+                '    --prefix={prefix_dir} '
+                '    --libdir=lib'
+                '    --release no-async'
+            ),
             Shell(build='cd {builds_dir}/$(basename {source})'
                   ' && make'),
             Shell(install='cd {builds_dir}/$(basename {source})'
                   ' && make install'),
             name='openssl',
-            url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz')
+            url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz',
+            env={
+                'CROSS_COMPILE': ' '
+            }
+        )
 
         toolchain.add_library(
             name='curl',
