@@ -199,6 +199,9 @@ class Reel:
         self.toolchains.append(t)
         return t
 
+    def add_library(self, **kwargs):
+        self.toolchain.add_library(**kwargs)
+
     def build(self):
         # Build our toolchains
         for t in self.toolchains:
