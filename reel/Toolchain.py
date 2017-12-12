@@ -146,12 +146,18 @@ class Toolchain:
             self.add_tool(
                 name='binutils',
                 url='{}/binutils/binutils-2.29.tar.xz'.format(gnu_mirror),
-                configure_args=[
-                    '--host={}'.format(self.parent_toolchain.triple), '--build={}'.format(self.parent_toolchain.triple),
-                    '--target={target_triple}', '--with-lib-path="{prefix_dir}/lib"', '--with-sysroot="{prefix_dir}"',
-                    '--disable-nls', '--disable-bootstrap', '--disable-werror', '--enable-shared'
-                    if not static else '--disable-shared', '--enable-static'
-                ],
+                configure_args={
+                    '--host': self.parent_toolchain.triple,
+                    '--build': self.parent_toolchain.triple,
+                    '--target': '{target_triple}',
+                    '--with-lib-path': os.path.join('{prefix_dir}', 'lib'),
+                    '--with-sysroot': '"{prefix_dir}"',
+                    '--disable-nls': True,
+                    '--disable-bootstrap': True,
+                    '--disable-werror': True,
+                    '--enable-static': True,
+                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True
+                },
                 install_targets=['install-strip']
             )
 
@@ -164,12 +170,18 @@ class Toolchain:
                     'FCFLAGS_FOR_TARGET': self.env['FCFLAGS'],
                     'LD_LIBRARY_PATH': os.path.join(self.prefix_dir, 'lib'),
                 },
-                'configure_args': [
-                    '--host={}'.format(self.parent_toolchain.triple), '--build={}'.format(self.parent_toolchain.triple),
-                    '--target={target_triple}', '--enable-languages=c,c++,fortran', '--with-sysroot="{prefix_dir}"',
-                    '--disable-nls', '--disable-multilib', '--disable-bootstrap', '--disable-werror', '--enable-shared'
-                    if not static else '--disable-shared', '--enable-static'
-                ]
+                'configure_args': {
+                    '--host': self.parent_toolchain.triple,
+                    '--build': self.parent_toolchain.triple,
+                    '--target': '{target_triple}',
+                    '--enable-languages': 'c,c++,fortran',
+                    '--with-sysroot': '"{prefix_dir}"',
+                    '--disable-nls': True,
+                    '--disable-multilib': True,
+                    '--disable-bootstrap': True,
+                    '--disable-werror': True,
+                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True
+                }
             }
 
             # Build gcc so we can build basic c programs (like musl)
@@ -192,9 +204,12 @@ class Toolchain:
             self.add_library(
                 name='musl',
                 url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
-                configure_args=[
-                    '--target={arch}', '--syslibdir={prefix_dir}/lib', '--disable-shared', '--enable-static'
-                ]
+                configure_args={
+                    '--target': '{target_triple}',
+                    '--syslibdir': os.path.join('{prefix_dir}', 'lib'),
+                    '--disable-shared': True,
+                    '--enable-static': True
+                }
             )
 
             # Build libgcc (our low level api)
@@ -216,9 +231,12 @@ class Toolchain:
                     name='musl_shared',
                     build_postfix='_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
-                    configure_args=[
-                        '--target={arch}', '--syslibdir={prefix_dir}/lib', '--enable-shared', '--disable-static'
-                    ]
+                    configure_args={
+                        '--target': '{target_triple}',
+                        '--syslibdir': os.path.join('{prefix_dir}', 'lib'),
+                        '--enable-shared': True,
+                        '--disable-static': True
+                    }
                 )
 
             # Build the other gnu libraries
@@ -244,10 +262,10 @@ class Toolchain:
             self.add_library(
                 name='libbacktrace',
                 url='https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
-                configure_args=[
-                    '--host={target_triple}', '--build={}'.format(self.parent_toolchain.triple), '--enable-static',
-                    '--enable-shared' if not static else '--disable-shared', '--enable-static'
-                ],
+                configure_args={
+                    '--enable-static': True,
+                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True
+                },
                 install_targets=['install-strip']
             )
 

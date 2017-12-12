@@ -11,8 +11,10 @@ class AutotoolsBuild:
 
     def __init__(self, **build_args):
 
-        # Grab our configure args if they exist
-        self.configure_args = build_args.get('configure_args', [])
+        # Set our default configuration arguments.
+        self.configure_args = {'--prefix': '{prefix_dir}', '--host': '{target_triple}', '--build': '{target_triple}'}
+
+        self.configure_args.update(build_args.get('configure_args', {}))
         self.build_postfix = build_args.get('build_postfix', '')
         self.build_args = build_args.get('build_args', [])
         self.install_args = build_args.get('install_args', [])
@@ -20,11 +22,6 @@ class AutotoolsBuild:
         # Grab our make and install targets
         self.build_targets = build_args.get('build_targets', ['all'])
         self.install_targets = build_args.get('install_targets', ['install'])
-
-        # Add our prefix to the args so it installs in the right spot
-        self.configure_args.append('--prefix={prefix_dir}')
-
-        # TODO add our build and host to the args
 
         # Build our environment variables
         self.env = dict(os.environ)
@@ -36,7 +33,11 @@ class AutotoolsBuild:
     def configure(self, **state):
 
         # Apply our state
-        args = [c.format(**state) for c in self.configure_args]
+        args = [
+            '{}{}'.format(k, '={}'.format(v) if v is not True else '').format(**state)
+            for k, v in self.configure_args.items()
+            if v is not None
+        ]
 
         # Work out our real full paths
         src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)

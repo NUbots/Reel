@@ -11,50 +11,70 @@ class Reel:
         toolchain.add_library(
             name='make',
             url='{}/make/make-4.2.tar.gz'.format(self.gnu_mirror),
-            configure_args=['--host={arch}', '--build={arch}', '--without-guile', '--disable-nls']
+            configure_args={
+                '--without-guile': True,
+                '--disable-nls': True
+            }
         )
 
         toolchain.add_library(
             name='m4',
             url='{}/m4/m4-1.4.18.tar.xz'.format(self.gnu_mirror),
-            configure_args=[
-                '--host={arch}', '--build={arch}', '--enable-threads=posix', '--enable-c++', '--enable-changeword',
-                '--with-packager="Reel"', '--with-packager-version="0.1"', '--with-syscmd-shell="/bin/bash"'
-            ]
+            configure_args={
+                '--enable-threads': 'posix',
+                '--enable-c++': True,
+                '--enable-changeword': True,
+                '--with-packager': '"Reel"',
+                '--with-packager-version': '"0.1"',
+                '--with-syscmd-shell': '/bin/bash'
+            }
         )
 
         toolchain.add_library(
             name='autoconf',
             url='{}/autoconf/autoconf-2.69.tar.xz'.format(self.gnu_mirror),
-            configure_args=['--host={arch}', '--build={arch}']
         )
 
         toolchain.add_library(
             name='automake',
             url='{}/automake/automake-1.15.1.tar.xz'.format(self.gnu_mirror),
-            configure_args=['--host={arch}', '--build={arch}']
         )
 
         toolchain.add_library(
             name='libtool',
             url='{}/libtool/libtool-2.4.6.tar.xz'.format(self.gnu_mirror),
-            configure_args=[
-                '--host={target_triple}', '--build={target_triple}', '--enable-static', '--enable-shared',
-                '--with-sysroot="{prefix_dir}"', '--enable-ltdl-install'
-            ]
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True,
+                '--with-sysroot': '"{prefix_dir}"',
+                '--enable-ltdl-install': True
+            }
         )
 
         toolchain.add_library(
             name='ncurses',
             url='{}/ncurses/ncurses-6.0.tar.gz'.format(self.gnu_mirror),
             env={'CPPFLAGS': '-P'},
-            configure_args=[
-                '--host={arch}', '--build={arch}', '--enable-static', '--enable-shared',
-                '--with-sysroot="{prefix_dir}"', '--with-build-cc="$CC"', '--with-normal', '--with-debug',
-                '--with-profile', '--with-termlib', '--with-ticlib', '--with-gpm', '--enable-sp-funcs',
-                '--enable-const', '--enable-ext-colors', '--enable-ext-mouse', '--enable-ext-putwin',
-                '--enable-no-padding', '--enable-sigwinch', '--enable-tcap-names'
-            ]
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True,
+                '--with-sysroot': '"{prefix_dir}"',
+                '--with-build-cc': '"$CC"',
+                '--with-normal': True,
+                '--with-debug': True,
+                '--with-profile': True,
+                '--with-termlib': True,
+                '--with-ticlib': True,
+                '--with-gpm': True,
+                '--enable-sp-funcs': True,
+                '--enable-const': True,
+                '--enable-ext-colors': True,
+                '--enable-ext-mouse': True,
+                '--enable-ext-putwin': True,
+                '--enable-no-padding': True,
+                '--enable-sigwinch': True,
+                '--enable-tcap-names': True
+            }
         )
 
         # Building ninja is a little weird
@@ -70,7 +90,14 @@ class Reel:
         )
 
         toolchain.add_library(
-            name='zlib', url='http://www.zlib.net/zlib-1.2.11.tar.gz', configure_args=['--static', '--shared']
+            name='zlib',
+            url='http://www.zlib.net/zlib-1.2.11.tar.gz',
+            configure_args={
+                '--host': None, # zlib configure doesn't understand host
+                '--build': None, # zlib configure doesn't understand build
+                '--static': True,
+                '--shared': True
+            }
         )
 
         toolchain.add_library(
@@ -97,10 +124,12 @@ class Reel:
         toolchain.add_library(
             name='curl',
             url='https://curl.haxx.se/download/curl-7.57.0.tar.xz',
-            configure_args=[
-                '--host={target_triple}', '--build={target_triple}', '--enable-shared', '--enable-static',
-                '--with-sysroot="{prefix_dir}"', '--with-ssl="{prefix_dir}"'
-            ]
+            configure_args={
+                '--enable-shared': True,
+                '--enable-static': True,
+                '--with-sysroot': '"{prefix_dir}"',
+                '--with-ssl': '"{prefix_dir}"'
+            }
         )
 
         # Bootstrapping cmake is a little weird too
