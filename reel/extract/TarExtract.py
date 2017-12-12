@@ -34,6 +34,10 @@ class TarExtract:
                     if f.name is not prefix:
                         f.name = os.path.relpath(f.name, prefix)
                         tf.extract(f, dest)
+
+            # Touch the folder.
+            os.utime(dest)
+
         else:
             cprint(indent('Archive {} already extracted... Skipping...'.format(basename), 8), 'yellow', attrs=['bold'])
 
