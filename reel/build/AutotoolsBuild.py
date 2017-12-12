@@ -12,7 +12,11 @@ class AutotoolsBuild:
     def __init__(self, **build_args):
 
         # Set our default configuration arguments.
-        self.configure_args = {'--prefix': '{prefix_dir}', '--host': '{target_triple}', '--build': '{target_triple}'}
+        self.configure_args = {
+            '--prefix': '{prefix_dir}',
+            '--host': '{target_triple}',
+            '--build': '{parent_target_triple}'
+        }
 
         self.configure_args.update(build_args.get('configure_args', {}))
         self.build_postfix = build_args.get('build_postfix', '')
