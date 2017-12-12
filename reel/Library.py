@@ -7,6 +7,7 @@ from .util import indent
 
 
 class Library:
+
     def __init__(self, toolchain, *phase_handlers, **kwargs):
 
         # Our toolchain object
@@ -50,20 +51,16 @@ class Library:
     def build(self):
 
         cprint(
-            'Building library {} for toolchain {}'.format(
-                self.name, self.toolchain.state['toolchain_name']),
+            'Building library {} for toolchain {}'.format(self.name, self.toolchain.state['toolchain_name']),
             'cyan',
-            attrs=['bold'])
+            attrs=['bold']
+        )
 
         state = self.toolchain.state.copy()
 
         for p, f in self.phase.items():
             if f is not None:
-                cprint(
-                    indent('Running phase {} for library {}'.format(
-                        p, self.name)),
-                    'magenta',
-                    attrs=['bold'])
+                cprint(indent('Running phase {} for library {}'.format(p, self.name)), 'magenta', attrs=['bold'])
                 new_state = f(**state)
                 if new_state is not None:
                     state.update(new_state)

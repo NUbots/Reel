@@ -4,6 +4,7 @@ from .TarExtract import TarExtract
 
 
 class SmartExtract:
+
     def __init__(self, **build_args):
         self.build_args = build_args
 

@@ -14,23 +14,25 @@ from .Library import Library
 
 
 class Toolchain:
-    def __init__(self,
-                 name,
-                 gnu_mirror,
-                 triple='',
-                 c_flags=None,
-                 cxx_flags=None,
-                 fc_flags=None,
-                 static=False,
-                 parent_toolchain=None):
+
+    def __init__(
+            self,
+            name,
+            gnu_mirror,
+            triple='',
+            c_flags=None,
+            cxx_flags=None,
+            fc_flags=None,
+            static=False,
+            parent_toolchain=None
+    ):
 
         self.name = name
         self.parent_toolchain = parent_toolchain
 
         # If we don't have a triple, work out the systems one
         if not triple:
-            self.triple = subprocess.check_output(
-                ['cc', '-dumpmachine']).decode('utf-8').strip()
+            self.triple = subprocess.check_output(['cc', '-dumpmachine']).decode('utf-8').strip()
 
             # Non system toolchains are musl based
             if parent_toolchain is not None:
@@ -72,8 +74,7 @@ class Toolchain:
 
         # Toolchain directories
         self.prefix_dir = os.path.join(self.toolchain_dir, self.name)
-        self.working_dir = os.path.join(self.setup_dir, self.name
-                                        if self.name else 'root')
+        self.working_dir = os.path.join(self.setup_dir, self.name if self.name else 'root')
         self.builds_dir = os.path.join(self.working_dir, 'build')
         self.logs_dir = os.path.join(self.working_dir, 'log')
         self.status_dir = os.path.join(self.working_dir, 'status')
@@ -102,8 +103,8 @@ class Toolchain:
 
             # Update our path to include where we build binaries too
             self.env['PATH'] = '{}{}{}'.format(
-                os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep,
-                self.env['PATH'])
+                os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep, self.env['PATH']
+            )
             self.env['CROSS_COMPILE'] = ''
             self.env['CFLAGS'] = ' '.join(c_flags)
             self.env['CXXFLAGS'] = ' '.join(cxx_flags)
@@ -114,13 +115,11 @@ class Toolchain:
             # Take our environment from our parent toolchain and update it
             self.env = self.parent_toolchain.env.copy()
 
-            # yapf: disable
             self.env.update({
                 # Extend the path
-                'PATH':
-                '{}{}{}'.format(
-                    os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep,
-                    self.parent_toolchain.env['PATH']),
+                'PATH': '{}{}{}'.format(
+                    os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep, self.parent_toolchain.env['PATH']
+                ),
 
                 # Overwrite the compiler and compiler flags
                 'CC': '{}-gcc'.format(self.triple),
@@ -137,29 +136,23 @@ class Toolchain:
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
             })
-            # yapf: enable
 
             # Build Binutils so we can link, ar, ranlib etc
             self.add_tool(
                 name='binutils',
                 url='{}/binutils/binutils-2.29.tar.xz'.format(gnu_mirror),
                 configure_args=[
-                    '--host={}'.format(
-                        self.parent_toolchain.triple), '--build={}'.format(
-                            self.parent_toolchain.triple),
-                    '--target={target_triple}',
-                    '--with-lib-path="{prefix_dir}/lib"',
-                    '--with-sysroot="{prefix_dir}"', '--disable-nls',
-                    '--disable-bootstrap', '--disable-werror',
-                    '--enable-shared'
+                    '--host={}'.format(self.parent_toolchain.triple), '--build={}'.format(self.parent_toolchain.triple),
+                    '--target={target_triple}', '--with-lib-path="{prefix_dir}/lib"', '--with-sysroot="{prefix_dir}"',
+                    '--disable-nls', '--disable-bootstrap', '--disable-werror', '--enable-shared'
                     if not static else '--disable-shared', '--enable-static'
                 ],
-                install_targets=['install-strip'])
+                install_targets=['install-strip']
+            )
 
             # We use this gcc build a few times, so make sure args are the same
             gcc_args = {
-                'url':
-                '{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
+                'url': '{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
                 'env': {
                     'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
                     'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
@@ -167,54 +160,50 @@ class Toolchain:
                     'LD_LIBRARY_PATH': os.path.join(self.prefix_dir, 'lib'),
                 },
                 'configure_args': [
-                    '--host={}'.format(
-                        self.parent_toolchain.triple), '--build={}'.format(
-                            self.parent_toolchain.triple),
-                    '--target={target_triple}',
-                    '--enable-languages=c,c++,fortran',
-                    '--with-sysroot="{prefix_dir}"', '--disable-nls',
-                    '--disable-multilib', '--disable-bootstrap',
-                    '--disable-werror', '--enable-shared'
+                    '--host={}'.format(self.parent_toolchain.triple), '--build={}'.format(self.parent_toolchain.triple),
+                    '--target={target_triple}', '--enable-languages=c,c++,fortran', '--with-sysroot="{prefix_dir}"',
+                    '--disable-nls', '--disable-multilib', '--disable-bootstrap', '--disable-werror', '--enable-shared'
                     if not static else '--disable-shared', '--enable-static'
                 ]
             }
 
             # Build gcc so we can build basic c programs (like musl)
             self.add_tool(
-                Shell(post_extract=
-                      'cd {source} && ./contrib/download_prerequisites'),
+                Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
                 Shell(
                     pre_configure='case $(uname -m) in'
                     '  x86_64)'
                     '    sed -e "/m64=/s/lib64/lib/" -i {source}/gcc/config/i386/t-linux64'
                     '  ;;'
-                    'esac'),
+                    'esac'
+                ),
                 name='gcc7',
                 **gcc_args,
                 build_targets=['all-gcc'],
-                install_targets=['install-strip-gcc'])
+                install_targets=['install-strip-gcc']
+            )
 
             # Build our static musl (our c standard library)
             self.add_library(
                 name='musl',
                 url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
                 configure_args=[
-                    '--target={arch}', '--syslibdir={prefix_dir}/lib',
-                    '--disable-shared', '--enable-static'
-                ])
+                    '--target={arch}', '--syslibdir={prefix_dir}/lib', '--disable-shared', '--enable-static'
+                ]
+            )
 
             # Build libgcc (our low level api)
             self.add_tool(
                 Shell(
-                    post_install=
-                    '{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
+                    post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
                     ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
                     ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
                 ),
                 name='libgcc',
                 **gcc_args,
                 build_targets=['all-target-libgcc'],
-                install_targets=['install-strip-target-libgcc'])
+                install_targets=['install-strip-target-libgcc']
+            )
 
             # If we're not building a pure static toolchain, make shared libc
             if not static:
@@ -223,41 +212,39 @@ class Toolchain:
                     build_postfix='_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
                     configure_args=[
-                        '--target={arch}', '--syslibdir={prefix_dir}/lib',
-                        '--enable-shared', '--disable-static'
-                    ])
+                        '--target={arch}', '--syslibdir={prefix_dir}/lib', '--enable-shared', '--disable-static'
+                    ]
+                )
 
             # Build the other gnu libraries
             self.add_tool(
-                Shell(pre_build='echo "{build}/gcc/"'
-                      ' && {build}/gcc/xgcc -dumpspecs'
-                      ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
-                      ' > {build}/gcc/specs'),
+                Shell(
+                    pre_build='echo "{build}/gcc/"'
+                    ' && {build}/gcc/xgcc -dumpspecs'
+                    ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
+                    ' > {build}/gcc/specs'
+                ),
                 name='gnulibs',
                 **gcc_args,
                 build_targets=[
-                    'all-target-libstdc++-v3', 'all-target-libquadmath',
-                    'all-target-libgfortran', 'all-target-libgomp'
+                    'all-target-libstdc++-v3', 'all-target-libquadmath', 'all-target-libgfortran', 'all-target-libgomp'
                 ],
                 install_targets=[
-                    'install-strip-target-libstdc++-v3',
-                    'install-strip-target-libquadmath',
-                    'install-strip-target-libgfortran',
-                    'install-strip-target-libgomp'
-                ])
+                    'install-strip-target-libstdc++-v3', 'install-strip-target-libquadmath',
+                    'install-strip-target-libgfortran', 'install-strip-target-libgomp'
+                ]
+            )
 
             # Libbacktrace is super useful
             self.add_library(
                 name='libbacktrace',
-                url=
-                'https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
+                url='https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
                 configure_args=[
-                    '--host={target_triple}', '--build={}'.format(
-                        self.parent_toolchain.triple), '--enable-static',
-                    '--enable-shared'
-                    if not static else '--disable-shared', '--enable-static'
+                    '--host={target_triple}', '--build={}'.format(self.parent_toolchain.triple), '--enable-static',
+                    '--enable-shared' if not static else '--disable-shared', '--enable-static'
                 ],
-                install_targets=['install-strip'])
+                install_targets=['install-strip']
+            )
 
     # Build a tool we can run (Use our state but parents env)
     def add_tool(self, *args, **kwargs):
@@ -268,9 +255,7 @@ class Toolchain:
             env.update(kwargs['env'])
         kwargs['env'] = env
 
-        self.libraries.append(
-            Library(self, SmartDownload, SmartExtract, SmartBuild, *args,
-                    **kwargs))
+        self.libraries.append(Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
 
     # Build a library using our toolchain
     def add_library(self, *args, **kwargs):
@@ -281,9 +266,7 @@ class Toolchain:
             env.update(kwargs['env'])
         kwargs['env'] = env
 
-        self.libraries.append(
-            Library(self, SmartDownload, SmartExtract, SmartBuild, *args,
-                    **kwargs))
+        self.libraries.append(Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
 
     def build(self):
 
@@ -291,19 +274,15 @@ class Toolchain:
         os.makedirs(self.prefix_dir, exist_ok=True)
 
         if os.path.exists(os.path.join(self.state['prefix_dir'], 'usr')):
-            if not os.path.islink(
-                    os.path.join(self.state['prefix_dir'], 'usr')):
+            if not os.path.islink(os.path.join(self.state['prefix_dir'], 'usr')):
                 os.path.unlink(os.path.join(self.state['prefix_dir'], 'usr'))
-                os.symlink(self.state['prefix_dir'],
-                           os.path.join(self.state['prefix_dir'], 'usr'))
+                os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
 
         else:
-            os.symlink(self.state['prefix_dir'],
-                       os.path.join(self.state['prefix_dir'], 'usr'))
+            os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
 
         for d in ['bin', 'include', 'lib']:
-            os.makedirs(
-                os.path.join(self.state['prefix_dir'], d), exist_ok=True)
+            os.makedirs(os.path.join(self.state['prefix_dir'], d), exist_ok=True)
 
         os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.archives_dir, exist_ok=True)
@@ -313,10 +292,10 @@ class Toolchain:
         os.makedirs(self.status_dir, exist_ok=True)
 
         cprint(
-            'Building toolchain {0} with architecture {1}'.format(
-                self.name if self.name else 'root', self.triple),
+            'Building toolchain {0} with architecture {1}'.format(self.name if self.name else 'root', self.triple),
             'red',
-            attrs=['bold'])
+            attrs=['bold']
+        )
 
         # Build all our libraries
         for l in self.libraries:

@@ -6,34 +6,34 @@ from .Shell import Shell
 
 
 class Reel:
+
     def add_build_tools(self, toolchain):
         toolchain.add_library(
             name='make',
             url='{}/make/make-4.2.tar.gz'.format(self.gnu_mirror),
-            configure_args=[
-                '--host={arch}', '--build={arch}', '--without-guile',
-                '--disable-nls'
-            ])
+            configure_args=['--host={arch}', '--build={arch}', '--without-guile', '--disable-nls']
+        )
 
         toolchain.add_library(
             name='m4',
             url='{}/m4/m4-1.4.18.tar.xz'.format(self.gnu_mirror),
             configure_args=[
-                '--host={arch}', '--build={arch}', '--enable-threads=posix',
-                '--enable-c++', '--enable-changeword',
-                '--with-packager="Reel"', '--with-packager-version="0.1"',
-                '--with-syscmd-shell="/bin/bash"'
-            ])
+                '--host={arch}', '--build={arch}', '--enable-threads=posix', '--enable-c++', '--enable-changeword',
+                '--with-packager="Reel"', '--with-packager-version="0.1"', '--with-syscmd-shell="/bin/bash"'
+            ]
+        )
 
         toolchain.add_library(
             name='autoconf',
             url='{}/autoconf/autoconf-2.69.tar.xz'.format(self.gnu_mirror),
-            configure_args=['--host={arch}', '--build={arch}'])
+            configure_args=['--host={arch}', '--build={arch}']
+        )
 
         toolchain.add_library(
             name='automake',
             url='{}/automake/automake-1.15.1.tar.xz'.format(self.gnu_mirror),
-            configure_args=['--host={arch}', '--build={arch}'])
+            configure_args=['--host={arch}', '--build={arch}']
+        )
 
         toolchain.add_library(
             name='libtool',
@@ -49,15 +49,13 @@ class Reel:
             url='{}/ncurses/ncurses-6.0.tar.gz'.format(self.gnu_mirror),
             env={'CPPFLAGS': '-P'},
             configure_args=[
-                '--host={arch}', '--build={arch}', '--enable-static',
-                '--enable-shared', '--with-sysroot="{prefix_dir}"',
-                '--with-build-cc="$CC"', '--with-normal', '--with-debug',
-                '--with-profile', '--with-termlib', '--with-ticlib',
-                '--with-gpm', '--enable-sp-funcs', '--enable-const',
-                '--enable-ext-colors', '--enable-ext-mouse',
-                '--enable-ext-putwin', '--enable-no-padding',
-                '--enable-sigwinch', '--enable-tcap-names'
-            ])
+                '--host={arch}', '--build={arch}', '--enable-static', '--enable-shared',
+                '--with-sysroot="{prefix_dir}"', '--with-build-cc="$CC"', '--with-normal', '--with-debug',
+                '--with-profile', '--with-termlib', '--with-ticlib', '--with-gpm', '--enable-sp-funcs',
+                '--enable-const', '--enable-ext-colors', '--enable-ext-mouse', '--enable-ext-putwin',
+                '--enable-no-padding', '--enable-sigwinch', '--enable-tcap-names'
+            ]
+        )
 
         # Building ninja is a little weird
         toolchain.add_library(
@@ -65,21 +63,15 @@ class Reel:
                 configure=
                 'mkdir -p {builds_dir}/$(basename {source}) && cp -r {source}/* {builds_dir}/$(basename {source})'
             ),
-            Shell(
-                build=
-                'cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'
-            ),
-            Shell(
-                install=
-                'cd {builds_dir}/$(basename {source}) && cp ninja {prefix_dir}/bin'
-            ),
+            Shell(build='cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'),
+            Shell(install='cd {builds_dir}/$(basename {source}) && cp ninja {prefix_dir}/bin'),
             name='ninja',
-            url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz')
+            url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz'
+        )
 
         toolchain.add_library(
-            name='zlib',
-            url='http://www.zlib.net/zlib-1.2.11.tar.gz',
-            configure_args=['--static', '--shared'])
+            name='zlib', url='http://www.zlib.net/zlib-1.2.11.tar.gz', configure_args=['--static', '--shared']
+        )
 
         toolchain.add_library(
             Shell(
@@ -113,24 +105,26 @@ class Reel:
 
         # Bootstrapping cmake is a little weird too
         toolchain.add_library(
-            Shell(configure='base_dir=$(pwd)'
-                  ' && mkdir -p {builds_dir}/$(basename {source})'
-                  ' && cd {builds_dir}/$(basename {source})'
-                  ' && $base_dir/{source}/bootstrap'
-                  '    --prefix={prefix_dir}'
-                  '    --no-qt-gui'
-                  '    --system-zlib'
-                  '    --parallel={cpu_count}'),
+            Shell(
+                configure='base_dir=$(pwd)'
+                ' && mkdir -p {builds_dir}/$(basename {source})'
+                ' && cd {builds_dir}/$(basename {source})'
+                ' && $base_dir/{source}/bootstrap'
+                '    --prefix={prefix_dir}'
+                '    --no-qt-gui'
+                '    --system-zlib'
+                '    --system-curl'
+                '    --parallel={cpu_count}'
+            ),
             Shell(build='cd {builds_dir}/$(basename {source})'
                   ' && make'),
             Shell(install='cd {builds_dir}/$(basename {source})'
                   ' && make install'),
             name='cmake',
-            url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz')
+            url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz'
+        )
 
-    def __init__(self,
-                 toolchain_level='FULL',
-                 gnu_mirror='https://ftpmirror.gnu.org/gnu'):
+    def __init__(self, toolchain_level='FULL', gnu_mirror='https://ftpmirror.gnu.org/gnu'):
         self.toolchains = []
         self.libraries = []
         self.toolchain = None
@@ -158,17 +152,12 @@ class Reel:
 
             # Make our bootstrap toolchain
             bootstrap_toolchain = Toolchain(
-                name='bootstrap',
-                gnu_mirror=self.gnu_mirror,
-                static=True,
-                parent_toolchain=system_toolchain)
+                name='bootstrap', gnu_mirror=self.gnu_mirror, static=True, parent_toolchain=system_toolchain
+            )
             self.toolchains.append(bootstrap_toolchain)
 
             # Make our real toolchain
-            self.toolchain = Toolchain(
-                name='',
-                gnu_mirror=self.gnu_mirror,
-                parent_toolchain=bootstrap_toolchain)
+            self.toolchain = Toolchain(name='', gnu_mirror=self.gnu_mirror, parent_toolchain=bootstrap_toolchain)
             self.toolchains.append(self.toolchain)
 
             # The final toolchain gets all the tools
@@ -176,11 +165,7 @@ class Reel:
 
     def add_toolchain(self, name, triple=''):
         # Create a new toolchain and return it and build using our toolchain
-        t = Toolchain(
-            name,
-            gnu_mirror=self.gnu_mirror,
-            triple=triple,
-            parent_toolchain=self.toolchain)
+        t = Toolchain(name, gnu_mirror=self.gnu_mirror, triple=triple, parent_toolchain=self.toolchain)
         self.toolchains.append(t)
         return t
 

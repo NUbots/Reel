@@ -6,6 +6,7 @@ from .AutotoolsBuild import AutotoolsBuild
 
 
 class SmartBuild:
+
     def __init__(self, **build_args):
 
         # Start without a downloader

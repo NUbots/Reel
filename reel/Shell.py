@@ -9,7 +9,9 @@ from .util import indent, get_status, update_status
 
 
 class Shell:
+
     class Command:
+
         def execute(self, phase, command, build_args, **state):
 
             # Build our environment variables
@@ -22,22 +24,18 @@ class Shell:
             if 'source' in state:
                 src_path = state['source']
                 base_src = os.path.basename(src_path)
-                status_path = os.path.join(state['status_dir'],
-                                           '{}.json'.format(base_src))
+                status_path = os.path.join(state['status_dir'], '{}.json'.format(base_src))
 
             else:
                 src_path = state['archive']
                 base_src = os.path.basename(src_path)
-                status_path = os.path.join(state['status_dir'],
-                                           '{}.json'.format(base_src))
+                status_path = os.path.join(state['status_dir'], '{}.json'.format(base_src))
 
             # Load the status file.
             status = get_status(status_path)
 
             if phase not in status or not status[phase]:
-                with open(
-                        os.path.join(state['logs_dir'], '{}_{}.log'.format(
-                            base_src, phase)), 'w') as logfile:
+                with open(os.path.join(state['logs_dir'], '{}_{}.log'.format(base_src, phase)), 'w') as logfile:
                     print(indent(' $ {}'.format(command.format(**state)), 8))
                     process = Popen(
                         args=command.format(**state),
@@ -45,7 +43,8 @@ class Shell:
                         env={k: v.format(**state)
                              for (k, v) in env.items()},
                         stdout=logfile,
-                        stderr=logfile)
+                        stderr=logfile
+                    )
 
                     if process.wait() != 0:
                         raise Exception('Failed to run phase {}'.format(phase))
@@ -55,10 +54,10 @@ class Shell:
 
             else:
                 cprint(
-                    indent('{} step for {} complete... Skipping...'.format(
-                        phase, base_src), 8),
+                    indent('{} step for {} complete... Skipping...'.format(phase, base_src), 8),
                     'yellow',
-                    attrs=['bold'])
+                    attrs=['bold']
+                )
 
     def __init__(self, **commands):
         self.commands = commands

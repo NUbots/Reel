@@ -4,6 +4,7 @@ from .HTTPDownload import HTTPDownload
 
 
 class SmartDownload:
+
     def __init__(self, **build_args):
 
         # Start without a downloader
