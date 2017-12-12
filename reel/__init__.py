@@ -39,9 +39,10 @@ class Reel:
             name='libtool',
             url='{}/libtool/libtool-2.4.6.tar.xz'.format(self.gnu_mirror),
             configure_args=[
-                '--host={arch}', '--build={arch}', '--enable-static',
-                '--enable-shared', '--with-sysroot="{prefix_dir}"'
-            ])
+                '--host={target_triple}', '--build={target_triple}', '--enable-static', '--enable-shared',
+                '--with-sysroot="{prefix_dir}"', '--enable-ltdl-install'
+            ]
+        )
 
         toolchain.add_library(
             name='ncurses',
@@ -100,10 +101,10 @@ class Reel:
             name='curl',
             url='https://curl.haxx.se/download/curl-7.57.0.tar.xz',
             configure_args=[
-                '--host={arch}', '--build={arch}', '--enable-shared',
-                '--enable-static', '--with-sysroot="{prefix_dir}"',
-                '--with-ssl="{prefix_dir}"'
-            ])
+                '--host={target_triple}', '--build={target_triple}', '--enable-shared', '--enable-static',
+                '--with-sysroot="{prefix_dir}"', '--with-ssl="{prefix_dir}"'
+            ]
+        )
 
         # Bootstrapping cmake is a little weird too
         toolchain.add_library(
