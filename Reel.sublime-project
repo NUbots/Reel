@@ -12,6 +12,7 @@
 			"on_save": true,
 			"popup_errors": true,
 			"use_entire_file_if_no_selection": true,
+            "use_stdin": true,
 		},
 		"default_line_ending": "unix",
 		"detect_indentation": false,
