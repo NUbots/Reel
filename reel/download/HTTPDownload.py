@@ -20,11 +20,11 @@ class HTTPDownload:
     def download(self, **kwargs):
 
         # Get the headers for the URL
-        head = requests.head(self.url, allow_redirects=True)
-        headers = head.headers
+        req = requests.get(self.url, allow_redirects=True, stream=True)
+        headers = req.headers
 
         # Extract a filename
-        filename = rfc6266.parse_requests_response(head).filename_unsafe
+        filename = rfc6266.parse_requests_response(req).filename_unsafe
 
         # Work out our output path
         output_file = os.path.join(kwargs['archives_dir'], filename)
@@ -59,16 +59,13 @@ class HTTPDownload:
 
         cprint(indent('Downloading {}'.format(filename), 8), 'green', attrs=['bold'])
 
-        # Do our get request
-        r = requests.get(self.url, allow_redirects=True, stream=True)
-
         # Total size in bytes.
-        total_size = int(r.headers.get('content-length', 0))
+        total_size = int(headers.get('content-length', 0))
 
         # Get the file
         with open(output_file, 'wb') as f:
             with tqdm(total=total_size, unit='B', unit_scale=True) as progress:
-                for data in r.iter_content(32 * 1024):
+                for data in req.iter_content(32 * 1024):
                     f.write(data)
                     progress.update(len(data))
 
