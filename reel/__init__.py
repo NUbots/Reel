@@ -31,6 +31,7 @@ class Reel:
         )
 
         toolchain.add_library(
+            Shell(post_extract='cd {source} && cp ../gcc-7.2.0/config.sub ./build-aux/'),
             name='autoconf',
             url='{}/autoconf/autoconf-2.69.tar.xz'.format(self.gnu_mirror),
         )
