@@ -121,9 +121,10 @@ class Toolchain:
 
             self.env.update({
                 # Extend the path
-                'PATH': '{}{}{}'.format(
-                    os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep, self.parent_toolchain.env['PATH']
-                ),
+                'PATH':
+                    '{}{}{}'.format(
+                        os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep, self.parent_toolchain.env['PATH']
+                    ),
 
                 # Overwrite the compiler and compiler flags
                 'CC': '{}-gcc'.format(self.triple),
@@ -182,9 +183,9 @@ class Toolchain:
                     'esac'
                 ),
                 name='gcc7',
-                **gcc_args,
                 build_targets=['all-gcc'],
-                install_targets=['install-strip-gcc']
+                install_targets=['install-strip-gcc'],
+                **gcc_args
             )
 
             # Build our static musl (our c standard library)
@@ -204,9 +205,9 @@ class Toolchain:
                     ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
                 ),
                 name='libgcc',
-                **gcc_args,
                 build_targets=['all-target-libgcc'],
-                install_targets=['install-strip-target-libgcc']
+                install_targets=['install-strip-target-libgcc'],
+                **gcc_args
             )
 
             # If we're not building a pure static toolchain, make shared libc
@@ -229,14 +230,14 @@ class Toolchain:
                     ' > {build}/gcc/specs'
                 ),
                 name='gnulibs',
-                **gcc_args,
                 build_targets=[
                     'all-target-libstdc++-v3', 'all-target-libquadmath', 'all-target-libgfortran', 'all-target-libgomp'
                 ],
                 install_targets=[
                     'install-strip-target-libstdc++-v3', 'install-strip-target-libquadmath',
                     'install-strip-target-libgfortran', 'install-strip-target-libgomp'
-                ]
+                ],
+                **gcc_args
             )
 
             # Libbacktrace is super useful
