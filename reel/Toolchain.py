@@ -97,6 +97,10 @@ class Toolchain:
             'cpu_count': multiprocessing.cpu_count(),
         }
 
+        # Embed our parents state into our state.
+        if self.parent_toolchain is not None:
+            self.state.update({'parent_{}'.format(k): v for (k, v) in self.parent_toolchain.state.items()})
+
         # If this is the system toolchain don't build anything but update our env
         if parent_toolchain is None:
             self.env = dict(os.environ.copy())
