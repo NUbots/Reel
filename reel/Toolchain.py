@@ -101,6 +101,9 @@ class Toolchain:
         # Embed our parents state into our state.
         if self.parent_toolchain is not None:
             self.state.update({'parent_{}'.format(k): v for (k, v) in self.parent_toolchain.state.items()})
+        # Otherwise pretend that we are our own parent
+        else:
+            self.state.update({'parent_{}'.format(k): v for (k, v) in self.state.items()})
 
         # If this is the system toolchain don't build anything but update our env
         if parent_toolchain is None:
@@ -114,6 +117,12 @@ class Toolchain:
             self.env['CFLAGS'] = ' '.join(c_flags)
             self.env['CXXFLAGS'] = ' '.join(cxx_flags)
             self.env['FCFLAGS'] = ' '.join(fc_flags)
+
+            # If our environment doesn't already have a CC or CXX use cc and c++
+            if 'CC' not in self.env:
+                self.env['CC'] = 'cc'
+            if 'CXX' not in self.env:
+                self.env['CXX'] = 'c++'
 
         # Otherwise we need to build our compiler
         else:
