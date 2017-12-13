@@ -3,6 +3,7 @@
 import platform
 from .Toolchain import Toolchain
 from .Shell import Shell
+from .patch import UpdateConfigSub
 
 
 class Reel:
@@ -31,8 +32,9 @@ class Reel:
         )
 
         toolchain.add_library(
-            Shell(post_extract='cd {source} && cp ../gcc-7.2.0/config.sub ./build-aux/'),
+            UpdateConfigSub,
             name='autoconf',
+            config_sub_file='build-aux/config.sub',
             url='{}/autoconf/autoconf-2.69.tar.xz'.format(self.gnu_mirror),
         )
 

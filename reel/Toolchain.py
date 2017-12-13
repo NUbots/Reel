@@ -8,6 +8,7 @@ import multiprocessing
 from .download import SmartDownload
 from .extract import SmartExtract
 from .build import SmartBuild
+from .patch import UpdateConfigSub
 from .Shell import Shell
 
 from .Library import Library
@@ -253,8 +254,10 @@ class Toolchain:
 
             # Libbacktrace is super useful
             self.add_library(
+                UpdateConfigSub,
                 name='libbacktrace',
-                url='https://github.com/NUbots/libbacktrace/archive/master.tar.gz',
+                url='https://github.com/ianlancetaylor/libbacktrace/archive/master.zip',
+                config_sub_file='config.sub',
                 configure_args={
                     '--enable-static': True,
                     '{}'.format('--enable-shared' if not static else '--disable-shared'): True
