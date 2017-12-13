@@ -2,6 +2,7 @@
 
 import os
 
+from reel.patch import UpdateConfigSub
 from reel import Reel
 
 r = Reel()  #gnu_mirror='http://gnu.uberglobalmirror.com')
@@ -22,6 +23,17 @@ toolchains = [
 ]
 
 for t in toolchains:
+
+    t.add_library(
+        UpdateConfigSub,
+        name='libbacktrace',
+        url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
+        config_sub_file='config.sub',
+        configure_args={'--enable-static': True,
+                        '--enable-shared': True},
+        install_targets=['install-strip']
+    )
+
     t.add_library(
         name='zlib',
         url='http://www.zlib.net/zlib-1.2.11.tar.gz',

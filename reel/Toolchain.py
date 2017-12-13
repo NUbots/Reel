@@ -261,19 +261,6 @@ class Toolchain:
                 **gcc_args
             )
 
-            # Libbacktrace is super useful
-            self.add_library(
-                UpdateConfigSub,
-                name='libbacktrace',
-                url='https://github.com/ianlancetaylor/libbacktrace/archive/master.zip',
-                config_sub_file='config.sub',
-                configure_args={
-                    '--enable-static': True,
-                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True
-                },
-                install_targets=['install-strip']
-            )
-
     # Build a tool we can run (Use our state but parents env)
     def add_tool(self, *args, **kwargs):
 
