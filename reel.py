@@ -4,7 +4,7 @@ import os
 
 from reel import Reel
 
-r = Reel() #gnu_mirror='http://gnu.uberglobalmirror.com')
+r = Reel()  #gnu_mirror='http://gnu.uberglobalmirror.com')
 
 r.add_library(
     url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
@@ -26,8 +26,8 @@ for t in toolchains:
         name='zlib',
         url='http://www.zlib.net/zlib-1.2.11.tar.gz',
         configure_args={
-            '--host': None, # zlib configure doesn't understand host
-            '--build': None, # zlib configure doesn't understand build
+            '--host': None,  # zlib configure doesn't understand host
+            '--build': None,  # zlib configure doesn't understand build
             '--static': True,
             '--shared': True
         }

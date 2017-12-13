@@ -96,8 +96,8 @@ class Reel:
             name='zlib',
             url='http://www.zlib.net/zlib-1.2.11.tar.gz',
             configure_args={
-                '--host': None, # zlib configure doesn't understand host
-                '--build': None, # zlib configure doesn't understand build
+                '--host': None,  # zlib configure doesn't understand host
+                '--build': None,  # zlib configure doesn't understand build
                 '--static': True,
                 '--shared': True
             }
