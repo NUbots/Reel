@@ -229,7 +229,9 @@ class Toolchain:
             # If we're not building a pure static toolchain, make shared libc
             if not static:
                 self.add_library(
-                    Shell(post_install='echo "{prefix_dir}/lib" > {prefix_dir}/etc/ld-musl-{arch}.path'),
+                    Shell(
+                        post_install='echo "{prefix_dir}/lib:{prefix_dir}/lib64" > {prefix_dir}/etc/ld-musl-{arch}.path'
+                    ),
                     name='musl_shared',
                     build_postfix='_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
