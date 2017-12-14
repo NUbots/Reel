@@ -295,7 +295,7 @@ class Toolchain:
         else:
             os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
 
-        for d in ['bin', 'include', 'lib']:
+        for d in ['bin', 'include', 'lib', 'etc']:
             os.makedirs(os.path.join(self.state['prefix_dir'], d), exist_ok=True)
 
         os.makedirs(self.working_dir, exist_ok=True)
