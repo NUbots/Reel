@@ -48,8 +48,8 @@ for t in toolchains:
         url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
         name='protobuf',
         env={
-            'CC_FOR_BUILD': '{} -static'.format(t.parent_toolchain.env['CC']),
-            'CXX_FOR_BUILD': '{} -static'.format(t.parent_toolchain.env['CXX'])
+            'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
+            'CXX_FOR_BUILD': t.parent_toolchain.env['CXX'],
         },
         configure_args={
             '--with-zlib': True,
