@@ -146,7 +146,6 @@ class Toolchain:
                 'CFLAGS': ' '.join(c_flags),
                 'CXXFLAGS': ' '.join(cxx_flags),
                 'FCFLAGS': ' '.join(fc_flags),
-                'LD_LIBRARY_PATH': os.path.abspath(os.path.join(self.prefix_dir, 'lib')),
 
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
@@ -178,7 +177,6 @@ class Toolchain:
                     'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
                     'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
                     'FCFLAGS_FOR_TARGET': self.env['FCFLAGS'],
-                    'LD_LIBRARY_PATH': os.path.join(self.prefix_dir, 'lib'),
                 },
                 'configure_args': {
                     '--host': self.parent_toolchain.triple,
@@ -231,6 +229,7 @@ class Toolchain:
             # If we're not building a pure static toolchain, make shared libc
             if not static:
                 self.add_library(
+                    Shell(post_install='echo "{prefix_dir}/lib" > {prefix_dir}/etc/ld-musl-{arch}.path'),
                     name='musl_shared',
                     build_postfix='_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',

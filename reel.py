@@ -47,10 +47,8 @@ for t in toolchains:
     t.add_library(
         url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
         name='protobuf',
-        env={
-            'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
-            'CXX_FOR_BUILD': t.parent_toolchain.env['CXX'],
-        },
+        env={'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
+             'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']},
         configure_args={
             '--with-zlib': True,
             '--with-protoc': os.path.join('{parent_prefix_dir}', 'bin', 'protoc'),
