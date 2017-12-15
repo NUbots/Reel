@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import os
 import platform
+
 from .Toolchain import Toolchain
 from .Shell import Shell
 from .patch import UpdateConfigSub
@@ -51,6 +53,99 @@ class Reel:
                 '--enable-shared': True,
                 '--with-sysroot': '"{prefix_dir}"',
                 '--enable-ltdl-install': True
+            }
+        )
+
+        toolchain.add_library(
+            Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
+            Shell(
+                post_build=
+                'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -r {} {} && rm -rf {dest}'.
+                format(
+                    os.path.join('{prefix_dir}', 'temp', 'include', '*'),
+                    os.path.join('{prefix_dir}', 'include'),
+                    dest=os.path.join('{prefix_dir}', 'temp', 'include')
+                )
+            ),
+            name='linux-headers',
+            url='https://git.kernel.org/torvalds/t/linux-4.15-rc3.tar.gz',
+            build_args=['ARCH={arch}', 'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))],
+            build_targets=['mrproper', 'headers_check', 'headers_install'],
+            install_targets=[]
+        )
+
+        toolchain.add_library(
+            name='util-linux',
+            url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True,
+                '--disable-all-programs': True,
+                '--enable-libblkid': True,
+                '--enable-libmount': True,
+                '--without-python': True
+            }
+        )
+
+        toolchain.add_library(
+            name='gettext',
+            url='{}/gettext/gettext-0.19.8.1.tar.xz'.format(self.gnu_mirror),
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True
+            }
+        )
+
+        toolchain.add_library(
+            url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
+            name='pcre',
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True,
+                '--enable-utf': True,
+                '--enable-unicode-properties': True
+            }
+        )
+
+        toolchain.add_library(
+            url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz',
+            name='ffi',
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True
+            }
+        )
+
+        toolchain.add_library(
+            Shell(post_install='cp {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
+            name='glib2',
+            url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True,
+                '--with-threads': 'posix',
+                '--with-pcre': 'system',
+                '--disable-gtk-doc': True,
+                '--disable-man': True
+            }
+        )
+
+        toolchain.add_library(
+            name='pkgconfig',
+            url='https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz',
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True
+            }
+        )
+
+        toolchain.add_library(
+            name='texinfo',
+            url='{}/texinfo/texinfo-6.5.tar.xz'.format(self.gnu_mirror),
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True,
+                '--with-sysroot': '"{prefix_dir}"'
             }
         )
 
