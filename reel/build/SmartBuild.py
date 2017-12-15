@@ -12,6 +12,7 @@ class SmartBuild:
 
         # Start without a downloader
         self.build_args = build_args
+        self.src_dir = build_args.get('src_dir', '.')
         self.build_tool = None
 
     def configure(self, **state):
@@ -19,16 +20,12 @@ class SmartBuild:
         source = state['source']
 
         # First check to see if we have a configure script
-        if os.path.isfile(os.path.join(source, 'configure')):
+        if os.path.isfile(os.path.join(source, self.src_dir, 'configure')) or os.path.isfile(os.path.join(
+                source, self.src_dir, 'autogen.sh')):
             self.build_tool = AutotoolsBuild(**self.build_args)
 
-        # If we have a repo that has autogen but no configure yet
-        elif os.path.isfile(os.path.join(source, 'autogen.sh')):
-            # TODO
-            pass
-
         # Then check for CMakeLists.txt
-        elif os.path.isfile(os.path.join(source, 'CMakeLists.txt')):
+        elif os.path.isfile(os.path.join(source, self.src_dir, 'CMakeLists.txt')):
             # TODO
             pass
 
