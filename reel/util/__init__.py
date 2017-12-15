@@ -14,6 +14,9 @@ def dedent(s):
 
 
 def get_status(status_file):
+    # Make sure the status directory exists.
+    os.makedirs(os.path.dirname(status_file), exist_ok=True)
+
     # Make sure we have our status file.
     if not os.path.isfile(status_file):
         with open(status_file, 'w') as f:
