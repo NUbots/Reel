@@ -117,6 +117,14 @@ class Reel:
         )
 
         toolchain.add_library(
+            url='http://www.mr511.de/software/libelf-0.8.13.tar.gz',
+            name='libelf',
+            configure_args={
+                '--enable-static': True,
+                '--enable-shared': True
+            }
+        )
+        toolchain.add_library(
             Shell(post_install='cp {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
             name='glib2',
             url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
