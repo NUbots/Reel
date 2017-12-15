@@ -328,7 +328,7 @@ for t in toolchains:
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
-            '--with-build-cc': '"$CC"',
+            '--with-build-cc': r.toolchain.env['CC'],
             '--with-normal': True,
             '--with-debug': True,
             '--with-profile': True,
