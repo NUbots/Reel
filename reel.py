@@ -53,6 +53,19 @@ for t in toolchains:
     )
 
     t.add_library(
+        name='util-linux',
+        url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
+        configure_args={
+            '--enable-static': True,
+            '--enable-shared': True,
+            '--disable-all-programs': True,
+            '--enable-libblkid': True,
+            '--enable-libmount': True,
+            '--without-python': True
+        }
+    )
+
+    t.add_library(
         name='zlib',
         url='http://www.zlib.net/zlib-1.2.11.tar.gz',
         configure_args={
