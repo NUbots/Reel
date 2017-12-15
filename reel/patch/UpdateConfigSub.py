@@ -33,7 +33,8 @@ class UpdateConfigSub:
             dest_file = os.path.join(state['source'], self.path)
 
             # Correct permissions because some people are asshats!
-            os.chmod(dest_file, os.stat(dest_file).st_mode | stat.S_IWUSR)
+            if os.path.isfile(dest_file):
+                os.chmod(dest_file, os.stat(dest_file).st_mode | stat.S_IWUSR)
 
             with open(dest_file, 'wb') as f:
                 f.write(config_sub_file)
