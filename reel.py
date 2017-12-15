@@ -213,15 +213,14 @@ for t in toolchains:
     )
 
     t.add_library(
-        url='https://xcb.freedesktop.org/dist/libpthread-stubs-0.4.tar.bz2',
-        name='pthread-stubs',
-        configure_args={
-            '--enable-static': True,
-            '--enable-shared': True
-        }
-    )
-
-    t.add_library(
+        Shell(
+            post_extract='cd {source}'
+            # Fixes incompatibilities between python2 and python3 (whitespace inconsistencies)
+            # https://bugs.freedesktop.org/show_bug.cgi?id=95490
+            ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/libxcb-1.12-python3-1.patch -O - | patch -Np1'
+            # pthread-stubs is useless on linux
+            ' && sed -i "s/pthread-stubs//" configure'
+        ),
         url='https://xcb.freedesktop.org/dist/libxcb-1.12.tar.bz2',
         name='xcb',
         configure_args={
