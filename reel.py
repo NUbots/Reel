@@ -46,7 +46,11 @@ for t in toolchains:
         ),
         name='linux-headers',
         url='https://git.kernel.org/torvalds/t/linux-4.15-rc3.tar.gz',
-        build_args=['ARCH={arch}', 'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))],
+        build_args=[
+            # Linux kernel doesn't know what aarch64, it knows arm64 though.
+            'ARCH={}'.format(t.arch if t.arch != 'aarch64' else 'arm64'),
+            'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))
+        ],
         build_targets=['mrproper', 'headers_check', 'headers_install'],
         install_targets=[]
     )
