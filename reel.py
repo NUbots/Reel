@@ -401,6 +401,13 @@ for t in toolchains:
     t.add_library(
         url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
         name='python',
+        # Configure cant run all tests.
+        env={'ac_cv_file__dev_ptmx': 'no',
+             'ac_cv_file__dev_ptc': 'no',
+             # Configure needs some help finding the curses headers.
+             'CPPFLAGS': '-I{prefix_dir}/include/ncurses',
+             'CFLAGS': '-I{prefix_dir}/include/ncurses',
+             'CXXFLAGS': '-I{prefix_dir}/include/ncurses'},
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
