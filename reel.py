@@ -275,7 +275,9 @@ for t in toolchains:
             name='xorg-lib-{}'.format(lib[0]),
             configure_args={
                 '--enable-static': True,
-                '--enable-shared': True
+                '--enable-shared': True,
+                # musl returns a valid pointer for a 0 byte allocation
+                '--enable-malloc0returnsnull': 'no'
             }
         )
 
@@ -283,6 +285,9 @@ for t in toolchains:
         url='https://prdownloads.sourceforge.net/tcl/tcl8.6.7-src.tar.gz',
         name='tcl',
         src_dir='unix',
+        # Apparently configure gets confused when we are cross compiling
+        # https://groups.google.com/forum/#!topic/comp.lang.tcl/P56Gge5_3Z8
+        env={'ac_cv_func_strtod': 'yes', 'tcl_cv_strtod_buggy': '1'},
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
