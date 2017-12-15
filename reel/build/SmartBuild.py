@@ -3,6 +3,7 @@
 import os
 
 from .AutotoolsBuild import AutotoolsBuild
+from .MakeBuild import MakeBuild
 
 
 class SmartBuild:
@@ -35,9 +36,8 @@ class SmartBuild:
         # Bazel
 
         # Then check for a Makefile
-        elif os.path.isfile(os.path.join(source, 'Makefile')):
-            # TODO
-            pass
+        elif os.path.isfile(os.path.join(source, self.src_dir, 'Makefile')):
+            self.build_tool = MakeBuild(**self.build_args)
 
         return self.build_tool.configure(**state)
 
