@@ -2,6 +2,7 @@
 
 import requests
 import os
+import stat
 from termcolor import cprint
 
 from ..util import get_status, update_status, indent
@@ -14,8 +15,8 @@ config_sub_file = req.content
 
 class UpdateConfigSub:
 
-    def __init__(self, config_sub_file, **build_args):
-        self.path = config_sub_file
+    def __init__(self, **build_args):
+        self.path = build_args.get('config_sub_file', 'config.sub')
 
     def post_extract(self, **state):
 
@@ -29,7 +30,12 @@ class UpdateConfigSub:
 
             cprint(indent('Patching {} for {}'.format(self.path, src_path), 8), 'green', attrs=['bold'])
 
-            with open(os.path.join(state['source'], self.path), 'wb') as f:
+            dest_file = os.path.join(state['source'], self.path)
+
+            # Correct permissions because some people are asshats!
+            os.chmod(dest_file, os.stat(dest_file).st_mode | stat.S_IWUSR)
+
+            with open(dest_file, 'wb') as f:
                 f.write(config_sub_file)
 
             update_status(status_path, {'config_sub': True})
