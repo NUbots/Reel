@@ -146,6 +146,12 @@ class Toolchain:
                 'CFLAGS': ' '.join(c_flags),
                 'CXXFLAGS': ' '.join(cxx_flags),
                 'FCFLAGS': ' '.join(fc_flags),
+                'LD_LIBRARY_PATH': '',
+                'PKG_CONFIG_PATH':
+                    '{}{}{}'.format(
+                        os.path.join(self.state['prefix_dir'], 'lib', 'pkgconfig'), os.pathsep,
+                        os.path.join(self.state['prefix_dir'], 'share', 'pkgconfig')
+                    ),
 
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
