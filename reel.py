@@ -37,8 +37,7 @@ for t in toolchains:
     t.add_library(
         Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
         Shell(
-            post_build=
-            'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -r {} {} && rm -rf {dest}'.
+            post_build='find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -r {} {} && rm -rf {dest}'.
             format(
                 os.path.join('{prefix_dir}', 'temp', 'include', '*'),
                 os.path.join('{prefix_dir}', 'include'),
@@ -318,7 +317,8 @@ for t in toolchains:
         src_dir='unix',
         # Apparently configure gets confused when we are cross compiling
         # https://groups.google.com/forum/#!topic/comp.lang.tcl/P56Gge5_3Z8
-        env={'ac_cv_func_strtod': 'yes', 'tcl_cv_strtod_buggy': '1'},
+        env={'ac_cv_func_strtod': 'yes',
+             'tcl_cv_strtod_buggy': '1'},
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
@@ -402,12 +402,14 @@ for t in toolchains:
         url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
         name='python',
         # Configure cant run all tests.
-        env={'ac_cv_file__dev_ptmx': 'no',
-             'ac_cv_file__dev_ptc': 'no',
-             # Configure needs some help finding the curses headers.
-             'CPPFLAGS': '-I{prefix_dir}/include/ncurses',
-             'CFLAGS': '-I{prefix_dir}/include/ncurses',
-             'CXXFLAGS': '-I{prefix_dir}/include/ncurses'},
+        env={
+            'ac_cv_file__dev_ptmx': 'no',
+            'ac_cv_file__dev_ptc': 'no',
+            # Configure needs some help finding the curses headers.
+            'CPPFLAGS': '-I{prefix_dir}/include/ncurses',
+            'CFLAGS': '-I{prefix_dir}/include/ncurses',
+            'CXXFLAGS': '-I{prefix_dir}/include/ncurses'
+        },
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
