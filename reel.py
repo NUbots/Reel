@@ -392,10 +392,12 @@ for t in toolchains:
             configure='base_dir=$(pwd)'
             ' && mkdir -p {builds_dir}/$(basename {source})'
             ' && cd {builds_dir}/$(basename {source})'
-            ' && $base_dir/{source}/config'
+            ' && $base_dir/{source}/Configure'
             '    --prefix={prefix_dir} '
             '    --libdir=lib'
-            '    --release no-async'
+            '    --release'
+            '    no-async'
+            '    linux-{arch}'
         ),
         Shell(build='cd {builds_dir}/$(basename {source})'
               ' && make'),
