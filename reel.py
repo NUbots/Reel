@@ -173,8 +173,8 @@ for t in toolchains:
     t.add_library(
         Shell(
             post_extract='cd {source}'
-            ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-schema-1.patch -O - | patch -Np1'
-            ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-python3-1.patch -O - | patch -Np1'
+            ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-schema-1.patch -O - | patch -Np1 || true'
+            ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-python3-1.patch -O - | patch -Np1 || true'
         ),
         url='https://xcb.freedesktop.org/dist/xcb-proto-1.12.tar.bz2',
         name='xcb-proto',
@@ -249,7 +249,7 @@ for t in toolchains:
             post_extract='cd {source}'
             # Fixes incompatibilities between python2 and python3 (whitespace inconsistencies)
             # https://bugs.freedesktop.org/show_bug.cgi?id=95490
-            ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/libxcb-1.12-python3-1.patch -O - | patch -Np1'
+            ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/libxcb-1.12-python3-1.patch -O - | patch -Np1 || true'
             # pthread-stubs is useless on linux
             ' && sed -i "s/pthread-stubs//" configure'
         ),
