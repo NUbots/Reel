@@ -4,6 +4,7 @@ import os
 
 from .AutotoolsBuild import AutotoolsBuild
 from .MakeBuild import MakeBuild
+from .CMakeBuild import CMakeBuild
 
 
 class SmartBuild:
@@ -26,8 +27,7 @@ class SmartBuild:
 
         # Then check for CMakeLists.txt
         elif os.path.isfile(os.path.join(source, self.src_dir, 'CMakeLists.txt')):
-            # TODO
-            pass
+            self.build_tool = CMakeBuild(**self.build_args)
 
         # Bjam
         # Bazel
