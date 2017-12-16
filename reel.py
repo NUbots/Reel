@@ -18,6 +18,15 @@ r.add_library(
     }
 )
 
+r.add_library(
+    name='gperf',
+    url='https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz',
+    configure_args={
+        '--enable-static': True,
+        '--enable-shared': True
+    }
+)
+
 toolchains = [
     r.add_toolchain('nuc7i7bnh', triple='x86_64-linux-musl'),
     r.add_toolchain('jetsontx2', triple='aarch64-linux-musl')
@@ -144,22 +153,14 @@ for t in toolchains:
     )
 
     t.add_library(
-        name='gperf',
-        url='https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz',
-        configure_args={
-            '--enable-static': True,
-            '--enable-shared': True
-        }
-    )
-
-    t.add_library(
         Shell(post_extract='cd {source} && rm -f src/fcobjshash.h'),
         url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.6.tar.bz2',
         name='fontconfig',
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
-            '--disable-docs': True
+            '--disable-docs': True,
+            'GPERF': os.path.join(t.state['parent_prefix_dir'], 'bin', 'gperf')
         }
     )
 
