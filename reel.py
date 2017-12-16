@@ -88,10 +88,7 @@ for t in toolchains:
         }
     )
 
-    t.add_library(
-        name='bzip2',
-        url='https://github.com/Bidski/bzip2/archive/v1.0.6.1.tar.gz',
-    )
+    t.add_library(name='bzip2', url='https://github.com/Bidski/bzip2/archive/master.tar.gz')
 
     t.add_library(
         url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
