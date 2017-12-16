@@ -125,7 +125,10 @@ class MakeBuild:
             if target not in status or not status[target]:
                 print(indent(' $ {}'.format(' '.join(['make', target])), 8))
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
-                    cmd = 'make PREFIX={} {}'.format(state['prefix_dir'], target)
+                    cmd = 'make PREFIX={} {} {}'.format(
+                        state['prefix_dir'], ' '.join(a.format(**state) for a in self.install_args), target
+                    )
+                    print(indent(' $ {}'.format(cmd), 8))
                     process = Popen(
                         args=cmd,
                         shell=True,

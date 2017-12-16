@@ -199,9 +199,9 @@ class AutotoolsBuild:
         # Open a log file and run make install
         for target in self.install_targets:
             if target not in status or not status[target]:
-                print(indent(' $ {}'.format(' '.join(['make', target])), 8))
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
-                    cmd = 'make {}'.format(target)
+                    cmd = 'make {} {}'.format(' '.join(a.format(**state) for a in self.install_args), target)
+                    print(indent(' $ {}'.format(cmd), 8))
                     process = Popen(
                         args=cmd,
                         shell=True,
