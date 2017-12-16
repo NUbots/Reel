@@ -70,8 +70,9 @@ class Reel:
             name='linux-headers',
             url='https://git.kernel.org/torvalds/t/linux-4.15-rc3.tar.gz',
             build_args=['ARCH={arch}', 'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))],
-            build_targets=['mrproper', 'headers_check', 'headers_install'],
-            install_targets=[]
+            build_targets=['mrproper', 'headers_check'],
+            install_args=['ARCH={arch}', 'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))],
+            install_targets=['headers_install']
         )
 
         toolchain.add_library(

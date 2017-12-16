@@ -60,8 +60,13 @@ for t in toolchains:
             'ARCH={}'.format(t.arch if t.arch != 'aarch64' else 'arm64'),
             'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))
         ],
-        build_targets=['mrproper', 'headers_check', 'headers_install'],
-        install_targets=[]
+        build_targets=['mrproper', 'headers_check'],
+        install_args=[
+            # Linux kernel doesn't know what aarch64, it knows arm64 though.
+            'ARCH={}'.format(t.arch if t.arch != 'aarch64' else 'arm64'),
+            'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))
+        ],
+        install_targets=['headers_install']
     )
 
     t.add_library(
