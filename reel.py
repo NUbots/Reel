@@ -319,8 +319,10 @@ for t in toolchains:
         src_dir='unix',
         # Apparently configure gets confused when we are cross compiling
         # https://groups.google.com/forum/#!topic/comp.lang.tcl/P56Gge5_3Z8
+        # It looks like musl have fixed some bugs in strtod, so lets assume that it is not "buggy"
         env={'ac_cv_func_strtod': 'yes',
-             'tcl_cv_strtod_buggy': '1'},
+             'tcl_cv_strtod_unbroken': 'yes',
+             'tcl_cv_strtod_buggy': 'no'},
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
@@ -333,6 +335,12 @@ for t in toolchains:
         url='https://prdownloads.sourceforge.net/tcl/tk8.6.7-src.tar.gz',
         name='tk',
         src_dir='unix',
+        # Apparently configure gets confused when we are cross compiling
+        # https://groups.google.com/forum/#!topic/comp.lang.tcl/P56Gge5_3Z8
+        # It looks like musl have fixed some bugs in strtod, so lets assume that it is not "buggy"
+        env={'ac_cv_func_strtod': 'yes',
+             'tcl_cv_strtod_unbroken': 'yes',
+             'tcl_cv_strtod_buggy': 'no'},
         configure_args={
             '--enable-static': True,
             '--enable-shared': True,
