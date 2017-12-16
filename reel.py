@@ -423,9 +423,10 @@ for t in toolchains:
             'ac_cv_file__dev_ptmx': 'no',
             'ac_cv_file__dev_ptc': 'no',
             # Configure needs some help finding the curses headers.
-            'CPPFLAGS': '-I{prefix_dir}/include/ncurses',
-            'CFLAGS': '-I{prefix_dir}/include/ncurses',
-            'CXXFLAGS': '-I{prefix_dir}/include/ncurses'
+            'CPPFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CPPFLAGS', ''), '{prefix_dir}'),
+            'CFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CFLAGS', ''), '{prefix_dir}'),
+            'CXXFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CXXFLAGS', ''), '{prefix_dir}'),
+            #'PYTHON_FOR_BUILD': os.path.join('python')
         },
         configure_args={
             '--enable-static': True,
