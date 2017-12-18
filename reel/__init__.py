@@ -261,8 +261,8 @@ class Reel:
         self.toolchains.append(t)
         return t
 
-    def add_library(self, **kwargs):
-        self.toolchain.add_library(**kwargs)
+    def add_library(self, *args, **kwargs):
+        self.toolchain.add_library(*args, **kwargs)
 
     def install_compression_libraries(self, **kwargs):
         kwargs.get('toolchain', self.toolchain).install_compression_libraries(**kwargs)
