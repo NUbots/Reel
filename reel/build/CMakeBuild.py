@@ -60,15 +60,8 @@ class CMakeBuild:
 
         if 'configure' not in status or not status['configure']:
             # Wipe build folder before reconfigure
-            for the_file in os.listdir(build_path):
-                file_path = os.path.join(build_path, the_file)
-                try:
-                    if os.path.isfile(file_path):
-                        os.unlink(file_path)
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)
-                except Exception as e:
-                    print(e)
+            if os.path.isdir(build_path):
+                shutil.rmtree(build_path)
 
             # Make our build directory and log directory
             os.makedirs(build_path, exist_ok=True)
