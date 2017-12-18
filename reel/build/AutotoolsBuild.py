@@ -104,21 +104,28 @@ class AutotoolsBuild:
             os.makedirs(build_path, exist_ok=True)
             os.makedirs(logs_path, exist_ok=True)
 
-            if self.in_source_build:
-                with open(os.path.join(logs_path, '{}_clone.log'.format(base_src)), 'w') as logfile:
-                    cmd = 'cp -rv {} {}'.format(
-                        os.path.abspath(os.path.join(src_path, self.src_dir, '*')), os.path.abspath(build_path)
-                    )
-                    print(indent(' $ {}'.format(cmd), 8))
-                    process = Popen(
-                        args=cmd,
-                        shell=True,
-                        cwd=os.path.abspath(build_path),
-                        env={k: v.format(**state)
-                             for k, v in self.env.items()},
-                        stdout=logfile,
-                        stderr=logfile
-                    )
+            if 'clone' not in status or not status['clone']:
+                if self.in_source_build:
+                    with open(os.path.join(logs_path, '{}_clone.log'.format(base_src)), 'w') as logfile:
+                        cmd = 'cp -rv {} {}'.format(
+                            os.path.abspath(os.path.join(src_path, self.src_dir, '*')), os.path.abspath(build_path)
+                        )
+                        print(indent(' $ {}'.format(cmd), 8))
+                        process = Popen(
+                            args=cmd,
+                            shell=True,
+                            cwd=os.path.abspath(build_path),
+                            env={k: v.format(**state)
+                                 for k, v in self.env.items()},
+                            stdout=logfile,
+                            stderr=logfile
+                        )
+
+                        if process.wait() != 0:
+                            raise Exception('Failed to clone')
+
+                        else:
+                            status = update_status(status_path, {'clone': True})
 
             # Open a log file and run configure
             with open(os.path.join(logs_path, '{}_configure.log'.format(base_src)), 'w') as logfile:
