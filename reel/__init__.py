@@ -75,6 +75,8 @@ class Reel:
             install_targets=['headers_install']
         )
 
+        toolchain.install_linux_headers()
+
         toolchain.add_library(
             name='util-linux',
             url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
@@ -126,16 +128,7 @@ class Reel:
             }
         )
 
-        toolchain.add_library(
-            name='zlib',
-            url='http://www.zlib.net/zlib-1.2.11.tar.gz',
-            configure_args={
-                '--host': None,  # zlib configure doesn't understand host
-                '--build': None,  # zlib configure doesn't understand build
-                '--static': True,
-                '--shared': True
-            }
-        )
+        toolchain.install_compression_libraries(zlib=True, bzip2=True, xz=True)
 
         toolchain.add_library(
             Shell(post_install='cp {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
@@ -310,6 +303,18 @@ class Reel:
 
     def add_library(self, **kwargs):
         self.toolchain.add_library(**kwargs)
+
+    def install_compression_libraries(self, **kwargs):
+        kwargs.get('toolchain', self.toolchain).install_compression_libraries(**kwargs)
+
+    def install_X11(self, **kwargs):
+        kwargs.get('toolchain', self.toolchain).install_X11(**kwargs)
+
+    def install_tcltk(self, **kwargs):
+        kwargs.get('toolchain', self.toolchain).install_tcltk(**kwargs)
+
+    def install_linux_headers(self, **kwargs):
+        kwargs.get('toolchain', self.toolchain).install_linux_headers(**kwargs)
 
     def build(self):
         # Build our toolchains
