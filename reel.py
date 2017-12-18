@@ -65,9 +65,7 @@ for t in toolchains:
              'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']},
         configure_args={
             '--with-zlib': True,
-            '--with-protoc': os.path.join('{parent_prefix_dir}', 'bin', 'protoc'),
-            '--enable-static': True,
-            '--enable-shared': True,
+            '--with-protoc': os.path.join('{parent_prefix_dir}', 'bin', 'protoc')
         }
     )
 
@@ -75,8 +73,6 @@ for t in toolchains:
         url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
         name='expat',
         configure_args={
-            '--enable-static': True,
-            '--enable-shared': True,
             '--without-docbook': True
         }
     )
@@ -107,8 +103,6 @@ for t in toolchains:
         url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
         env={'CPPFLAGS': '-P'},
         configure_args={
-            '--enable-static': True,
-            '--enable-shared': True,
             '--with-build-cc': r.toolchain.env['CC'],
             '--with-normal': True,
             '--with-debug': True,
@@ -170,8 +164,6 @@ for t in toolchains:
                 ),
         },
         configure_args={
-            '--enable-static': True,
-            '--enable-shared': True,
             '--enable-ipv6': True,
             '--with-system-ffi': True,
             '--with-system-expat': True,
