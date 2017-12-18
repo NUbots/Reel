@@ -56,6 +56,14 @@ class Reel:
         )
 
         toolchain.add_library(
+            name='nasm',
+            url='http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.xz',
+            configure_args={
+                '--target': '{target_triple}',
+            }
+        )
+
+        toolchain.add_library(
             Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
             Shell(
                 post_build=
