@@ -125,6 +125,18 @@ class Reel:
                 '--enable-shared': True
             }
         )
+
+        toolchain.add_library(
+            name='zlib',
+            url='http://www.zlib.net/zlib-1.2.11.tar.gz',
+            configure_args={
+                '--host': None,  # zlib configure doesn't understand host
+                '--build': None,  # zlib configure doesn't understand build
+                '--static': True,
+                '--shared': True
+            }
+        )
+
         toolchain.add_library(
             Shell(post_install='cp {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
             name='glib2',
@@ -194,17 +206,6 @@ class Reel:
             Shell(install='cd {builds_dir}/$(basename {source}) && cp ninja {prefix_dir}/bin'),
             name='ninja',
             url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz'
-        )
-
-        toolchain.add_library(
-            name='zlib',
-            url='http://www.zlib.net/zlib-1.2.11.tar.gz',
-            configure_args={
-                '--host': None,  # zlib configure doesn't understand host
-                '--build': None,  # zlib configure doesn't understand build
-                '--static': True,
-                '--shared': True
-            }
         )
 
         toolchain.add_library(
