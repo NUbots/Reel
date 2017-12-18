@@ -15,7 +15,9 @@ class AutotoolsBuild:
         self.configure_args = {
             '--prefix': '{prefix_dir}',
             '--host': '{target_triple}',
-            '--build': '{parent_target_triple}'
+            '--build': '{parent_target_triple}',
+            '--enable-static': True,
+            '--enable-shared': True
         }
 
         self.configure_args.update(build_args.get('configure_args', {}))

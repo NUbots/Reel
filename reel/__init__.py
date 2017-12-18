@@ -49,8 +49,6 @@ class Reel:
             name='libtool',
             url='{}/libtool/libtool-2.4.6.tar.xz'.format(self.gnu_mirror),
             configure_args={
-                '--enable-static': True,
-                '--enable-shared': True,
                 '--with-sysroot': '"{prefix_dir}"',
                 '--enable-ltdl-install': True
             }
@@ -81,8 +79,6 @@ class Reel:
             name='util-linux',
             url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
             configure_args={
-                '--enable-static': True,
-                '--enable-shared': True,
                 '--disable-all-programs': True,
                 '--enable-libblkid': True,
                 '--enable-libmount': True,
@@ -90,43 +86,20 @@ class Reel:
             }
         )
 
-        toolchain.add_library(
-            name='gettext',
-            url='{}/gettext/gettext-0.19.8.1.tar.xz'.format(self.gnu_mirror),
-            configure_args={
-                '--enable-static': True,
-                '--enable-shared': True
-            }
-        )
+        toolchain.add_library(name='gettext', url='{}/gettext/gettext-0.19.8.1.tar.xz'.format(self.gnu_mirror))
 
         toolchain.add_library(
             url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
             name='pcre',
             configure_args={
-                '--enable-static': True,
-                '--enable-shared': True,
                 '--enable-utf': True,
                 '--enable-unicode-properties': True
             }
         )
 
-        toolchain.add_library(
-            url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz',
-            name='ffi',
-            configure_args={
-                '--enable-static': True,
-                '--enable-shared': True
-            }
-        )
+        toolchain.add_library(url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz', name='ffi')
 
-        toolchain.add_library(
-            url='http://www.mr511.de/software/libelf-0.8.13.tar.gz',
-            name='libelf',
-            configure_args={
-                '--enable-static': True,
-                '--enable-shared': True
-            }
-        )
+        toolchain.add_library(url='http://www.mr511.de/software/libelf-0.8.13.tar.gz', name='libelf')
 
         toolchain.install_compression_libraries(zlib=True, bzip2=True, xz=True)
 
@@ -135,8 +108,6 @@ class Reel:
             name='glib2',
             url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
             configure_args={
-                '--enable-static': True,
-                '--enable-shared': True,
                 '--with-threads': 'posix',
                 '--with-pcre': 'system',
                 '--disable-gtk-doc': True,
@@ -145,20 +116,13 @@ class Reel:
         )
 
         toolchain.add_library(
-            name='pkgconfig',
-            url='https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz',
-            configure_args={
-                '--enable-static': True,
-                '--enable-shared': True
-            }
+            name='pkgconfig', url='https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz'
         )
 
         toolchain.add_library(
             name='texinfo',
             url='{}/texinfo/texinfo-6.5.tar.xz'.format(self.gnu_mirror),
             configure_args={
-                '--enable-static': True,
-                '--enable-shared': True,
                 '--with-sysroot': '"{prefix_dir}"'
             }
         )
@@ -168,8 +132,6 @@ class Reel:
             url='{}/ncurses/ncurses-6.0.tar.gz'.format(self.gnu_mirror),
             env={'CPPFLAGS': '-P'},
             configure_args={
-                '--enable-static': True,
-                '--enable-shared': True,
                 '--with-sysroot': '"{prefix_dir}"',
                 '--with-build-cc': '"$CC"',
                 '--with-normal': True,
@@ -228,8 +190,6 @@ class Reel:
             name='curl',
             url='https://curl.haxx.se/download/curl-7.57.0.tar.xz',
             configure_args={
-                '--enable-shared': True,
-                '--enable-static': True,
                 '--with-sysroot': '"{prefix_dir}"',
                 '--with-ssl': '"{prefix_dir}"'
             }
