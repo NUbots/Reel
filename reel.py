@@ -9,24 +9,60 @@ from reel import Reel
 r = Reel()  #gnu_mirror='http://gnu.uberglobalmirror.com')
 
 r.add_library(
-    url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
-    name='protobuf',
+    name='gperf',
+    url='https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz',
+)
+
+r.add_library(
+    name='readline',
+    url='https://ftpmirror.gnu.org/gnu/readline/readline-7.0.tar.gz',
+)
+
+r.add_library(
+    url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
+    name='expat',
     configure_args={
-        '--with-zlib': True,
-        '--enable-static': True,
-        '--enable-shared': True
+        '--without-docbook': True
     }
 )
+
+r.add_library(url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz', name='png')
 
 r.install_X11()
 r.install_tcltk()
 
 r.add_library(
-    name='gperf',
-    url='https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz',
+    UpdateConfigSub,
+    url='http://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.4.2.tar.gz',
+    name='mpdec',
+    in_source_build=True,
+    build_targets=['default']
+)
+
+r.add_library(
+    url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
+    name='python',
+    env={
+        # Configure needs some help finding the curses headers.
+        'CPPFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CPPFLAGS', ''), '{prefix_dir}'),
+        'CFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CFLAGS', ''), '{prefix_dir}'),
+        'CXXFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CXXFLAGS', ''), '{prefix_dir}'),
+        'LDFLAGS': '{} -L{}/lib'.format(r.toolchain.env.get('LDFLAGS', ''), '{prefix_dir}')
+    },
     configure_args={
-        '--enable-static': True,
-        '--enable-shared': True
+        '--enable-ipv6': True,
+        '--with-system-ffi': True,
+        '--with-system-expat': True,
+        '--with-system-libmpdec': True,
+        '--with-threads': True
+    }
+)
+
+r.add_library(
+    url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
+    name='protobuf',
+    configure_args={
+        '--with-zlib': True
     }
 )
 
@@ -122,6 +158,11 @@ for t in toolchains:
     )
 
     t.add_library(
+        name='readline',
+        url='https://ftpmirror.gnu.org/gnu/readline/readline-7.0.tar.gz',
+    )
+
+    t.add_library(
         Shell(
             configure='base_dir=$(pwd)'
             ' && mkdir -p {builds_dir}/$(basename {source})'
@@ -147,19 +188,20 @@ for t in toolchains:
     t.add_library(
         url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
         name='python',
-        # Configure cant run all tests.
         env={
+            # Configure cant run all tests.
             'ac_cv_file__dev_ptmx': 'no',
             'ac_cv_file__dev_ptc': 'no',
+
             # Configure needs some help finding the curses headers.
             'CPPFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CPPFLAGS', ''), '{prefix_dir}'),
             'CFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CFLAGS', ''), '{prefix_dir}'),
             'CXXFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CXXFLAGS', ''), '{prefix_dir}'),
+
             # We need to be able to find the systems python to perform cross-compilation.
-            # NOTE: THIS IS DANGEROUS!!!!! Build python for the root toolchain and use that instead!!!!
             'PATH':
                 '{}{}{}{}{}'.format(
-                    '/usr/bin', os.pathsep, os.path.join(t.state['prefix_dir'], 'bin'), os.pathsep,
+                    t.state['parent_prefix_dir'], os.pathsep, os.path.join(t.state['prefix_dir'], 'bin'), os.pathsep,
                     t.parent_toolchain.env['PATH']
                 ),
         },
@@ -174,28 +216,10 @@ for t in toolchains:
 
 r.build()
 
-# pkg-config
-
-# autopoint
-# gettext
-# libpcre
-# libmount
-
-# ffi
-# glib2
-
-# linux-headers-generic
-# nasm
 # python3
-# protobuf
 
-# zlib
-# python3
 # libasound2
 # libusb
-# protobuf
-# zlib
-# bzip2
 # xml2
 # nuclear
 # openblas
