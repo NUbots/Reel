@@ -426,7 +426,13 @@ for t in toolchains:
             'CPPFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CPPFLAGS', ''), '{prefix_dir}'),
             'CFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CFLAGS', ''), '{prefix_dir}'),
             'CXXFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CXXFLAGS', ''), '{prefix_dir}'),
-            #'PYTHON_FOR_BUILD': os.path.join('python')
+            # We need to be able to find the systems python to perform cross-compilation.
+            # NOTE: THIS IS DANGEROUS!!!!! Build python for the root toolchain and use that instead!!!!
+            'PATH':
+                '{}{}{}{}{}'.format(
+                    '/usr/bin', os.pathsep, os.path.join(t.state['prefix_dir'], 'bin'), os.pathsep,
+                    t.parent_toolchain.env['PATH']
+                ),
         },
         configure_args={
             '--enable-static': True,
