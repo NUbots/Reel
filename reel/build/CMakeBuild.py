@@ -23,10 +23,10 @@ class CMakeBuild:
         self.configure_args = {
             '-DCMAKE_INSTALL_PREFIX': '{prefix_dir}',
             '-DCMAKE_BUILD_TYPE': 'MinSizeRel',
+            '-DCMAKE_PREFIX_PATH': '{prefix_dir}',
 
             # Until we sort out a toolcahin file
             '-DCMAKE_C_COMPILER': self.env['CC'],
-            '-DCMAKE_CXX_COMPIER': self.env['CXX']
             '-DCMAKE_CXX_COMPILER': self.env['CXX']
             #'-DCMAKE_TOOLCHAIN_FILE': build_args.get('toolchain_file')
         }
