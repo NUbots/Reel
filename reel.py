@@ -225,6 +225,20 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        name='xml2',
+        url='http://xmlsoft.org/sources/libxml2-2.9.3.tar.gz',
+        env={
+            'PYTHONPATH': os.path.abspath(os.path.join('{prefix_dir}', 'lib', 'python3.6', 'site-packages')),
+        },
+        configure_args={
+            '--with-zlib': '{prefix_dir}',
+            '--with-python': '{prefix_dir}',
+            '--with-python-install-dir':
+                os.path.abspath(os.path.join('{prefix_dir}', 'lib', 'python3.6', 'site-packages')),
+        }
+    )
+
 r.build()
 
 # python3
