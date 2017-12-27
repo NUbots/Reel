@@ -46,7 +46,7 @@ class BoostBuild:
             self.configure_args.update({'--with-bjam': self.bjam_path})
 
         # Grab our make and install targets
-        self.build_targets = build_args.get('install_targets', ['all'])
+        self.build_targets = build_args.get('build_targets', ['all'])
         self.install_targets = build_args.get('install_targets', ['install'])
 
         # Because asshats.
@@ -184,10 +184,12 @@ class BoostBuild:
         status = get_status(status_path)
 
         # Open a log file and run make install
-        for target in self.install_targets:
-            if target not in status or not status[target]:
-                with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
-                    cmd = './bjam {} {}'.format(' '.join(args), target)
+        if len(self.install_targets) > 0:
+            if 'install' not in status or not status['install']:
+                with open(os.path.join(logs_path, '{}_install.log'.format(base_src)), 'w') as logfile:
+                    cmd = '{} {} install'.format(
+                        self.bjam_path.format(**state) if self.bjam_path else './bjam', ' '.join(args)
+                    )
                     print(indent(' $ {}'.format(cmd), 8))
                     process = Popen(
                         args=cmd,
@@ -200,16 +202,14 @@ class BoostBuild:
                     )
 
                     if process.wait() != 0:
-                        raise Exception('Failed to run make {}'.format(target))
+                        raise Exception('Failed to run make')
 
                     else:
-                        status = update_status(status_path, {target: True})
+                        status = update_status(status_path, {'install': True})
 
             else:
                 cprint(
-                    indent('Install step {} for {} complete... Skipping...'.format(target, base_src), 8),
-                    'yellow',
-                    attrs=['bold']
+                    indent('Install step for {} complete... Skipping...'.format(base_src), 8), 'yellow', attrs=['bold']
                 )
 
     def get_paths(self, state):
