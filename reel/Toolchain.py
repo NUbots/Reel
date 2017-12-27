@@ -501,10 +501,10 @@ class Toolchain:
     def install_linux_headers(self, **kwargs):
 
         # Linux kernel doesn't know what aarch64, it knows arm64 though.
-        args = [
-            'ARCH={}'.format(self.arch if self.arch != 'aarch64' else 'arm64'),
-            'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))
-        ]
+        args = {
+            'ARCH': self.arch if self.arch != 'aarch64' else 'arm64',
+            'INSTALL_HDR_PATH': os.path.join('{prefix_dir}', 'temp')
+        }
 
         self.add_library(
             Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),

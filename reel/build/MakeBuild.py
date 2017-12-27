@@ -11,17 +11,10 @@ class MakeBuild:
 
     def __init__(self, **build_args):
 
-        # Set our default configuration arguments.
-        self.configure_args = {
-            '--prefix': '{prefix_dir}',
-            '--host': '{target_triple}',
-            '--build': '{parent_target_triple}'
-        }
-
         self.src_dir = build_args.get('src_dir', '.')
         self.build_postfix = build_args.get('build_postfix', '')
-        self.build_args = build_args.get('build_args', [])
-        self.install_args = build_args.get('install_args', [])
+        self.build_args = build_args.get('build_args', {})
+        self.install_args = build_args.get('install_args', {})
 
         # Grab our make and install targets
         self.build_targets = build_args.get('build_targets', ['all'])
@@ -79,6 +72,13 @@ class MakeBuild:
         # Work out our real full paths
         src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
 
+        # Apply our state
+        args = [
+            '{}{}'.format(k, '={}'.format(v) if v is not True else '').format(**state)
+            for k, v in self.build_args.items()
+            if v is not None
+        ]
+
         # Load the status file.
         status = get_status(status_path)
 
@@ -86,9 +86,7 @@ class MakeBuild:
         for target in self.build_targets:
             if 'make_{}'.format(target) not in status or not status['make_{}'.format(target)]:
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
-                    cmd = 'make -j{} {} {}'.format(
-                        state['cpu_count'], ' '.join(a.format(**state) for a in self.build_args), target
-                    )
+                    cmd = 'make -j{} {} {}'.format(state['cpu_count'], ' '.join(args), target)
                     print(indent(' $ {}'.format(cmd), 8))
                     process = Popen(
                         args=cmd,
@@ -117,6 +115,13 @@ class MakeBuild:
         # Work out our real full paths
         src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
 
+        # Apply our state
+        args = [
+            '{}{}'.format(k, '={}'.format(v) if v is not True else '').format(**state)
+            for k, v in self.install_args.items()
+            if v is not None
+        ]
+
         # Load the status file.
         status = get_status(status_path)
 
@@ -125,9 +130,7 @@ class MakeBuild:
             if target not in status or not status[target]:
                 print(indent(' $ {}'.format(' '.join(['make', target])), 8))
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
-                    cmd = 'make PREFIX={} {} {}'.format(
-                        state['prefix_dir'], ' '.join(a.format(**state) for a in self.install_args), target
-                    )
+                    cmd = 'make PREFIX={} {} {}'.format(state['prefix_dir'], ' '.join(args), target)
                     print(indent(' $ {}'.format(cmd), 8))
                     process = Popen(
                         args=cmd,
