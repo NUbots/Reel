@@ -247,6 +247,16 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        name='openblas',
+        url='https://github.com/xianyi/OpenBLAS/archive/v0.2.19.tar.gz',
+        build_tool='make',
+        build_args={
+            'CROSS=1', 'TARGET={}'.format('HASWELL' if t.name == 'nuc7i7bnh' else 'ARMV8'), 'USE_THREAD=1', 'BINARY=64',
+            'NUM_THREADS=2', 'HOSTCC={}'.format(t.parent_toolchain.env['CC'])
+        }
+    )
+
 r.build()
 
 # python3
