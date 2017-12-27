@@ -185,6 +185,14 @@ for t in toolchains:
         }
     )
 
+    PYTHON_PROJECT_BASE = '_PYTHON_PROJECT_BASE={}'.format(
+        os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3'))
+    )
+    PYTHON_HOST_PLATFORM = '_PYTHON_HOST_PLATFORM=linux-{arch}'
+    PYTHONPATH = 'PYTHONPATH={}{}{}'.format(
+        os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3')), os.pathsep,
+        os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.3'))
+    )
     t.add_library(
         url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
         name='python',
@@ -199,11 +207,14 @@ for t in toolchains:
             'CXXFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CXXFLAGS', ''), '{prefix_dir}'),
 
             # We need to be able to find the systems python to perform cross-compilation.
-            'PATH':
-                '{}{}{}{}{}'.format(
-                    t.state['parent_prefix_dir'], os.pathsep, os.path.join(t.state['prefix_dir'], 'bin'), os.pathsep,
-                    t.parent_toolchain.env['PATH']
+            '_PYTHON_PROJECT_BASE': '{}'.format(os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3'))),
+            '_PYTHON_HOST_PLATFORM': 'linux-{arch}',
+            'PYTHONPATH':
+                '{}{}{}'.format(
+                    os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3')), os.pathsep,
+                    os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.3'))
                 ),
+            'PYTHON_FOR_BUILD': os.path.join(t.state['parent_prefix_dir'], 'bin', 'python3.6')
         },
         configure_args={
             '--enable-ipv6': True,
