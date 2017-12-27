@@ -239,6 +239,14 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        name='nuclear',
+        url='https://github.com/Fastcode/NUClear/archive/master.tar.gz',
+        configure_args={
+            '-DBUILD_TESTS': 'OFF',
+        }
+    )
+
 r.build()
 
 # python3
