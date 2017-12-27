@@ -269,6 +269,15 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        name='yaml-cpp',
+        url='https://github.com/jbeder/yaml-cpp/archive/master.tar.gz',
+        configure_args={
+            '-DYAML_CPP_BUILD_CONTRIB': 'OFF',
+            '-DYAML_CPP_BUILD_TOOLS': 'OFF'
+        }
+    )
+
 r.build()
 
 # python3
