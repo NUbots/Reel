@@ -5,6 +5,7 @@ import os
 from .AutotoolsBuild import AutotoolsBuild
 from .MakeBuild import MakeBuild
 from .CMakeBuild import CMakeBuild
+from .BoostBuild import BoostBuild
 
 
 class SmartBuild:
@@ -28,6 +29,9 @@ class SmartBuild:
             elif self.use_tool == 'cmake':
                 self.build_tool = CMakeBuild(**self.build_args)
 
+            elif self.use_tool == 'boost':
+                self.build_tool = BoostBuild(**self.build_args)
+
             elif self.use_tool == 'make':
                 self.build_tool = MakeBuild(**self.build_args)
 
@@ -41,7 +45,10 @@ class SmartBuild:
             elif os.path.isfile(os.path.join(source, self.src_dir, 'CMakeLists.txt')):
                 self.build_tool = CMakeBuild(**self.build_args)
 
-            # Bjam
+            # Then check for Jamroot
+            elif os.path.isfile(os.path.join(source, self.src_dir, 'Jamroot')):
+                self.build_tool = BoostBuild(**self.build_args)
+
             # Bazel
 
             # Then check for a Makefile
