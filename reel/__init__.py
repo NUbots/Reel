@@ -63,25 +63,6 @@ class Reel:
             }
         )
 
-        toolchain.add_library(
-            Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
-            Shell(
-                post_build=
-                'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -r {} {} && rm -rf {dest}'.
-                format(
-                    os.path.join('{prefix_dir}', 'temp', 'include', '*'),
-                    os.path.join('{prefix_dir}', 'include'),
-                    dest=os.path.join('{prefix_dir}', 'temp', 'include')
-                )
-            ),
-            name='linux-headers',
-            url='https://git.kernel.org/torvalds/t/linux-4.15-rc3.tar.gz',
-            build_args=['ARCH={arch}', 'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))],
-            build_targets=['mrproper', 'headers_check'],
-            install_args=['ARCH={arch}', 'INSTALL_HDR_PATH={}'.format(os.path.join('{prefix_dir}', 'temp'))],
-            install_targets=['headers_install']
-        )
-
         toolchain.install_linux_headers()
 
         toolchain.add_library(
