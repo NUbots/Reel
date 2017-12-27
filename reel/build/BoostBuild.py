@@ -27,8 +27,8 @@ class BoostBuild:
             'library-path': '{prefix_dir}/lib',
             '-q': True,
             '-a': True,
-            'cflags': self.env.get('CFLAGS', ''),
-            'cxxflags': self.env.get('CXXFLAGS', ''),
+            'cflags': '"{}"'.format(self.env.get('CFLAGS', '')),
+            'cxxflags': '"{}"'.format(self.env.get('CXXFLAGS', '')),
             '--python-buildid': '-py36',
         }
 
