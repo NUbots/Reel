@@ -257,6 +257,8 @@ for t in toolchains:
         }
     )
 
+    t.add_library(name='libsvm', url='https://github.com/Bidski/libsvm/archive/v322.tar.gz')
+
 r.build()
 
 # python3
