@@ -259,6 +259,16 @@ for t in toolchains:
 
     t.add_library(name='libsvm', url='https://github.com/Bidski/libsvm/archive/v322.tar.gz')
 
+    t.add_library(
+        name='armadillo',
+        url='https://downloads.sourceforge.net/project/arma/armadillo-7.950.1.tar.xz',
+        build_tool='cmake',
+        configure_args={
+            '-DLAPACK_LIBRARY': os.path.join('{prefix_dir}', 'lib', 'libopenblas.so'),
+            '-DARPACK_LIBRARY': os.path.join('{prefix_dir}', 'lib', 'libopenblas.so')
+        }
+    )
+
 r.build()
 
 # python3
