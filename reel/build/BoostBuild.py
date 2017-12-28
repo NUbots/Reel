@@ -190,7 +190,7 @@ class BoostBuild:
                     )
 
                     if process.wait() != 0:
-                        raise Exception('Failed to run make')
+                        raise Exception('Failed to run install')
 
                     else:
                         status = update_status(status_path, {'install': True})
