@@ -29,7 +29,7 @@ class BoostBuild:
             '-a': True,
             'cflags': '"{}"'.format(self.env.get('CFLAGS', '')),
             'cxxflags': '"{}"'.format(self.env.get('CXXFLAGS', '')),
-            '--python-buildid': '-py36',
+            '--python-buildid': 'py36'
         }
 
         self.install_args = {'--prefix': '{prefix_dir}'}
