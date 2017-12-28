@@ -399,20 +399,7 @@ r.build()
 
 # libasound2
 # libusb
-# xml2
-# nuclear
-# openblas
-# libsvm
-# armadillo
 # tcmalloc
-# yaml-cpp
-# fftw3
-# fftw3f
-# jpeg-turbo
-# fmt
-# portaudio
-# eigen3
-# boost (damn :'( )
 # espeak
 # fswatch
 # catch
