@@ -5,7 +5,7 @@ import shutil
 from subprocess import Popen
 from termcolor import cprint
 
-from ..util import get_status, update_status, indent
+from ..util import get_status, update_status, indent, parse_args
 
 
 class BoostBuild:
@@ -58,11 +58,7 @@ class BoostBuild:
         src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
 
         # Apply our state
-        args = [
-            '{}{}'.format(k, '={}'.format(v) if v is not True else '').format(**state)
-            for k, v in self.configure_args.items()
-            if v is not None
-        ]
+        args = parse_args(self.configure_args, **state)
 
         # Load the status file.
         status = get_status(status_path)
@@ -130,11 +126,7 @@ class BoostBuild:
         src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
 
         # Apply our state
-        args = [
-            '{}{}'.format(k, '={}'.format(v) if v is not True else '').format(**state)
-            for k, v in self.build_args.items()
-            if v is not None
-        ]
+        args = parse_args(self.build_args, **state)
 
         # Load the status file.
         status = get_status(status_path)
@@ -174,11 +166,7 @@ class BoostBuild:
         src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
 
         # Apply our state
-        args = [
-            '{}{}'.format(k, '={}'.format(v) if v is not True else '').format(**state)
-            for k, v in self.install_args.items()
-            if v is not None
-        ]
+        args = parse_args(self.install_args, **state)
 
         # Load the status file.
         status = get_status(status_path)
