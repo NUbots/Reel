@@ -303,6 +303,14 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        name='jpeg-turbo',
+        url='http://downloads.sourceforge.net/project/libjpeg-turbo/1.5.1/libjpeg-turbo-1.5.1.tar.gz',
+        configure_args={
+            'CCASFLAGS': '-f elf64'
+        }
+    )
+
 # libasound2
 # libusb
 # xml2
