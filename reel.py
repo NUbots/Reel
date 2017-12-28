@@ -66,6 +66,20 @@ r.add_library(
     }
 )
 
+r.add_library(name='icu', src_dir='source', url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz')
+
+r.add_library(
+    Shell(
+        post_configure='cp {} {}'.format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
+    ),
+    name='bjam',
+    url='https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz',
+    configure_args={'--with-python': 'python3',
+                    '--with-icu': '{prefix_dir}'},
+    build_targets=[],
+    install_targets=[]
+)
+
 toolchains = [
     r.add_toolchain('nuc7i7bnh', triple='x86_64-linux-musl'),
     r.add_toolchain('jetsontx2', triple='aarch64-linux-musl')
@@ -323,6 +337,65 @@ for t in toolchains:
             '-DCMAKE_BUILD_TYPE': 'RelWithDebInfo'
         }
     )
+
+    t.add_library(
+        name='icu',
+        src_dir='source',
+        url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz',
+        configure_args={
+            # We need to specify the build directory as necessary cross-tools are not installed.
+            '--with-cross-build': os.path.abspath(os.path.join('{parent_builds_dir}', 'icu4c-60_2-src')),
+            '--disable-tests': True,
+            '--disable-samples': True
+        }
+    )
+
+    t.add_library(
+        name='boost',
+        url='https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz',
+        configure_args={'--with-python': 'python3',
+                        '--with-icu': '{prefix_dir}'},
+        use_bjam=os.path.join('{parent_prefix_dir}', 'bin', 'bjam'),
+        env={'BOOST_BUILD_PATH': os.path.abspath('{source}')},
+        build_args={
+            'address-model': '64',
+            'architecture': 'x86' if t.name == 'nuc7i7bnh' else 'arm',
+            'link': 'static',
+            'variant': 'release',
+            'threading': 'multi',
+            'threadapi': 'pthread',
+            'abi': 'x32' if t.name == 'nuc7i7bnh' else 'aapcs',
+            'binary-format': 'elf',
+            'target-os': 'linux',
+            'toolset': 'gcc',
+
+            # Unable to cross compule boost.context for ARM (other modules depend on boost.context)
+            '--without-context': True if t.name == 'jetsontx2' else False,
+            '--without-coroutine': True if t.name == 'jetsontx2' else False,
+            '--without-coroutine2': True if t.name == 'jetsontx2' else False,
+            '--without-fiber': True if t.name == 'jetsontx2' else False
+        },
+        install_args={
+            'address-model': '64',
+            'architecture': 'x86' if t.name == 'nuc7i7bnh' else 'arm',
+            'link': 'static',
+            'variant': 'release',
+            'threading': 'multi',
+            'threadapi': 'pthread',
+            'abi': 'x32' if t.name == 'nuc7i7bnh' else 'aapcs',
+            'binary-format': 'elf',
+            'target-os': 'linux',
+            'toolset': 'gcc',
+
+            # Unable to cross compule boost.context for ARM (other modules depend on boost.context)
+            '--without-context': True if t.name == 'jetsontx2' else False,
+            '--without-coroutine': True if t.name == 'jetsontx2' else False,
+            '--without-coroutine2': True if t.name == 'jetsontx2' else False,
+            '--without-fiber': True if t.name == 'jetsontx2' else False
+        }
+    )
+
+r.build()
 
 # libasound2
 # libusb
