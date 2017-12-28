@@ -315,6 +315,15 @@ for t in toolchains:
 
     t.add_library(UpdateConfigSub, name='portaudio', url='http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz')
 
+    t.add_library(
+        name='eigen3',
+        url='http://bitbucket.org/eigen/eigen/get/3.3.4.tar.bz2',
+        configure_args={
+            # Eigen doesn't know how to MinSizeRel.
+            '-DCMAKE_BUILD_TYPE': 'RelWithDebInfo'
+        }
+    )
+
 # libasound2
 # libusb
 # xml2
