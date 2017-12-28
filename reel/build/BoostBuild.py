@@ -33,7 +33,17 @@ class BoostBuild:
             '--python-buildid': 'py36'
         }
 
-        self.install_args = {'--prefix': '{prefix_dir}'}
+        self.install_args = {
+            '--prefix': '{prefix_dir}',
+            'include': [os.path.join('{prefix_dir}', 'include'),
+                        os.path.join('{prefix_dir}', 'include', 'python3.6m')],
+            'library-path': '{prefix_dir}/lib',
+            '-q': True,
+            '-a': True,
+            'cflags': '"{}"'.format(self.env.get('CFLAGS', '')),
+            'cxxflags': '"{}"'.format(self.env.get('CXXFLAGS', '')),
+            '--python-buildid': 'py36'
+        }
 
         self.configure_args.update(build_args.get('configure_args', {}))
         self.src_dir = build_args.get('src_dir', '.')
