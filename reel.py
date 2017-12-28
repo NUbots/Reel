@@ -282,9 +282,26 @@ for t in toolchains:
         }
     )
 
-r.build()
+    # Double precision FFTW3 library
+    t.add_library(
+        name='fftw3',
+        url='http://www.fftw.org/fftw-3.3.7.tar.gz',
+        configure_args={
+            '--enable-openmp': True,
+            '--enable-threads': True
+        }
+    )
 
-# python3
+    # Single precision FFTW3 library
+    t.add_library(
+        name='fftw3f',
+        url='http://www.fftw.org/fftw-3.3.7.tar.gz',
+        configure_args={
+            '--enable-openmp': True,
+            '--enable-threads': True,
+            '--enable-float': True
+        }
+    )
 
 # libasound2
 # libusb
