@@ -23,7 +23,8 @@ class BoostBuild:
         self.configure_args = {'--prefix': '{prefix_dir}', '--with-toolset': 'gcc'}
 
         self.build_args = {
-            'include': '{prefix_dir}/include',
+            'include': [os.path.join('{prefix_dir}', 'include'),
+                        os.path.join('{prefix_dir}', 'include', 'python3.6m')],
             'library-path': '{prefix_dir}/lib',
             '-q': True,
             '-a': True,
