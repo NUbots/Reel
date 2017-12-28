@@ -419,6 +419,16 @@ for t in toolchains:
         src_dir='fswatch-1.9.3'
     )
 
+    t.add_library(
+        name='pybind11',
+        url='https://github.com/pybind/pybind11/archive/v2.2.1.tar.gz',
+        configure_args={
+            '-DPYBIND11_TEST': 'OFF',
+            '-DPYBIND11_PYTHON_VERSION': '3',
+            '-DPYTHON_EXECUTABLE': os.path.join('{parent_prefix_dir}', 'bin', 'python3')
+        }
+    )
+
 r.build()
 
 # libasound2
