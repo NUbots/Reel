@@ -311,6 +311,8 @@ for t in toolchains:
         }
     )
 
+    t.add_library(name='fmt', url='https://github.com/fmtlib/fmt/archive/3.0.1.tar.gz')
+
 # libasound2
 # libusb
 # xml2
