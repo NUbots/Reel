@@ -413,6 +413,12 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        name='fswatch',
+        url='https://github.com/emcrisostomo/fswatch/releases/download/1.9.3/fswatch-1.9.3.tar.gz',
+        src_dir='fswatch-1.9.3'
+    )
+
 r.build()
 
 # libasound2
