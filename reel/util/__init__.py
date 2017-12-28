@@ -34,3 +34,26 @@ def update_status(status_file, args):
         json.dump(status, f, indent=4, separators=(',', ': '), sort_keys=True)
 
     return status
+
+
+def is_sequence(item):
+    if not hasattr(item, "strip") and hasattr(item, "__getitem__") or hasattr(item, "__iter__"
+                                                                              ) and not isinstance(item, str):
+        return True
+    else:
+        return False
+
+
+def parse_args(dict_args, **state):
+    args = []
+
+    for k, v in dict_args.items():
+        if v is not None:
+            if is_sequence(v):
+                args = args + ['{}={}'.format(k, val).format(**state) for val in v]
+            elif v is not True:
+                args.append('{}={}'.format(k, v).format(**state))
+            else:
+                args.append(k)
+
+    return args
