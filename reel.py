@@ -395,6 +395,24 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        Shell(
+            pre_configure='cp {} {}'.format(
+                os.path.abspath(os.path.join('{source}', 'src', 'portaudio19.h')),
+                os.path.abspath(os.path.join('{source}', 'src', 'portaudio.h'))
+            )
+        ),
+        name='espeak',
+        src_dir='src',
+        url='https://github.com/Bidski/espeak/archive/master.tar.gz',
+        env={'AUDIO': 'PORTAUDIO'},
+        build_args={'DATADIR': os.path.join('{prefix_dir}', 'share', 'espeak-data')},
+        install_args={
+            'DATADIR': os.path.join('{prefix_dir}', 'share', 'espeak-data'),
+            'SRC_DIR': os.path.abspath(os.path.join('{source}', 'src'))
+        }
+    )
+
 r.build()
 
 # libasound2
