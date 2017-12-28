@@ -313,6 +313,8 @@ for t in toolchains:
 
     t.add_library(name='fmt', url='https://github.com/fmtlib/fmt/archive/3.0.1.tar.gz')
 
+    t.add_library(UpdateConfigSub, name='portaudio', url='http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz')
+
 # libasound2
 # libusb
 # xml2
