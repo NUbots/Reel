@@ -19,7 +19,7 @@ class CMakeBuild:
         if 'env' in build_args:
             self.env.update(build_args['env'])
 
-        # Set our default configuration arguments.
+        # Set our default configuration arguments
         self.configure_args = {
             '-DCMAKE_INSTALL_PREFIX': '{prefix_dir}',
             '-DCMAKE_BUILD_TYPE': 'MinSizeRel',
@@ -56,7 +56,7 @@ class CMakeBuild:
             if v is not None
         ]
 
-        # Load the status file.
+        # Load the status file
         status = get_status(status_path)
 
         if 'configure' not in status or not status['configure']:
@@ -106,7 +106,7 @@ class CMakeBuild:
             if v is not None
         ]
 
-        # Load the status file.
+        # Load the status file
         status = get_status(status_path)
 
         # Otherwise run make for each of our targets
@@ -149,7 +149,7 @@ class CMakeBuild:
             if v is not None
         ]
 
-        # Load the status file.
+        # Load the status file
         status = get_status(status_path)
 
         # Open a log file and run make install

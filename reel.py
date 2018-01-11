@@ -43,7 +43,7 @@ r.add_library(
     url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
     name='python',
     env={
-        # Configure needs some help finding the curses headers.
+        # Configure needs some help finding the curses headers
         'CPPFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CPPFLAGS', ''), '{prefix_dir}'),
         'CFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CFLAGS', ''), '{prefix_dir}'),
         'CXXFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CXXFLAGS', ''), '{prefix_dir}'),
@@ -144,7 +144,7 @@ for t in toolchains:
         url='http://www.mr511.de/software/libelf-0.8.13.tar.gz',
         name='libelf',
 
-        # Need to force the results of some configure checks.
+        # Need to force the results of some configure checks
         env={
             'ac_cv_sizeof_long': '8',
             'ac_cv_sizeof_long_long': '8',
@@ -249,16 +249,16 @@ for t in toolchains:
         url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
         name='python',
         env={
-            # Configure cant run all tests.
+            # Configure cant run all tests
             'ac_cv_file__dev_ptmx': 'no',
             'ac_cv_file__dev_ptc': 'no',
 
-            # Configure needs some help finding the curses headers.
+            # Configure needs some help finding the curses headers
             'CPPFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CPPFLAGS', ''), '{prefix_dir}'),
             'CFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CFLAGS', ''), '{prefix_dir}'),
             'CXXFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CXXFLAGS', ''), '{prefix_dir}'),
 
-            # We need to be able to find the systems python to perform cross-compilation.
+            # We need to be able to find the systems python to perform cross-compilation
             '_PYTHON_PROJECT_BASE': '{}'.format(os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3'))),
             '_PYTHON_HOST_PLATFORM': 'linux-{arch}',
             'PYTHONPATH':
@@ -372,7 +372,7 @@ for t in toolchains:
         name='eigen3',
         url='http://bitbucket.org/eigen/eigen/get/3.3.4.tar.bz2',
         configure_args={
-            # Eigen doesn't know how to MinSizeRel.
+            # Eigen doesn't know how to MinSizeRel
             '-DCMAKE_BUILD_TYPE': 'RelWithDebInfo'
         }
     )
@@ -382,7 +382,7 @@ for t in toolchains:
         src_dir='source',
         url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz',
         configure_args={
-            # We need to specify the build directory as necessary cross-tools are not installed.
+            # We need to specify the build directory as necessary cross-tools are not installed
             '--with-cross-build': os.path.abspath(os.path.join('{parent_builds_dir}', 'icu4c-60_2-src')),
             '--disable-tests': True,
             '--disable-samples': True

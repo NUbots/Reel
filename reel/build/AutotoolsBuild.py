@@ -36,7 +36,7 @@ class AutotoolsBuild:
         self.build_targets = build_args.get('build_targets', ['all'])
         self.install_targets = build_args.get('install_targets', ['install'])
 
-        # Because asshats.
+        # Because asshats
         self.in_source_build = build_args.get('in_source_build', False)
 
         # Build our environment variables
@@ -104,7 +104,7 @@ class AutotoolsBuild:
             if v is not None
         ]
 
-        # Load the status file.
+        # Load the status file
         status = get_status(status_path)
 
         if 'configure' not in status or not status['configure']:
@@ -177,7 +177,7 @@ class AutotoolsBuild:
             if v is not None
         ]
 
-        # Load the status file.
+        # Load the status file
         status = get_status(status_path)
 
         # Otherwise run make for each of our targets
@@ -220,7 +220,7 @@ class AutotoolsBuild:
             if v is not None
         ]
 
-        # Load the status file.
+        # Load the status file
         status = get_status(status_path)
 
         # Open a log file and run make install

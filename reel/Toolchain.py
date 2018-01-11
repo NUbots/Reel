@@ -59,7 +59,7 @@ class Toolchain:
         if fc_flags is None:
             fc_flags = []
 
-        # Make sure we are always generating position independent code.
+        # Make sure we are always generating position independent code
         if '-fPIC' not in c_flags:
             c_flags.append('-fPIC')
             cxx_flags.append('-fPIC')
@@ -102,7 +102,7 @@ class Toolchain:
             'cpu_count': multiprocessing.cpu_count(),
         }
 
-        # Embed our parents state into our state.
+        # Embed our parents state into our state
         if self.parent_toolchain is not None:
             self.state.update({'parent_{}'.format(k): v for (k, v) in self.parent_toolchain.state.items()})
         # Otherwise pretend that we are our own parent
@@ -504,7 +504,7 @@ class Toolchain:
 
     def install_linux_headers(self, **kwargs):
 
-        # Linux kernel doesn't know what aarch64, it knows arm64 though.
+        # Linux kernel doesn't know what aarch64, it knows arm64 though
         args = {
             'ARCH': self.arch if self.arch != 'aarch64' else 'arm64',
             'INSTALL_HDR_PATH': os.path.join('{prefix_dir}', 'temp')
