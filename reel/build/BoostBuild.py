@@ -186,8 +186,9 @@ class BoostBuild:
         if len(self.install_targets) > 0:
             if 'install' not in status or not status['install']:
                 with open(os.path.join(logs_path, '{}_install.log'.format(base_src)), 'w') as logfile:
-                    cmd = '{} {} install'.format(
-                        self.bjam_path.format(**state) if self.bjam_path else './bjam', ' '.join(args)
+                    cmd = '{} -j{} {} install'.format(
+                        self.bjam_path.format(**state)
+                        if self.bjam_path else './bjam', state['cpu_count'], ' '.join(args)
                     )
                     print(indent(' $ {}'.format(cmd), 8))
                     process = Popen(
