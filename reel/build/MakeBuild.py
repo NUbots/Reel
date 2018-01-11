@@ -41,7 +41,7 @@ class MakeBuild:
             os.makedirs(logs_path, exist_ok=True)
 
             with open(os.path.join(logs_path, '{}_configure.log'.format(base_src)), 'w') as logfile:
-                cmd = 'cp -r {} {}/'.format(
+                cmd = 'cp -rv {} {}/'.format(
                     os.path.abspath(os.path.join(src_path, self.src_dir, '*')), os.path.abspath(build_path)
                 )
                 print(indent(' $ {}'.format(cmd), 8))

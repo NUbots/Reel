@@ -70,7 +70,8 @@ r.add_library(name='icu', src_dir='source', url='http://download.icu-project.org
 
 r.add_library(
     Shell(
-        post_configure='cp {} {}'.format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
+        post_configure='cp -v {} {}'.
+        format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
     ),
     name='bjam',
     url='https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz',
@@ -162,7 +163,7 @@ for t in toolchains:
     )
 
     t.add_library(
-        Shell(post_install='cp {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
+        Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
         name='glib2',
         url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
         configure_args={
@@ -421,7 +422,7 @@ for t in toolchains:
 
     t.add_library(
         Shell(
-            pre_configure='cp {} {}'.format(
+            pre_configure='cp -v {} {}'.format(
                 os.path.abspath(os.path.join('{source}', 'src', 'portaudio19.h')),
                 os.path.abspath(os.path.join('{source}', 'src', 'portaudio.h'))
             )
@@ -456,7 +457,7 @@ for t in toolchains:
 
     t.add_library(
         Shell(
-            post_install='cp {} {}'.format(
+            post_install='cp -v {} {}'.format(
                 os.path.join('{build}', 'src', 'arvconfig.h'), os.path.join('{prefix_dir}', 'include', 'arvconfig.h')
             )
         ),

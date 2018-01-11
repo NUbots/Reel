@@ -514,7 +514,7 @@ class Toolchain:
             Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
             Shell(
                 post_build=
-                'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -r {} {} && rm -rf {dest}'.
+                'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -rv {} {} && rm -rf {dest}'.
                 format(
                     os.path.join('{prefix_dir}', 'temp', 'include', '*'),
                     os.path.join('{prefix_dir}', 'include'),
