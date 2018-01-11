@@ -389,6 +389,25 @@ for t in toolchains:
         }
     )
 
+    boost_args = {
+        'address-model': t.abi,
+        'architecture': 'x86' if t.arch == 'x86_64' else 'arm',
+        'link': 'static',
+        'variant': 'release',
+        'threading': 'multi',
+        'threadapi': 'pthread',
+        'abi': 'x32' if t.arch == 'x86_64' else 'aapcs',
+        'binary-format': 'elf',
+        'target-os': 'linux',
+        'toolset': 'gcc',
+
+        # Unable to cross compule boost.context for ARM (other modules depend on boost.context)
+        '--without-context': True if t.arch == 'aarch64' else None,
+        '--without-coroutine': True if t.arch == 'aarch64' else None,
+        '--without-coroutine2': True if t.arch == 'aarch64' else None,
+        '--without-fiber': True if t.arch == 'aarch64' else None
+    }
+
     t.add_library(
         name='boost',
         url='https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz',
@@ -396,42 +415,8 @@ for t in toolchains:
                         '--with-icu': '{prefix_dir}'},
         use_bjam=os.path.join('{parent_prefix_dir}', 'bin', 'bjam'),
         env={'BOOST_BUILD_PATH': os.path.abspath('{source}')},
-        build_args={
-            'address-model': '64',
-            'architecture': 'x86' if t.name == 'nuc7i7bnh' else 'arm',
-            'link': 'static',
-            'variant': 'release',
-            'threading': 'multi',
-            'threadapi': 'pthread',
-            'abi': 'x32' if t.name == 'nuc7i7bnh' else 'aapcs',
-            'binary-format': 'elf',
-            'target-os': 'linux',
-            'toolset': 'gcc',
-
-            # Unable to cross compule boost.context for ARM (other modules depend on boost.context)
-            '--without-context': True if t.name == 'jetsontx2' else False,
-            '--without-coroutine': True if t.name == 'jetsontx2' else False,
-            '--without-coroutine2': True if t.name == 'jetsontx2' else False,
-            '--without-fiber': True if t.name == 'jetsontx2' else False
-        },
-        install_args={
-            'address-model': '64',
-            'architecture': 'x86' if t.name == 'nuc7i7bnh' else 'arm',
-            'link': 'static',
-            'variant': 'release',
-            'threading': 'multi',
-            'threadapi': 'pthread',
-            'abi': 'x32' if t.name == 'nuc7i7bnh' else 'aapcs',
-            'binary-format': 'elf',
-            'target-os': 'linux',
-            'toolset': 'gcc',
-
-            # Unable to cross compule boost.context for ARM (other modules depend on boost.context)
-            '--without-context': True if t.name == 'jetsontx2' else False,
-            '--without-coroutine': True if t.name == 'jetsontx2' else False,
-            '--without-coroutine2': True if t.name == 'jetsontx2' else False,
-            '--without-fiber': True if t.name == 'jetsontx2' else False
-        }
+        build_args=boost_args,
+        install_args=boost_args
     )
 
     t.add_library(
