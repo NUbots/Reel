@@ -139,6 +139,19 @@ for t in toolchains:
         name='png',
     )
 
+    t.add_library(
+        UpdateConfigSub,
+        url='http://www.mr511.de/software/libelf-0.8.13.tar.gz',
+        name='libelf',
+
+        # Need to force the results of some configure checks.
+        env={
+            'ac_cv_sizeof_long': '8',
+            'ac_cv_sizeof_long_long': '8',
+            'libelf_cv_int64': 'long'
+        }
+    )
+
     t.install_X11()
     t.install_tcltk()
 
