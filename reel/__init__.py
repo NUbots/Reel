@@ -89,6 +89,14 @@ class Reel:
             }
         )
 
+        toolchain.add_library(
+            name='texinfo',
+            url='{}/texinfo/texinfo-6.5.tar.xz'.format(self.gnu_mirror),
+            configure_args={
+                '--with-sysroot': '"{prefix_dir}"'
+            }
+        )
+
         toolchain.add_library(url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz', name='ffi')
 
         toolchain.add_library(url='http://www.mr511.de/software/libelf-0.8.13.tar.gz', name='libelf')
@@ -109,14 +117,6 @@ class Reel:
 
         toolchain.add_library(
             name='pkgconfig', url='https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz'
-        )
-
-        toolchain.add_library(
-            name='texinfo',
-            url='{}/texinfo/texinfo-6.5.tar.xz'.format(self.gnu_mirror),
-            configure_args={
-                '--with-sysroot': '"{prefix_dir}"'
-            }
         )
 
         toolchain.add_library(
