@@ -128,7 +128,6 @@ class MakeBuild:
         # Open a log file and run make install
         for target in self.install_targets:
             if target not in status or not status[target]:
-                print(indent(' $ {}'.format(' '.join(['make', target])), 8))
                 with open(os.path.join(logs_path, '{}_make_{}.log'.format(base_src, target)), 'w') as logfile:
                     cmd = 'make PREFIX={} {} {}'.format(state['prefix_dir'], ' '.join(args), target)
                     print(indent(' $ {}'.format(cmd), 8))
