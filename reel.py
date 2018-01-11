@@ -446,6 +446,14 @@ for t in toolchains:
     t.add_library(name='udev', url='https://dev.gentoo.org/~blueness/eudev/eudev-3.2.5.tar.gz')
 
     t.add_library(
+        name='libusb',
+        url='https://github.com/libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.tar.bz2',
+        configure_args={
+            '--disable-examples-build': True,
+            '--disable-tests-build': True
+        }
+    )
+
         name='pybind11',
         url='https://github.com/pybind/pybind11/archive/v2.2.1.tar.gz',
         configure_args={
@@ -459,7 +467,6 @@ r.build()
 
 # libasound2    Dont know if we actually need this
 
-# libusb
 # tcmalloc      Needs patching for musl
 # catch
 # aravis        Currently screwed up because we cant exclude documentation from build
