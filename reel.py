@@ -454,6 +454,28 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        Shell(
+            post_install='cp {} {}'.format(
+                os.path.join('{build}', 'src', 'arvconfig.h'), os.path.join('{prefix_dir}', 'include', 'arvconfig.h')
+            )
+        ),
+        name='aravis',
+        url='http://ftp.gnome.org/pub/GNOME/sources/aravis/0.5/aravis-0.5.10.tar.xz',
+        configure_args={
+            '--disable-viewer': True,
+            '--disable-gst-plugin': True,
+            '--disable-gst-0.10-plugin': True,
+            '--disable-gtk-doc': True,
+            '--disable-gtk-doc-html': True,
+            '--disable-gtk-doc-pdf': True,
+            '--enable-usb': True,
+            '--disable-zlib-pc': True,
+            '--disable-nls': True
+        }
+    )
+
+    t.add_library(
         name='pybind11',
         url='https://github.com/pybind/pybind11/archive/v2.2.1.tar.gz',
         configure_args={
@@ -469,7 +491,6 @@ r.build()
 
 # tcmalloc      Needs patching for musl
 # catch
-# aravis        Currently screwed up because we cant exclude documentation from build
 
 # command => '/usr/bin/pip3 install pyparsing &&
 #             /usr/bin/pip3 install pydotplus &&
