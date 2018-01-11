@@ -347,6 +347,7 @@ for t in toolchains:
     # Single precision FFTW3 library
     t.add_library(
         name='fftw3f',
+        build_postfix='_single',
         url='http://www.fftw.org/fftw-3.3.7.tar.gz',
         configure_args={
             '--enable-openmp': True,
