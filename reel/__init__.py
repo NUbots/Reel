@@ -72,7 +72,9 @@ class Reel:
                 '--disable-all-programs': True,
                 '--enable-libblkid': True,
                 '--enable-libmount': True,
-                '--without-python': True
+                '--enable-libuuid': True,
+                '--without-python': True,
+                '--with-bashcompletiondir': os.path.join('{prefix_dir}', 'share', 'bash-completion', 'completions')
             }
         )
 
