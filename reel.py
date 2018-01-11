@@ -152,6 +152,15 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
+        name='pcre',
+        configure_args={
+            '--enable-utf': True,
+            '--enable-unicode-properties': True
+        }
+    )
+
     t.install_X11()
     t.install_tcltk()
 
