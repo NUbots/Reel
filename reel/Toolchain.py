@@ -25,7 +25,8 @@ class Toolchain:
             cxx_flags=None,
             fc_flags=None,
             static=False,
-            parent_toolchain=None
+            parent_toolchain=None,
+            abi='64'
     ):
 
         self.name = name
@@ -45,6 +46,9 @@ class Toolchain:
 
         # Our arch is the first part of the triple
         self.arch = self.triple.split('-')[0]
+
+        # Are we building for a 32-bit or a 64-bit ABI?
+        self.abi = abi
 
         if c_flags is None:
             c_flags = []
