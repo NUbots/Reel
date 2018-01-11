@@ -443,6 +443,8 @@ for t in toolchains:
         src_dir='fswatch-1.9.3'
     )
 
+    t.add_library(name='udev', url='https://dev.gentoo.org/~blueness/eudev/eudev-3.2.5.tar.gz')
+
     t.add_library(
         name='pybind11',
         url='https://github.com/pybind/pybind11/archive/v2.2.1.tar.gz',
