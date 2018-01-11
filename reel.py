@@ -161,6 +161,20 @@ for t in toolchains:
         }
     )
 
+    t.add_library(
+        Shell(post_install='cp {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
+        name='glib2',
+        url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
+        configure_args={
+            'glib_cv_stack_grows': 'no',
+            'glib_cv_uscore': 'no',
+            '--with-threads': 'posix',
+            '--with-pcre': 'system',
+            '--disable-gtk-doc': True,
+            '--disable-man': True
+        }
+    )
+
     t.install_X11()
     t.install_tcltk()
 
