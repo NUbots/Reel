@@ -11,16 +11,22 @@ class AutotoolsBuild:
 
     def __init__(self, **build_args):
 
-        # Set our default configuration arguments.
+        # Set our default configuration arguments
         self.configure_args = {
             '--prefix': '{prefix_dir}',
             '--host': '{target_triple}',
             '--build': '{parent_target_triple}',
-            '--enable-static': True,
-            '--enable-shared': True
         }
 
         self.configure_args.update(build_args.get('configure_args', {}))
+
+        # Unless specified otherwise, we always want to build static and shared versions of libraries
+        if '--enable-shared' not in self.configure_args and '--disable-shared' not in self.configure_args:
+            self.configure_args.update({'--enable-shared': True})
+
+        if '--enable-static' not in self.configure_args and '--disable-static' not in self.configure_args:
+            self.configure_args.update({'--enable-static': True})
+
         self.src_dir = build_args.get('src_dir', '.')
         self.build_postfix = build_args.get('build_postfix', '')
         self.build_args = build_args.get('build_args', {})
