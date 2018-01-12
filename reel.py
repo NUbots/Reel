@@ -498,7 +498,7 @@ for t in toolchains:
         configure_args={
             '-DPYBIND11_TEST': 'OFF',
             '-DPYBIND11_PYTHON_VERSION': '3',
-            '-DPYTHON_EXECUTABLE': os.path.join('{parent_prefix_dir}', 'bin', 'python3')
+            '-DPYTHON_EXECUTABLE': sys.executable
         }
     )
 
