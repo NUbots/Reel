@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import subprocess
 from termcolor import cprint
 import multiprocessing
@@ -10,8 +11,11 @@ from .extract import SmartExtract
 from .build import SmartBuild
 from .patch import UpdateConfigSub
 from .Shell import Shell
+from .Python import Python
 
 from .Library import Library
+
+from .util import dedent
 
 
 class Toolchain:
@@ -50,26 +54,9 @@ class Toolchain:
         # Are we building for a 32-bit or a 64-bit ABI?
         self.abi = abi
 
-        if c_flags is None:
-            c_flags = []
-
-        if cxx_flags is None:
-            cxx_flags = []
-
-        if fc_flags is None:
-            fc_flags = []
-
-        # Make sure we are always generating position independent code
-        if '-fPIC' not in c_flags:
-            c_flags.append('-fPIC')
-            cxx_flags.append('-fPIC')
-            fc_flags.append('-fPIC')
-
-        # If we are doing a static build, add -static to our flags
-        if static:
-            c_flags.insert(0, '-static')
-            cxx_flags.insert(0, '-static')
-            fc_flags.insert(0, '-static')
+        self.c_flags = c_flags.copy() if c_flags is not None else []
+        self.cxx_flags = cxx_flags.copy() if cxx_flags is not None else []
+        self.fc_flags = fc_flags.copy() if fc_flags is not None else []
 
         # Global directories
         self.toolchain_dir = 'toolchain'
@@ -100,7 +87,22 @@ class Toolchain:
             'logs_dir': self.logs_dir,
             'status_dir': self.status_dir,
             'cpu_count': multiprocessing.cpu_count(),
+            'c_flags': self.c_flags.copy(),
+            'cxx_flags': self.cxx_flags.copy(),
+            'fc_flags': self.fc_flags.copy()
         }
+
+        # Make sure we are always generating position independent code
+        if '-fPIC' not in self.c_flags:
+            self.c_flags.append('-fPIC')
+            self.cxx_flags.append('-fPIC')
+            self.fc_flags.append('-fPIC')
+
+        # If we are doing a static build, add -static to our flags
+        if static and '-static' not in self.c_flags:
+            self.c_flags.insert(0, '-static')
+            self.cxx_flags.insert(0, '-static')
+            self.fc_flags.insert(0, '-static')
 
         # Embed our parents state into our state
         if self.parent_toolchain is not None:
@@ -118,9 +120,9 @@ class Toolchain:
                 os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep, self.env['PATH']
             )
             self.env['CROSS_COMPILE'] = ''
-            self.env['CFLAGS'] = ' '.join(c_flags)
-            self.env['CXXFLAGS'] = ' '.join(cxx_flags)
-            self.env['FCFLAGS'] = ' '.join(fc_flags)
+            self.env['CFLAGS'] = ' '.join(self.c_flags)
+            self.env['CXXFLAGS'] = ' '.join(self.cxx_flags)
+            self.env['FCFLAGS'] = ' '.join(self.fc_flags)
 
             # If our environment doesn't already have a CC or CXX use cc and c++
             if 'CC' not in self.env:
@@ -147,9 +149,9 @@ class Toolchain:
                 'AR': '{}-ar'.format(self.triple),
                 'RANLIB': '{}-ranlib'.format(self.triple),
                 'NM': '{}-nm'.format(self.triple),
-                'CFLAGS': ' '.join(c_flags),
-                'CXXFLAGS': ' '.join(cxx_flags),
-                'FCFLAGS': ' '.join(fc_flags),
+                'CFLAGS': ' '.join(self.c_flags),
+                'CXXFLAGS': ' '.join(self.cxx_flags),
+                'FCFLAGS': ' '.join(self.fc_flags),
                 'LD_LIBRARY_PATH': '',
                 'PKG_CONFIG_PATH':
                     '{}{}{}'.format(
@@ -268,6 +270,7 @@ class Toolchain:
                         ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
                         ' > {build}/gcc/specs'
                     ),
+                    Python(pre_install=generate_toolchain_files)
                 ],
                 build_targets=[
                     'all-target-libstdc++-v3', 'all-target-libquadmath', 'all-target-libgfortran', 'all-target-libgomp'
@@ -586,3 +589,96 @@ class Toolchain:
         # Build all our libraries
         for l in self.libraries:
             l.build()
+
+
+def generate_toolchain_files(env, log_file=None, **state):
+    gcc_template = dedent(
+        """\
+        *c_opts:
+        {c_compile_options}
+
+        *cxx_opts:
+        {cxx_compile_options}
+
+        *cc1_options:
+        + %(c_opts)
+
+        *cc1plus_options:
+        + %(cxx_opts)
+        """
+    )
+
+    cmake_template = dedent(
+        """\
+        SET(CMAKE_SYSTEM_NAME Linux)
+
+        SET(CMAKE_C_COMPILER {cc})
+        SET(CMAKE_CXX_COMPILER {cxx})
+
+        SET(CMAKE_FIND_ROOT_PATH "{prefix_dir}")
+        SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
+        SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+        SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+        SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+
+        INCLUDE_DIRECTORIES(SYSTEM "{include_dir}")
+
+        {compile_options}
+
+        SET(PLATFORM "{arch}" CACHE STRING "The platform to build for." FORCE)
+        """
+    )
+
+    # Get the march and mtune flags from c_flags + cxx_flags + fc_flags
+    march = ''
+    mtune = ''
+    for flag in state['c_flags'] + state['cxx_flags'] + state['fc_flags']:
+        if '-march=' in flag:
+            march = 'ADD_COMPILE_OPTIONS({})'.format(flag)
+            if log_file is not None: log_file.write('Found architecture parameter: {}\n'.format(march))
+        if '-mtune=' in flag:
+            mtune = 'ADD_COMPILE_OPTIONS({})'.format(flag)
+            if log_file is not None: log_file.write('Found tuning parameter: {}\n'.format(mtune))
+
+    # Find the location of the GCC specs file
+    libgcc = subprocess.check_output(
+        '{} {}'.format(
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple'])), '-print-libgcc-file-name'
+        ),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Form our output file names
+    specs_file = os.path.join(os.path.dirname(libgcc), 'specs')
+    cmake_toolchain_file = os.path.join(state['prefix_dir'], '{}.cmake'.format(state['toolchain_name']))
+
+    if log_file is not None: log_file.write('Using gcc specs: {}\n'.format(specs_file))
+
+    # Write out the new GCC specs
+    with open(specs_file, 'a') as specs:
+        specs.write(
+            gcc_template.format(
+                c_compile_options=' '.join([flag for flag in state['c_flags'] if flag != march and flag != mtune]),
+                cxx_compile_options=' '.join([flag for flag in state['cxx_flags'] if flag != march and flag != mtune])
+            )
+        )
+
+    if log_file is not None: log_file.write('Successfully wrote new specs file to "{}"\n'.format(specs_file))
+
+    # Write out the CMake toolchain file
+    with open(cmake_toolchain_file, 'w') as f:
+        f.write(
+            cmake_template.format(
+                arch=state['toolchain_name'],
+                cc=env['CC'],
+                cxx=env['CXX'],
+                include_dir=os.path.join(state['prefix_dir'], 'include'),
+                compile_options='{}\n{}'.format(march, mtune),
+                prefix_dir=state['prefix_dir']
+            )
+        )
+
+    if log_file is not None:
+        log_file.write('Successfully wrote cmake toolchain file to "{}"\n'.format(cmake_toolchain_file))
+        log_file.write('\n\nCompleted with no errors\n')
