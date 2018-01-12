@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 
 from reel.patch import UpdateConfigSub
 from reel import Shell
@@ -270,14 +271,6 @@ for t in toolchains:
         }
     )
 
-    PYTHON_PROJECT_BASE = '_PYTHON_PROJECT_BASE={}'.format(
-        os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3'))
-    )
-    PYTHON_HOST_PLATFORM = '_PYTHON_HOST_PLATFORM=linux-{arch}'
-    PYTHONPATH = 'PYTHONPATH={}{}{}'.format(
-        os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3')), os.pathsep,
-        os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.3'))
-    )
     t.add_library(
         name='python',
         url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
@@ -287,9 +280,22 @@ for t in toolchains:
             'ac_cv_file__dev_ptc': 'no',
 
             # Configure needs some help finding the curses headers
-            'CPPFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CPPFLAGS', ''), '{prefix_dir}'),
-            'CFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CFLAGS', ''), '{prefix_dir}'),
-            'CXXFLAGS': '{} -I{}/include/ncurses'.format(t.env.get('CXXFLAGS', ''), '{prefix_dir}'),
+            'CPPFLAGS':
+                '{} -I{} -I{}'.format(
+                    t.env.get('CPPFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
+                    os.path.join('{prefix_dir}', 'include', 'ncurses')
+                ),
+            'CFLAGS':
+                '{} -I{} -I{}'.format(
+                    t.env.get('CFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
+                    os.path.join('{prefix_dir}', 'include', 'ncurses')
+                ),
+            'CXXFLAGS':
+                '{} -I{} -I{}'.format(
+                    t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
+                    os.path.join('{prefix_dir}', 'include', 'ncurses')
+                ),
+            'LDFLAGS': '{} -L{}'.format(t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'lib')),
 
             # We need to be able to find the systems python to perform cross-compilation
             '_PYTHON_PROJECT_BASE': '{}'.format(os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3'))),
@@ -299,8 +305,9 @@ for t in toolchains:
                     os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3')), os.pathsep,
                     os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.3'))
                 ),
-            'PYTHON_FOR_BUILD': os.path.join(t.state['parent_prefix_dir'], 'bin', 'python3.6')
+            'PYTHON_FOR_BUILD': sys.executable
         },
+        in_source_build=True,
         configure_args={
             '--enable-ipv6': True,
             '--with-system-ffi': True,
