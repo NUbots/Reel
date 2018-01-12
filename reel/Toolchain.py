@@ -485,6 +485,8 @@ class Toolchain:
                 name='xorg-lib-{}'.format(lib[0]),
                 url='https://www.x.org/pub/individual/lib/{}-{}.tar.bz2'.format(*lib),
                 phases=[UpdateConfigSub],
+                env={'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
+                     'CFLAGS_FOR_BUILD': ''},
                 configure_args={
                     # musl returns a valid pointer for a 0 byte allocation
                     '--enable-malloc0returnsnull': 'no'
