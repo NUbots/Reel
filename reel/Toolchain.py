@@ -204,8 +204,8 @@ class Toolchain:
 
             # Build gcc so we can build basic c programs (like musl)
             self.add_tool(
-                Shell(post_extract='cd {source} && ./contrib/download_prerequisites'),
                 name='gcc7',
+                phases=[Shell(post_extract='cd {source} && ./contrib/download_prerequisites')],
                 build_targets=['all-gcc'],
                 install_targets=['install-strip-gcc'],
                 **gcc_args
@@ -225,12 +225,14 @@ class Toolchain:
 
             # Build libgcc (our low level api)
             self.add_tool(
-                Shell(
-                    post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
-                    ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
-                    ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
-                ),
                 name='libgcc',
+                phases=[
+                    Shell(
+                        post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
+                        ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
+                        ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
+                    )
+                ],
                 build_targets=['all-target-libgcc'],
                 install_targets=['install-strip-target-libgcc'],
                 **gcc_args
@@ -239,12 +241,15 @@ class Toolchain:
             # If we're not building a pure static toolchain, make shared libc
             if not static:
                 self.add_library(
-                    Shell(
-                        post_install='echo "{prefix_dir}/lib:{prefix_dir}/lib64" > {prefix_dir}/etc/ld-musl-{arch}.path'
-                    ),
                     name='musl_shared',
-                    build_postfix='_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
+                    build_postfix='_shared',
+                    phases=[
+                        Shell(
+                            post_install=
+                            'echo "{prefix_dir}/lib:{prefix_dir}/lib64" > {prefix_dir}/etc/ld-musl-{arch}.path'
+                        )
+                    ],
                     configure_args={
                         '--target': '{target_triple}',
                         '--syslibdir': os.path.join('{prefix_dir}', 'lib'),
@@ -255,13 +260,15 @@ class Toolchain:
 
             # Build the other gnu libraries
             self.add_tool(
-                Shell(
-                    pre_build='echo "{build}/gcc/"'
-                    ' && {build}/gcc/xgcc -dumpspecs'
-                    ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
-                    ' > {build}/gcc/specs'
-                ),
                 name='gnulibs',
+                phases=[
+                    Shell(
+                        pre_build='echo "{build}/gcc/"'
+                        ' && {build}/gcc/xgcc -dumpspecs'
+                        ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
+                        ' > {build}/gcc/specs'
+                    ),
+                ],
                 build_targets=[
                     'all-target-libstdc++-v3', 'all-target-libquadmath', 'all-target-libgfortran', 'all-target-libgomp'
                 ],
@@ -273,7 +280,7 @@ class Toolchain:
             )
 
     # Build a tool we can run (Use our state but parents env)
-    def add_tool(self, *args, **kwargs):
+    def add_tool(self, phases=None, **kwargs):
 
         # Update our own env with one if it's provided
         env = self.parent_toolchain.env.copy()
@@ -281,10 +288,15 @@ class Toolchain:
             env.update(kwargs['env'])
         kwargs['env'] = env
 
-        self.libraries.append(Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
+        default_phases = [SmartDownload, SmartExtract, SmartBuild]
+
+        if phases is not None:
+            default_phases.extend(phases)
+
+        self.libraries.append(Library(self, default_phases, **kwargs))
 
     # Build a library using our toolchain
-    def add_library(self, *args, **kwargs):
+    def add_library(self, phases=None, **kwargs):
 
         # Update our own env with one if it's provided
         env = self.env.copy()
@@ -292,7 +304,12 @@ class Toolchain:
             env.update(kwargs['env'])
         kwargs['env'] = env
 
-        self.libraries.append(Library(self, SmartDownload, SmartExtract, SmartBuild, *args, **kwargs))
+        default_phases = [SmartDownload, SmartExtract, SmartBuild]
+
+        if phases is not None:
+            default_phases.extend(phases)
+
+        self.libraries.append(Library(self, default_phases, **kwargs))
 
     def install_compression_libraries(self, **kwargs):
 
@@ -322,13 +339,15 @@ class Toolchain:
     def install_X11(self, **kwargs):
 
         self.add_library(
-            Shell(
-                post_extract='cd {source}'
-                ' && sed -ri "s:.*(AUX_MODULES.*valid):\\1:" modules.cfg '
-                ' && sed -ri "s:.*(#.*SUBPIXEL_RENDERING) .*:\\1:" include/freetype/config/ftoption.h'
-            ),
-            url='https://downloads.sourceforge.net/freetype/freetype-2.8.1.tar.bz2',
             name='freetype',
+            url='https://downloads.sourceforge.net/freetype/freetype-2.8.1.tar.bz2',
+            phases=[
+                Shell(
+                    post_extract='cd {source}'
+                    ' && sed -ri "s:.*(AUX_MODULES.*valid):\\1:" modules.cfg '
+                    ' && sed -ri "s:.*(#.*SUBPIXEL_RENDERING) .*:\\1:" include/freetype/config/ftoption.h'
+                )
+            ],
             configure_args={
                 '--with-harfbuzz': 'no',
                 '--with-zlib': 'yes',
@@ -338,9 +357,9 @@ class Toolchain:
         )
 
         self.add_library(
-            Shell(post_extract='cd {source} && rm -f src/fcobjshash.h'),
-            url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.6.tar.bz2',
             name='fontconfig',
+            url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.6.tar.bz2',
+            phases=[Shell(post_extract='cd {source} && rm -f src/fcobjshash.h')],
             configure_args={
                 '--disable-docs': True
             }
@@ -349,13 +368,15 @@ class Toolchain:
         self.add_library(url='https://www.x.org/pub/individual/util/util-macros-1.19.1.tar.bz2', name='util-macros')
 
         self.add_library(
-            Shell(
-                post_extract='cd {source}'
-                ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-schema-1.patch -O - | patch -Np1 || true'
-                ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-python3-1.patch -O - | patch -Np1 || true'
-            ),
+            name='xcb-proto',
             url='https://xcb.freedesktop.org/dist/xcb-proto-1.12.tar.bz2',
-            name='xcb-proto'
+            phases=[
+                Shell(
+                    post_extract='cd {source}'
+                    ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-schema-1.patch -O - | patch -Np1 || true'
+                    ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-python3-1.patch -O - | patch -Np1 || true'
+                )
+            ]
         )
 
         # yapf: disable
@@ -391,26 +412,28 @@ class Toolchain:
 
         for proto in xorg_protos:
             self.add_library(
-                UpdateConfigSub,
+                name='xorg-protocol-header-{}'.format(proto[0]),
                 url='https://www.x.org/pub/individual/proto/{}-{}.tar.bz2'.format(*proto),
-                name='xorg-protocol-header-{}'.format(proto[0])
+                phases=[UpdateConfigSub]
             )
 
-        self.add_library(url='https://www.x.org/pub/individual/lib/libXdmcp-1.1.2.tar.bz2', name='Xdmcp')
+        self.add_library(name='Xdmcp', url='https://www.x.org/pub/individual/lib/libXdmcp-1.1.2.tar.bz2')
 
-        self.add_library(url='https://www.x.org/pub/individual/lib/libXau-1.0.8.tar.bz2', name='Xau')
+        self.add_library(name='Xau', url='https://www.x.org/pub/individual/lib/libXau-1.0.8.tar.bz2')
 
         self.add_library(
-            Shell(
-                post_extract='cd {source}'
-                # Fixes incompatibilities between python2 and python3 (whitespace inconsistencies)
-                # https://bugs.freedesktop.org/show_bug.cgi?id=95490
-                ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/libxcb-1.12-python3-1.patch -O - | patch -Np1 || true'
-                # pthread-stubs is useless on linux
-                ' && sed -i "s/pthread-stubs//" configure'
-            ),
-            url='https://xcb.freedesktop.org/dist/libxcb-1.12.tar.bz2',
             name='xcb',
+            url='https://xcb.freedesktop.org/dist/libxcb-1.12.tar.bz2',
+            phases=[
+                Shell(
+                    post_extract='cd {source}'
+                    # Fixes incompatibilities between python2 and python3 (whitespace inconsistencies)
+                    # https://bugs.freedesktop.org/show_bug.cgi?id=95490
+                    ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/libxcb-1.12-python3-1.patch -O - | patch -Np1 || true'
+                    # pthread-stubs is useless on linux
+                    ' && sed -i "s/pthread-stubs//" configure'
+                )
+            ],
             configure_args={
                 '--enable-xinput': True,
                 '--without-doxygen': True
@@ -456,9 +479,9 @@ class Toolchain:
 
         for lib in xorg_libs:
             self.add_library(
-                UpdateConfigSub,
-                url='https://www.x.org/pub/individual/lib/{}-{}.tar.bz2'.format(*lib),
                 name='xorg-lib-{}'.format(lib[0]),
+                url='https://www.x.org/pub/individual/lib/{}-{}.tar.bz2'.format(*lib),
+                phases=[UpdateConfigSub],
                 configure_args={
                     # musl returns a valid pointer for a 0 byte allocation
                     '--enable-malloc0returnsnull': 'no'
@@ -477,8 +500,8 @@ class Toolchain:
 
         # Tcl/Tk configures don't understand --enable-static
         self.add_library(
-            url='https://prdownloads.sourceforge.net/tcl/tcl8.6.7-src.tar.gz',
             name='tcl',
+            url='https://prdownloads.sourceforge.net/tcl/tcl8.6.7-src.tar.gz',
             src_dir='unix',
             configure_args={'--enable-threads': True,
                             '--enable-static': None},
@@ -488,8 +511,8 @@ class Toolchain:
         m64 = '--enable-64bit' if self.arch == 'x86_64' else '--disable-64bit'
 
         self.add_library(
-            url='https://prdownloads.sourceforge.net/tcl/tk8.6.7-src.tar.gz',
             name='tk',
+            url='https://prdownloads.sourceforge.net/tcl/tk8.6.7-src.tar.gz',
             src_dir='unix',
             configure_args={
                 '--with-tcl': os.path.join('..', 'tcl8.6.7-src'),
@@ -511,18 +534,20 @@ class Toolchain:
         }
 
         self.add_library(
-            Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
-            Shell(
-                post_build=
-                'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -rv {} {} && rm -rf {dest}'.
-                format(
-                    os.path.join('{prefix_dir}', 'temp', 'include', '*'),
-                    os.path.join('{prefix_dir}', 'include'),
-                    dest=os.path.join('{prefix_dir}', 'temp', 'include')
-                )
-            ),
             name='linux-headers',
             url='https://git.kernel.org/torvalds/t/linux-4.15-rc3.tar.gz',
+            phases=[
+                Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
+                Shell(
+                    post_build=
+                    'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -rv {} {} && rm -rf {dest}'.
+                    format(
+                        os.path.join('{prefix_dir}', 'temp', 'include', '*'),
+                        os.path.join('{prefix_dir}', 'include'),
+                        dest=os.path.join('{prefix_dir}', 'temp', 'include')
+                    )
+                )
+            ],
             build_args=args,
             build_targets=['mrproper', 'headers_check'],
             install_args=args,

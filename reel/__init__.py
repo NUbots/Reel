@@ -35,10 +35,10 @@ class Reel:
         )
 
         toolchain.add_library(
-            UpdateConfigSub,
             name='autoconf',
-            config_sub_file='build-aux/config.sub',
             url='{}/autoconf/autoconf-2.69.tar.xz'.format(self.gnu_mirror),
+            phases=[UpdateConfigSub],
+            config_sub_file='build-aux/config.sub',
         )
 
         toolchain.add_library(
@@ -81,8 +81,8 @@ class Reel:
         toolchain.add_library(name='gettext', url='{}/gettext/gettext-0.19.8.1.tar.xz'.format(self.gnu_mirror))
 
         toolchain.add_library(
-            url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
             name='pcre',
+            url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
             configure_args={
                 '--enable-utf': True,
                 '--enable-unicode-properties': True
@@ -97,16 +97,16 @@ class Reel:
             }
         )
 
-        toolchain.add_library(url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz', name='ffi')
+        toolchain.add_library(name='ffi', url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz')
 
-        toolchain.add_library(url='http://www.mr511.de/software/libelf-0.8.13.tar.gz', name='libelf')
+        toolchain.add_library(name='libelf', url='http://www.mr511.de/software/libelf-0.8.13.tar.gz')
 
         toolchain.install_compression_libraries(zlib=True, bzip2=True, xz=True)
 
         toolchain.add_library(
-            Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
             name='glib2',
             url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
+            phases=[Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h')],
             configure_args={
                 '--with-threads': 'posix',
                 '--with-pcre': 'system',
@@ -145,34 +145,38 @@ class Reel:
 
         # Building ninja is a little weird
         toolchain.add_library(
-            Shell(
-                configure=
-                'mkdir -p {builds_dir}/$(basename {source}) && cp -rv {source}/* {builds_dir}/$(basename {source})'
-            ),
-            Shell(build='cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'),
-            Shell(install='cd {builds_dir}/$(basename {source}) && cp -v ninja {prefix_dir}/bin'),
             name='ninja',
-            url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz'
+            url='https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz',
+            phases=[
+                Shell(
+                    configure=
+                    'mkdir -p {builds_dir}/$(basename {source}) && cp -rv {source}/* {builds_dir}/$(basename {source})'
+                ),
+                Shell(build='cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'),
+                Shell(install='cd {builds_dir}/$(basename {source}) && cp -v ninja {prefix_dir}/bin')
+            ]
         )
 
         toolchain.add_library(
-            Shell(
-                configure='base_dir=$(pwd)'
-                ' && mkdir -p {builds_dir}/$(basename {source})'
-                ' && cd {builds_dir}/$(basename {source})'
-                ' && $base_dir/{source}/Configure'
-                '    --prefix={prefix_dir} '
-                '    --libdir=lib'
-                '    --release'
-                '    no-async'
-                '    linux-{arch}'
-            ),
-            Shell(build='cd {builds_dir}/$(basename {source})'
-                  ' && make'),
-            Shell(install='cd {builds_dir}/$(basename {source})'
-                  ' && make install'),
             name='openssl',
             url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz',
+            phases=[
+                Shell(
+                    configure='base_dir=$(pwd)'
+                    ' && mkdir -p {builds_dir}/$(basename {source})'
+                    ' && cd {builds_dir}/$(basename {source})'
+                    ' && $base_dir/{source}/Configure'
+                    '    --prefix={prefix_dir} '
+                    '    --libdir=lib'
+                    '    --release'
+                    '    no-async'
+                    '    linux-{arch}'
+                ),
+                Shell(build='cd {builds_dir}/$(basename {source})'
+                      ' && make'),
+                Shell(install='cd {builds_dir}/$(basename {source})'
+                      ' && make install')
+            ],
             env={
                 'CROSS_COMPILE': ' '
             }
@@ -189,23 +193,25 @@ class Reel:
 
         # Bootstrapping cmake is a little weird too
         toolchain.add_library(
-            Shell(
-                configure='base_dir=$(pwd)'
-                ' && mkdir -p {builds_dir}/$(basename {source})'
-                ' && cd {builds_dir}/$(basename {source})'
-                ' && $base_dir/{source}/bootstrap'
-                '    --prefix={prefix_dir}'
-                '    --no-qt-gui'
-                '    --system-zlib'
-                '    --system-curl'
-                '    --parallel={cpu_count}'
-            ),
-            Shell(build='cd {builds_dir}/$(basename {source})'
-                  ' && make'),
-            Shell(install='cd {builds_dir}/$(basename {source})'
-                  ' && make install'),
             name='cmake',
-            url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz'
+            url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz',
+            phases=[
+                Shell(
+                    configure='base_dir=$(pwd)'
+                    ' && mkdir -p {builds_dir}/$(basename {source})'
+                    ' && cd {builds_dir}/$(basename {source})'
+                    ' && $base_dir/{source}/bootstrap'
+                    '    --prefix={prefix_dir}'
+                    '    --no-qt-gui'
+                    '    --system-zlib'
+                    '    --system-curl'
+                    '    --parallel={cpu_count}'
+                ),
+                Shell(build='cd {builds_dir}/$(basename {source})'
+                      ' && make'),
+                Shell(install='cd {builds_dir}/$(basename {source})'
+                      ' && make install')
+            ]
         )
 
     def __init__(self, toolchain_level='FULL', gnu_mirror='https://ftpmirror.gnu.org/gnu'):

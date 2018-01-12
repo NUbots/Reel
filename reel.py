@@ -19,14 +19,13 @@ r.add_library(
 )
 
 r.add_library(
-    url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
     name='expat',
+    url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
     configure_args={
         '--without-docbook': True
     }
 )
 
-r.add_library(url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz', name='png')
 
 r.install_X11()
 r.install_tcltk()
@@ -57,10 +56,11 @@ r.add_library(
         '--with-threads': True
     }
 )
+r.add_library(name='png', url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz')
 
 r.add_library(
-    url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
     name='protobuf',
+    url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
     configure_args={
         '--with-zlib': True
     }
@@ -69,12 +69,14 @@ r.add_library(
 r.add_library(name='icu', src_dir='source', url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz')
 
 r.add_library(
-    Shell(
-        post_configure='cp -v {} {}'.
-        format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
-    ),
     name='bjam',
     url='https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz',
+    phases=[
+        Shell(
+            post_configure='cp -v {} {}'.
+            format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
+        )
+    ],
     configure_args={'--with-python': 'python3',
                     '--with-icu': '{prefix_dir}'},
     build_targets=[],
@@ -88,9 +90,9 @@ toolchains = [
 
 for t in toolchains:
     t.add_library(
-        UpdateConfigSub,
         name='libbacktrace',
         url='https://github.com/ianlancetaylor/libbacktrace/archive/master.tar.gz',
+        phases=[UpdateConfigSub],
         install_targets=['install-strip']
     )
 
@@ -112,8 +114,8 @@ for t in toolchains:
     t.install_compression_libraries(zlib=True, bzip2=True, xz=True)
 
     t.add_library(
-        url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
         name='protobuf',
+        url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
         env={'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
              'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']},
         configure_args={
@@ -123,27 +125,24 @@ for t in toolchains:
     )
 
     t.add_library(
-        url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
         name='expat',
+        url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
         configure_args={
             '--without-docbook': True
         }
     )
 
-    t.add_library(
-        url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz',
-        name='ffi',
-    )
+    t.add_library(name='ffi', url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz')
 
     t.add_library(
-        url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz',
         name='png',
+        url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz',
     )
 
     t.add_library(
-        UpdateConfigSub,
-        url='http://www.mr511.de/software/libelf-0.8.13.tar.gz',
         name='libelf',
+        url='http://www.mr511.de/software/libelf-0.8.13.tar.gz',
+        phases=[UpdateConfigSub],
 
         # Need to force the results of some configure checks
         env={
@@ -154,8 +153,8 @@ for t in toolchains:
     )
 
     t.add_library(
-        url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
         name='pcre',
+        url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
         configure_args={
             '--enable-utf': True,
             '--enable-unicode-properties': True
@@ -163,9 +162,9 @@ for t in toolchains:
     )
 
     t.add_library(
-        Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h'),
         name='glib2',
         url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
+        phase=[Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h')],
         configure_args={
             'glib_cv_stack_grows': 'no',
             'glib_cv_uscore': 'no',
@@ -180,9 +179,9 @@ for t in toolchains:
     t.install_tcltk()
 
     t.add_library(
-        UpdateConfigSub,
-        url='http://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.4.2.tar.gz',
         name='mpdec',
+        url='http://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.4.2.tar.gz',
+        phases=[UpdateConfigSub],
         in_source_build=True,
         build_targets=['default']
     )
@@ -216,23 +215,25 @@ for t in toolchains:
     )
 
     t.add_library(
-        Shell(
-            configure='base_dir=$(pwd)'
-            ' && mkdir -p {builds_dir}/$(basename {source})'
-            ' && cd {builds_dir}/$(basename {source})'
-            ' && $base_dir/{source}/Configure'
-            '    --prefix={prefix_dir} '
-            '    --libdir=lib'
-            '    --release'
-            '    no-async'
-            '    linux-{arch}'
-        ),
-        Shell(build='cd {builds_dir}/$(basename {source})'
-              ' && make'),
-        Shell(install='cd {builds_dir}/$(basename {source})'
-              ' && make install'),
         name='openssl',
         url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz',
+        phases=[
+            Shell(
+                configure='base_dir=$(pwd)'
+                ' && mkdir -p {builds_dir}/$(basename {source})'
+                ' && cd {builds_dir}/$(basename {source})'
+                ' && $base_dir/{source}/Configure'
+                '    --prefix={prefix_dir} '
+                '    --libdir=lib'
+                '    --release'
+                '    no-async'
+                '    linux-{arch}'
+            ),
+            Shell(build='cd {builds_dir}/$(basename {source})'
+                  ' && make'),
+            Shell(install='cd {builds_dir}/$(basename {source})'
+                  ' && make install')
+        ],
         env={
             'CROSS_COMPILE': ' '
         }
@@ -247,8 +248,8 @@ for t in toolchains:
         os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.3'))
     )
     t.add_library(
-        url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
         name='python',
+        url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
         env={
             # Configure cant run all tests
             'ac_cv_file__dev_ptmx': 'no',
@@ -348,8 +349,8 @@ for t in toolchains:
     # Single precision FFTW3 library
     t.add_library(
         name='fftw3f',
-        build_postfix='_single',
         url='http://www.fftw.org/fftw-3.3.7.tar.gz',
+        build_postfix='_single',
         configure_args={
             '--enable-openmp': True,
             '--enable-threads': True,
@@ -367,7 +368,9 @@ for t in toolchains:
 
     t.add_library(name='fmt', url='https://github.com/fmtlib/fmt/archive/3.0.1.tar.gz')
 
-    t.add_library(UpdateConfigSub, name='portaudio', url='http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz')
+    t.add_library(
+        name='portaudio', url='http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz', phases=[UpdateConfigSub]
+    )
 
     t.add_library(
         name='eigen3',
@@ -380,8 +383,8 @@ for t in toolchains:
 
     t.add_library(
         name='icu',
-        src_dir='source',
         url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz',
+        src_dir='source',
         configure_args={
             # We need to specify the build directory as necessary cross-tools are not installed
             '--with-cross-build': os.path.abspath(os.path.join('{parent_builds_dir}', 'icu4c-60_2-src')),
@@ -421,15 +424,17 @@ for t in toolchains:
     )
 
     t.add_library(
-        Shell(
-            pre_configure='cp -v {} {}'.format(
-                os.path.abspath(os.path.join('{source}', 'src', 'portaudio19.h')),
-                os.path.abspath(os.path.join('{source}', 'src', 'portaudio.h'))
-            )
-        ),
         name='espeak',
-        src_dir='src',
         url='https://github.com/Bidski/espeak/archive/master.tar.gz',
+        phases=[
+            Shell(
+                pre_configure='cp -v {} {}'.format(
+                    os.path.abspath(os.path.join('{source}', 'src', 'portaudio19.h')),
+                    os.path.abspath(os.path.join('{source}', 'src', 'portaudio.h'))
+                )
+            )
+        ],
+        src_dir='src',
         env={'AUDIO': 'PORTAUDIO'},
         build_args={'DATADIR': os.path.join('{prefix_dir}', 'share', 'espeak-data')},
         install_args={
@@ -456,13 +461,16 @@ for t in toolchains:
     )
 
     t.add_library(
-        Shell(
-            post_install='cp -v {} {}'.format(
-                os.path.join('{build}', 'src', 'arvconfig.h'), os.path.join('{prefix_dir}', 'include', 'arvconfig.h')
-            )
-        ),
         name='aravis',
         url='http://ftp.gnome.org/pub/GNOME/sources/aravis/0.5/aravis-0.5.10.tar.xz',
+        phases=[
+            Shell(
+                post_install='cp -v {} {}'.format(
+                    os.path.join('{build}', 'src', 'arvconfig.h'),
+                    os.path.join('{prefix_dir}', 'include', 'arvconfig.h')
+                )
+            )
+        ],
         configure_args={
             '--disable-viewer': True,
             '--disable-gst-plugin': True,

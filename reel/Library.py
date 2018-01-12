@@ -8,7 +8,7 @@ from .util import indent
 
 class Library:
 
-    def __init__(self, toolchain, *phase_handlers, **kwargs):
+    def __init__(self, toolchain, phase_handlers, **kwargs):
 
         # Our toolchain object
         self.toolchain = toolchain
