@@ -190,7 +190,7 @@ class Reel:
                     '    --libdir=lib'
                     '    --release'
                     '    no-async'
-                    '    linux-{arch}'
+                    '    linux-{arch}' if platform.system() == 'Linux' else '    darwin64-x86_64-cc'
                 ),
                 Shell(build='cd {builds_dir}/$(basename {source})'
                       ' && make'),
