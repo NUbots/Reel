@@ -29,36 +29,6 @@ r.add_library(
 
 r.add_library(name='png', url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz')
 
-# r.install_X11()
-# r.install_tcltk()
-
-# r.add_library(
-#     name='mpdec',
-#     url='http://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.4.2.tar.gz',
-#     phases=[UpdateConfigSub],
-#     in_source_build=True,
-#     build_targets=['default']
-# )
-
-# r.add_library(
-#     name='python',
-#     url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
-#     env={
-#         # Configure needs some help finding the curses headers
-#         'CPPFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CPPFLAGS', ''), '{prefix_dir}'),
-#         'CFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CFLAGS', ''), '{prefix_dir}'),
-#         'CXXFLAGS': '{} -I{}/include/ncurses'.format(r.toolchain.env.get('CXXFLAGS', ''), '{prefix_dir}'),
-#         'LDFLAGS': '{} -L{}/lib'.format(r.toolchain.env.get('LDFLAGS', ''), '{prefix_dir}')
-#     },
-#     configure_args={
-#         '--enable-ipv6': True,
-#         '--with-system-ffi': True,
-#         '--with-system-expat': True,
-#         '--with-system-libmpdec': True,
-#         '--with-threads': True
-#     }
-# )
-
 r.add_library(
     name='protobuf',
     url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
