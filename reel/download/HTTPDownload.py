@@ -22,7 +22,7 @@ class HTTPDownload:
 
         # Load the status file.
         split = urlsplit(self.url)
-        url_status_file = '{}.json'.format(os.path.join(state['status_dir'], 'downloads', split.netloc, split.path[1:]))
+        url_status_file = '{}.json'.format(os.path.join(state['archives_dir'], 'status', split.netloc, split.path[1:]))
         url_status = get_status(url_status_file)
 
         # Get the headers for the URL
