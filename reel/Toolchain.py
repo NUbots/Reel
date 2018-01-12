@@ -671,8 +671,8 @@ def generate_toolchain_files(env, log_file=None, **state):
         f.write(
             cmake_template.format(
                 arch=state['toolchain_name'],
-                cc=env['CC'],
-                cxx=env['CXX'],
+                cc='{}-gcc'.format(state['target_triple']),
+                cxx='{}-g++'.format(state['target_triple']),
                 include_dir=os.path.join(state['prefix_dir'], 'include'),
                 compile_options='{}\n{}'.format(march, mtune),
                 prefix_dir=state['prefix_dir']
