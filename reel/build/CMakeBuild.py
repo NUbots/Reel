@@ -24,11 +24,7 @@ class CMakeBuild:
             '-DCMAKE_INSTALL_PREFIX': '{prefix_dir}',
             '-DCMAKE_BUILD_TYPE': 'MinSizeRel',
             '-DCMAKE_PREFIX_PATH': '{prefix_dir}',
-
-            # Until we sort out a toolcahin file
-            '-DCMAKE_C_COMPILER': self.env['CC'],
-            '-DCMAKE_CXX_COMPILER': self.env['CXX']
-            #'-DCMAKE_TOOLCHAIN_FILE': build_args.get('toolchain_file')
+            '-DCMAKE_TOOLCHAIN_FILE': '{cmake_toolchain_file}'
         }
 
         self.configure_args.update(build_args.get('configure_args', {}))
@@ -48,6 +44,12 @@ class CMakeBuild:
 
         # Work out our real full paths
         src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
+
+        # Make sure we have a toolchain file
+        if 'cmake_toolchain_file' not in state:
+            state.update({
+                'cmake_toolchain_file': os.path.join(state['prefix_dir'], '{}.cmake'.format(state['toolchain_name']))
+            })
 
         # Apply our state
         args = [
