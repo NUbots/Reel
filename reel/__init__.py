@@ -253,9 +253,18 @@ class Reel:
             # The final toolchain gets all the tools
             self.add_build_tools(self.toolchain)
 
-    def add_toolchain(self, name, triple=''):
+    def add_toolchain(self, name, triple='', abi='64', c_flags=None, cxx_flags=None, fc_flags=None):
         # Create a new toolchain and return it and build using our toolchain
-        t = Toolchain(name, gnu_mirror=self.gnu_mirror, triple=triple, parent_toolchain=self.toolchain)
+        t = Toolchain(
+            name,
+            gnu_mirror=self.gnu_mirror,
+            triple=triple,
+            parent_toolchain=self.toolchain,
+            abi=abi,
+            c_flags=c_flags,
+            cxx_flags=cxx_flags,
+            fc_flags=fc_flags
+        )
         self.toolchains.append(t)
         return t
 
