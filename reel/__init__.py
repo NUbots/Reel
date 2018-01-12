@@ -63,20 +63,21 @@ class Reel:
             }
         )
 
-        toolchain.install_linux_headers()
+        if platform.system() == 'Linux':
+            toolchain.install_linux_headers()
 
-        toolchain.add_library(
-            name='util-linux',
-            url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
-            configure_args={
-                '--disable-all-programs': True,
-                '--enable-libblkid': True,
-                '--enable-libmount': True,
-                '--enable-libuuid': True,
-                '--without-python': True,
-                '--with-bashcompletiondir': os.path.join('{prefix_dir}', 'share', 'bash-completion', 'completions')
-            }
-        )
+            toolchain.add_library(
+                name='util-linux',
+                url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
+                configure_args={
+                    '--disable-all-programs': True,
+                    '--enable-libblkid': True,
+                    '--enable-libmount': True,
+                    '--enable-libuuid': True,
+                    '--without-python': True,
+                    '--with-bashcompletiondir': os.path.join('{prefix_dir}', 'share', 'bash-completion', 'completions')
+                }
+            )
 
         toolchain.add_library(name='gettext', url='{}/gettext/gettext-0.19.8.1.tar.xz'.format(self.gnu_mirror))
 
