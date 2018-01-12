@@ -5,7 +5,7 @@ import shutil
 from subprocess import Popen
 from termcolor import cprint
 
-from ..util import get_status, update_status, indent, parse_args
+from ..util import get_status, update_status, indent, parse_args, dedent
 
 
 class BoostBuild:
@@ -104,6 +104,17 @@ class BoostBuild:
 
                     else:
                         status = update_status(status_path, {'clone': True})
+
+            # Make sure boost is going to use our compiler.
+            template = dedent(
+                """\
+                # Configure specific gcc version, giving alternative name to use.
+                using gcc : : {CXX} ;
+                """
+            ).format(CXX=os.path.join(state['prefix_dir'], 'bin', '{}-g++'.format(state['target_triple'])))
+
+            with open(os.path.join(os.path.abspath(src_path), 'user-config.jam'), 'w') as config:
+                config.write(template)
 
             # Open a log file and run configure
             with open(os.path.join(logs_path, '{}_configure.log'.format(base_src)), 'w') as logfile:
