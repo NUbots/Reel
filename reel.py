@@ -83,9 +83,40 @@ r.add_library(
     install_targets=[]
 )
 
+nuc7i7bnh_flags = [
+    '-march=broadwell', '-mtune=broadwell', '-mmmx', '-mno-3dnow', '-msse', '-msse2', '-msse3', '-mssse3', '-mno-sse4a',
+    '-mcx16', '-msahf', '-mmovbe', '-maes', '-mno-sha', '-mpclmul', '-mpopcnt', '-mabm', '-mno-lwp', '-mfma',
+    '-mno-fma4', '-mno-xop', '-mbmi', '-mbmi2', '-mno-tbm', '-mavx', '-mavx2', '-msse4.2', '-msse4.1', '-mlzcnt',
+    '-mno-rtm', '-mno-hle', '-mrdrnd', '-mf16c', '-mfsgsbase', '-mrdseed', '-mprfchw', '-madx', '-mfxsr', '-mxsave',
+    '-mxsaveopt', '-mno-avx512f', '-mno-avx512er', '-mno-avx512cd', '-mno-avx512pf', '-mno-prefetchwt1', '-mclflushopt',
+    '-mxsavec', '-mxsaves', '-mno-avx512dq', '-mno-avx512bw', '-mno-avx512vl', '-mno-avx512ifma', '-mno-avx512vbmi',
+    '-mno-clwb', '-mno-mwaitx', '--param l1-cache-size=32', '--param l1-cache-line-size=64',
+    '--param l2-cache-size=4096'
+]
+
+jetsontx2_flags = [
+    '-mabi=lp64', '-march=armv8-a+crypto+simd+fp+crc', '-mtune=cortex-a57', '-mabi=lp64', '-mlittle-endian',
+    '-mcmodel=small', '-mfix-cortex-a53-835769', '-mfix-cortex-a53-843419', '-mmusl', '-momit-leaf-frame-pointer',
+    '-mpc-relative-literal-loads', '-msign-return-address=none', '-mtls-dialect=desc'
+]
+
 toolchains = [
-    r.add_toolchain('nuc7i7bnh', triple='x86_64-linux-musl'),
-    r.add_toolchain('jetsontx2', triple='aarch64-linux-musl')
+    r.add_toolchain(
+        'nuc7i7bnh',
+        triple='x86_64-linux-musl',
+        abi='64',
+        c_flags=nuc7i7bnh_flags,
+        cxx_flags=nuc7i7bnh_flags,
+        fc_flags=nuc7i7bnh_flags
+    ),
+    r.add_toolchain(
+        'jetsontx2',
+        triple='aarch64-linux-musl',
+        abi='64',
+        c_flags=jetsontx2_flags,
+        cxx_flags=jetsontx2_flags,
+        fc_flags=jetsontx2_flags
+    )
 ]
 
 for t in toolchains:
