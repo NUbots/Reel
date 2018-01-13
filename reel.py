@@ -4,8 +4,38 @@ import os
 import sys
 
 from reel.patch import UpdateConfigSub
-from reel import Shell
+from reel import Python
 from reel import Reel
+from reel import Shell
+
+from reel.util import dedent
+
+
+def generate_numpy_site_config(env, **state):
+    # Make sure python is going to use our toolchain.
+    template = dedent(
+        """\
+        [ALL]
+        library_dirs = {prefix_dir}/lib:{prefix_dir}/lib64:{prefix_dir}/{target_triple}/lib:{prefix_dir}/{target_triple}/lib64/
+        include_dirs = {prefix_dir}/include
+        search_static_first = false
+
+        [openblas]
+        libraries = openblas,gfortran{quadmath}
+        library_dirs = {prefix_dir}/lib:{prefix_dir}/lib64:{prefix_dir}/{target_triple}/lib:{prefix_dir}/{target_triple}/lib64/
+        include_dirs = {prefix_dir}/include
+        runtime_library_dirs = {prefix_dir}/lib:{prefix_dir}/lib64:{prefix_dir}/{target_triple}/lib:{prefix_dir}/{target_triple}/lib64/
+
+        [fftw]
+        libraries = fftw3
+        """
+    ).format(
+        quadmath=',quadmath' if state['arch'] != 'aarch64' else '', **state
+    )
+
+    with open(os.path.join(os.path.abspath(state['build']), 'site.cfg'), 'w') as config:
+        config.write(template)
+
 
 r = Reel()  #gnu_mirror='http://gnu.uberglobalmirror.com')
 
@@ -499,6 +529,27 @@ for t in toolchains:
             '-DPYBIND11_TEST': 'OFF',
             '-DPYBIND11_PYTHON_VERSION': '3',
             '-DPYTHON_EXECUTABLE': sys.executable
+        }
+    )
+
+    t.add_library(
+        name='numpy',
+        url='https://github.com/numpy/numpy/archive/v1.14.0.tar.gz',
+        phases=[Python(post_configure=generate_numpy_site_config)],
+        env={
+            'BLAS': 'openblas',
+            'PYTHONPATH': os.path.join('{prefix_dir}', 'lib', 'python3.6', 'site-packages'),
+            'CPPFLAGS': '{} -I{}'.format(t.env.get('CPPFLAGS', ''), os.path.join('{prefix_dir}', 'include')),
+            'CFLAGS': '{} -I{}'.format(t.env.get('CFLAGS', ''), os.path.join('{prefix_dir}', 'include')),
+            'CXXFLAGS': '{} -I{}'.format(t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'include')),
+            'LDSHARED':
+                '{}  -pthread -shared -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now'
+                .format(t.env.get('CC', '')),
+            'LDFLAGS': '{} -L{}'.format(t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'lib')),
+        },
+        build_args={'--fcompiler': 'gfortran'},
+        install_args={
+            '-O2': True
         }
     )
 

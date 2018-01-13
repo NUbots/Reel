@@ -5,6 +5,7 @@ import platform
 
 from .Toolchain import Toolchain
 from .Shell import Shell
+from .Python import Python
 from .patch import UpdateConfigSub
 
 
