@@ -3,9 +3,10 @@
 import os
 
 from .AutotoolsBuild import AutotoolsBuild
-from .MakeBuild import MakeBuild
-from .CMakeBuild import CMakeBuild
 from .BoostBuild import BoostBuild
+from .CMakeBuild import CMakeBuild
+from .MakeBuild import MakeBuild
+from .PythonBuild import PythonBuild
 
 
 class SmartBuild:
@@ -35,6 +36,9 @@ class SmartBuild:
             elif self.use_tool == 'make':
                 self.build_tool = MakeBuild(**self.build_args)
 
+            elif self.use_tool == 'python':
+                self.build_tool = PythonBuild(**self.build_args)
+
         else:
             # First check to see if we have a configure script
             if os.path.isfile(os.path.join(source, self.src_dir, 'configure')) or os.path.isfile(os.path.join(
@@ -48,6 +52,10 @@ class SmartBuild:
             # Then check for Jamroot
             elif os.path.isfile(os.path.join(source, self.src_dir, 'Jamroot')):
                 self.build_tool = BoostBuild(**self.build_args)
+
+            # Then check for setup.py
+            elif os.path.isfile(os.path.join(source, self.src_dir, 'setup.py')):
+                self.build_tool = PythonBuild(**self.build_args)
 
             # Bazel
 
