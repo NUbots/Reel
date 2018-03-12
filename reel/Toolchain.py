@@ -163,7 +163,7 @@ class Toolchain:
             # Build Binutils so we can link, ar, ranlib etc
             self.add_tool(
                 name='binutils',
-                url='{}/binutils/binutils-2.29.tar.xz'.format(gnu_mirror),
+                url='{}/binutils/binutils-2.30.tar.xz'.format(gnu_mirror),
                 configure_args={
                     '--host': self.parent_toolchain.triple,
                     '--build': self.parent_toolchain.triple,
@@ -181,7 +181,7 @@ class Toolchain:
 
             # We use this gcc build a few times, so make sure args are the same
             gcc_args = {
-                'url': '{}/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz'.format(gnu_mirror),
+                'url': '{}/gcc/gcc-7.3.0/gcc-7.3.0.tar.xz'.format(gnu_mirror),
                 'env': {
                     'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
                     'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
@@ -213,7 +213,7 @@ class Toolchain:
             # Build our static musl (our c standard library)
             self.add_library(
                 name='musl',
-                url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
+                url='https://www.musl-libc.org/releases/musl-1.1.19.tar.gz',
                 configure_args={
                     '--target': '{target_triple}',
                     '--syslibdir': os.path.join('{prefix_dir}', 'lib'),
@@ -241,7 +241,7 @@ class Toolchain:
             if not static:
                 self.add_library(
                     name='musl_shared',
-                    url='https://www.musl-libc.org/releases/musl-1.1.18.tar.gz',
+                    url='https://www.musl-libc.org/releases/musl-1.1.19.tar.gz',
                     build_postfix='_shared',
                     phases=[
                         Shell(
