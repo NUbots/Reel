@@ -585,12 +585,15 @@ class Toolchain:
             'Architecture: {}'.format(self.triple),
             'Directory:    {}'.format(self.state['prefix_dir'])
         ]
-        max_len = max(80 - 4, max(len(l) for l in info))
+        max_string = max(len(l) for l in info)
+        max_len = max(76, max_string)
 
+        cprint('')
         cprint('#' * (max_len + 4), 'red', attrs=['bold'])
         for i in info:
-            cprint('# {} #'.format(i.ljust(max_len)), 'red', attrs=['bold'])
+            cprint('# {} #'.format(i.ljust(max_string).center(max_len)), 'red', attrs=['bold'])
         cprint('#' * (max_len + 4), 'red', attrs=['bold'])
+        cprint('')
 
         # Build all our libraries
         for l in self.libraries:
