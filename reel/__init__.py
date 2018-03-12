@@ -44,7 +44,7 @@ class Reel:
 
         toolchain.add_library(
             name='automake',
-            url='{}/automake/automake-1.15.1.tar.xz'.format(self.gnu_mirror),
+            url='{}/automake/automake-1.16.tar.xz'.format(self.gnu_mirror),
         )
 
         toolchain.add_library(
@@ -76,7 +76,7 @@ class Reel:
 
         toolchain.add_library(
             name='ncurses',
-            url='{}/ncurses/ncurses-6.0.tar.gz'.format(self.gnu_mirror),
+            url='{}/ncurses/ncurses-6.1.tar.gz'.format(self.gnu_mirror),
             env={'CPPFLAGS': '-P'},
             configure_args={
                 '--with-sysroot': '"{prefix_dir}"',
@@ -146,7 +146,7 @@ class Reel:
 
         toolchain.add_library(
             name='curl',
-            url='https://curl.haxx.se/download/curl-7.57.0.tar.xz',
+            url='https://curl.haxx.se/download/curl-7.58.0.tar.xz',
             configure_args={
                 '--with-sysroot': '"{prefix_dir}"',
                 '--with-ssl': '"{prefix_dir}"'
@@ -156,7 +156,7 @@ class Reel:
         # Bootstrapping cmake is a little weird too
         toolchain.add_library(
             name='cmake',
-            url='https://cmake.org/files/v3.10/cmake-3.10.0.tar.gz',
+            url='https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz',
             phases=[
                 Shell(
                     configure='base_dir=$(pwd)'

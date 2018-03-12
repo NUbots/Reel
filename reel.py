@@ -57,11 +57,14 @@ r.add_library(
     }
 )
 
-r.add_library(name='png', url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz')
+r.add_library(
+    name='png',
+    url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz'
+)
 
 r.add_library(
     name='protobuf',
-    url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
+    url='https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-cpp-3.5.1.tar.gz',
     configure_args={
         '--with-zlib': True
     }
@@ -71,14 +74,14 @@ r.add_library(name='icu', src_dir='source', url='http://download.icu-project.org
 
 r.add_library(
     name='bjam',
-    url='https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz',
+    url='https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2',
     phases=[
         Shell(
             post_configure='cp -v {} {}'.
             format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
         )
     ],
-    configure_args={'--with-python': 'python3',
+    configure_args={'--with-python': sys.executable,
                     '--with-icu': '{prefix_dir}'},
     build_targets=[],
     install_targets=[]
@@ -147,7 +150,7 @@ for t in toolchains:
 
     t.add_library(
         name='protobuf',
-        url='https://github.com/google/protobuf/releases/download/v3.5.0/protobuf-cpp-3.5.0.tar.gz',
+        url='https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-cpp-3.5.1.tar.gz',
         env={'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
              'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']},
         configure_args={
@@ -220,7 +223,7 @@ for t in toolchains:
 
     t.add_library(
         name='ncurses',
-        url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.0.tar.gz',
+        url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.1.tar.gz',
         env={'CPPFLAGS': '-P'},
         configure_args={
             '--with-build-cc': r.toolchain.env['CC'],
@@ -367,7 +370,7 @@ for t in toolchains:
 
     t.add_library(
         name='yaml-cpp',
-        url='https://github.com/jbeder/yaml-cpp/archive/master.tar.gz',
+        url='https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.2.tar.gz',
         configure_args={
             '-DYAML_CPP_BUILD_CONTRIB': 'OFF',
             '-DYAML_CPP_BUILD_TOOLS': 'OFF'
@@ -452,7 +455,7 @@ for t in toolchains:
 
     t.add_library(
         name='boost',
-        url='https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz',
+        url='https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz',
         configure_args={'--with-python': 'python3',
                         '--with-icu': '{prefix_dir}'},
         use_bjam=os.path.join('{parent_prefix_dir}', 'bin', 'bjam'),

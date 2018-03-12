@@ -537,7 +537,7 @@ class Toolchain:
 
         self.add_library(
             name='linux-headers',
-            url='https://git.kernel.org/torvalds/t/linux-4.15-rc3.tar.gz',
+            url='https://git.kernel.org/torvalds/t/linux-4.16-rc5.tar.gz',
             phases=[
                 Shell(pre_build='mkdir -p {}'.format('{prefix_dir}', 'temp')),
                 Shell(
