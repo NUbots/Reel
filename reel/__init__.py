@@ -57,25 +57,6 @@ class Reel:
         )
 
         toolchain.add_library(
-            name='intltool',
-            url='http://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz',
-            # intltool-update has some regex that is incompatible with Perl 5.26
-            # https://bugs.launchpad.net/intltool/+bug/1696658
-            phases=[
-                Shell(
-                    post_extract='cd {source} && '
-                    'wget https://raw.githubusercontent.com/Alexpux/MSYS2-packages/master/intltool/perl-5.22-compatibility.patch -O patch'
-                    ' && patch -Np1 --dry-run -i patch'
-                    ' ; if [ $? -eq 0 ]; then patch -Np1 -i patch; else exit 0; fi'
-                ),
-                Shell(
-                    pre_configure=
-                    'echo "This library depends on the Perl module \'XML::Parser\', please make sure it is installed."'
-                )
-            ]
-        )
-
-        toolchain.add_library(
             name='nasm',
             url='http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.xz',
             configure_args={
@@ -83,61 +64,14 @@ class Reel:
             }
         )
 
-        if platform.system() == 'Linux':
-            toolchain.install_linux_headers()
-
-            toolchain.add_library(
-                name='util-linux',
-                url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
-                configure_args={
-                    '--disable-all-programs': True,
-                    '--enable-libblkid': True,
-                    '--enable-libmount': True,
-                    '--enable-libuuid': True,
-                    '--without-python': True,
-                    '--with-bashcompletiondir': os.path.join('{prefix_dir}', 'share', 'bash-completion', 'completions')
-                }
-            )
-
-        toolchain.add_library(name='gettext', url='{}/gettext/gettext-0.19.8.1.tar.xz'.format(self.gnu_mirror))
-
-        toolchain.add_library(
-            name='pcre',
-            url='http://ftp.pcre.org/pub/pcre/pcre-8.41.tar.bz2',
-            configure_args={
-                '--enable-utf': True,
-                '--enable-unicode-properties': True
-            }
-        )
-
-        toolchain.add_library(
-            name='texinfo',
-            url='{}/texinfo/texinfo-6.5.tar.xz'.format(self.gnu_mirror),
-            configure_args={
-                '--with-sysroot': '"{prefix_dir}"'
-            }
-        )
-
-        toolchain.add_library(name='ffi', url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz')
-
-        toolchain.add_library(name='libelf', url='http://www.mr511.de/software/libelf-0.8.13.tar.gz')
-
         toolchain.install_compression_libraries(zlib=True, bzip2=True, xz=True)
 
         toolchain.add_library(
-            name='glib2',
-            url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
-            phases=[Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h')],
+            name='pkgconfig',
+            url='https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz',
             configure_args={
-                '--with-threads': 'posix',
-                '--with-pcre': 'system',
-                '--disable-gtk-doc': True,
-                '--disable-man': True
+                '--with-internal-glib': True,
             }
-        )
-
-        toolchain.add_library(
-            name='pkgconfig', url='https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz'
         )
 
         toolchain.add_library(
@@ -178,26 +112,33 @@ class Reel:
             ]
         )
 
+        # Building openssl is weird because they don't like being normal
+        openssl_phases = {
+            'configure': '',
+            'build': '',
+            'install': '',
+        }
+
+        openssl_phases['configure'] += 'base_dir=$(pwd)'
+        openssl_phases['configure'] += ' && mkdir -p {builds_dir}/$(basename {source})'
+        openssl_phases['configure'] += ' && cd {builds_dir}/$(basename {source})'
+        openssl_phases['configure'] += ' && $base_dir/{source}/Configure'
+        openssl_phases['configure'] += '    --prefix={prefix_dir} '
+        openssl_phases['configure'] += '    --libdir=lib'
+        openssl_phases['configure'] += '    --release'
+        openssl_phases['configure'] += '    no-async'
+        openssl_phases['configure'] += '    linux-{arch}' if platform.system() == 'Linux' else '    darwin64-x86_64-cc'
+
+        openssl_phases['build'] += 'cd {builds_dir}/$(basename {source})'
+        openssl_phases['build'] += ' && make'
+
+        openssl_phases['install'] += 'cd {builds_dir}/$(basename {source})'
+        openssl_phases['install'] += ' && make install'
+
         toolchain.add_library(
             name='openssl',
             url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz',
-            phases=[
-                Shell(
-                    configure='base_dir=$(pwd)'
-                    ' && mkdir -p {builds_dir}/$(basename {source})'
-                    ' && cd {builds_dir}/$(basename {source})'
-                    ' && $base_dir/{source}/Configure'
-                    '    --prefix={prefix_dir} '
-                    '    --libdir=lib'
-                    '    --release'
-                    '    no-async'
-                    '    linux-{arch}' if platform.system() == 'Linux' else '    darwin64-x86_64-cc'
-                ),
-                Shell(build='cd {builds_dir}/$(basename {source})'
-                      ' && make'),
-                Shell(install='cd {builds_dir}/$(basename {source})'
-                      ' && make install')
-            ],
+            phases=[Shell(**openssl_phases)],
             env={
                 'CROSS_COMPILE': ' '
             }
