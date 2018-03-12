@@ -579,11 +579,18 @@ class Toolchain:
         os.makedirs(self.logs_dir, exist_ok=True)
         os.makedirs(self.status_dir, exist_ok=True)
 
-        cprint(
-            'Building toolchain {0} with architecture {1}'.format(self.state['toolchain_name'], self.triple),
-            'red',
-            attrs=['bold']
-        )
+        # A nice big banner to make it visible
+        info = [
+            'Toolchain:    {}'.format(self.state['toolchain_name']),
+            'Architecture: {}'.format(self.triple),
+            'Directory:    {}'.format(self.state['prefix_dir'])
+        ]
+        max_len = max(80 - 4, max(len(l) for l in info))
+
+        cprint('#' * (max_len + 4), 'red', attrs=['bold'])
+        for i in info:
+            cprint('# {} #'.format(i.ljust(max_len)), 'red', attrs=['bold'])
+        cprint('#' * (max_len + 4), 'red', attrs=['bold'])
 
         # Build all our libraries
         for l in self.libraries:
