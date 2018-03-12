@@ -137,10 +137,7 @@ class Toolchain:
 
             self.env.update({
                 # Extend the path
-                'PATH':
-                    '{}{}{}'.format(
-                        os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep, self.parent_toolchain.env['PATH']
-                    ),
+                'PATH': os.pathsep.join([os.path.join(self.state['prefix_dir'], 'bin'), self.env['PATH']]),
 
                 # Overwrite the compiler and compiler flags
                 'CC': '{}-gcc'.format(self.triple),
@@ -154,10 +151,10 @@ class Toolchain:
                 'FCFLAGS': ' '.join(self.fc_flags),
                 'LD_LIBRARY_PATH': '',
                 'PKG_CONFIG_PATH':
-                    '{}{}{}'.format(
-                        os.path.join(self.state['prefix_dir'], 'lib', 'pkgconfig'), os.pathsep,
+                    os.pathsep.join([
+                        os.path.join(self.state['prefix_dir'], 'lib', 'pkgconfig'),
                         os.path.join(self.state['prefix_dir'], 'share', 'pkgconfig')
-                    ),
+                    ]),
 
                 # Let all makes know they should treat this as a cross compilation
                 'CROSS_COMPILE': '{}-'.format(self.triple),
