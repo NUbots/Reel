@@ -24,8 +24,12 @@ class CMakeBuild:
             '-DCMAKE_INSTALL_PREFIX': '{prefix_dir}',
             '-DCMAKE_BUILD_TYPE': 'MinSizeRel',
             '-DCMAKE_PREFIX_PATH': '{prefix_dir}',
-            '-DCMAKE_TOOLCHAIN_FILE': '{cmake_toolchain_file}'
         }
+
+        if 'CROSS_COMPILE' in self.env and self.env['CROSS_COMPILE']:
+           self.configure_args.update({
+                '-DCMAKE_TOOLCHAIN_FILE': '{cmake_toolchain_file}'
+           })
 
         self.configure_args.update(build_args.get('configure_args', {}))
         self.src_dir = build_args.get('src_dir', '.')
