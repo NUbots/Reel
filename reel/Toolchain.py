@@ -115,14 +115,23 @@ class Toolchain:
         if parent_toolchain is None:
             self.env = dict(os.environ.copy())
 
-            # Update our path to include where we build binaries too
-            self.env['PATH'] = '{}{}{}'.format(
-                os.path.join(self.state['prefix_dir'], 'bin'), os.pathsep, self.env['PATH']
-            )
-            self.env['CROSS_COMPILE'] = ''
-            self.env['CFLAGS'] = ' '.join(self.c_flags)
-            self.env['CXXFLAGS'] = ' '.join(self.cxx_flags)
-            self.env['FCFLAGS'] = ' '.join(self.fc_flags)
+            # System toolchains need environment too
+            self.env.update({
+                # Update our path to include where we build binaries too
+                'PATH': os.pathsep.join([os.path.join(self.state['prefix_dir'], 'bin'), self.env['PATH']]),
+                'CFLAGS': ' '.join(self.c_flags),
+                'CXXFLAGS': ' '.join(self.cxx_flags),
+                'FCFLAGS': ' '.join(self.fc_flags),
+                'CPATH': os.path.join('{prefix_dir}', 'include'),
+                'LIBRARY_PATH': os.path.join(self.state['prefix_dir'], 'lib'),
+                'LD_LIBRARY_PATH': os.path.join(self.state['prefix_dir'], 'lib'),
+                'CROSS_COMPILE': '',
+                'PKG_CONFIG_PATH':
+                    os.pathsep.join([
+                        os.path.join('{prefix_dir}', 'lib', 'pkgconfig'),
+                        os.path.join('{prefix_dir}', 'share', 'pkgconfig')
+                    ]),
+            })
 
             # If our environment doesn't already have a CC or CXX use cc and c++
             if 'CC' not in self.env:
