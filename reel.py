@@ -10,6 +10,8 @@ from reel import Shell
 
 from reel.util import dedent
 
+r = Reel()  #gnu_mirror='http://gnu.uberglobalmirror.com')
+
 r.add_library(
     name='gperf',
     url='https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz',
