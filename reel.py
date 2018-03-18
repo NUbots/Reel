@@ -52,22 +52,15 @@ r.add_library(
 r.add_library(
     name='expat',
     url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
-    configure_args={
-        '--without-docbook': True
-    }
+    configure_args={'--without-docbook': True}
 )
 
-r.add_library(
-    name='png',
-    url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz'
-)
+r.add_library(name='png', url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz')
 
 r.add_library(
     name='protobuf',
     url='https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-cpp-3.5.1.tar.gz',
-    configure_args={
-        '--with-zlib': True
-    }
+    configure_args={'--with-zlib': True}
 )
 
 r.add_library(name='icu', src_dir='source', url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz')
@@ -81,8 +74,10 @@ r.add_library(
             format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
         )
     ],
-    configure_args={'--with-python': sys.executable,
-                    '--with-icu': '{prefix_dir}'},
+    configure_args={
+        '--with-python': sys.executable,
+        '--with-icu': '{prefix_dir}'
+    },
     build_targets=[],
     install_targets=[]
 )
@@ -151,8 +146,10 @@ for t in toolchains:
     t.add_library(
         name='protobuf',
         url='https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-cpp-3.5.1.tar.gz',
-        env={'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
-             'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']},
+        env={
+            'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
+            'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']
+        },
         configure_args={
             '--with-zlib': True,
             '--with-protoc': os.path.join('{parent_prefix_dir}', 'bin', 'protoc')
@@ -162,9 +159,7 @@ for t in toolchains:
     t.add_library(
         name='expat',
         url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
-        configure_args={
-            '--without-docbook': True
-        }
+        configure_args={'--without-docbook': True}
     )
 
     t.add_library(name='ffi', url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz')
@@ -198,7 +193,7 @@ for t in toolchains:
 
     t.add_library(
         name='glib2',
-        url='https://ftp.gnome.org/pub/gnome/sources/glib/2.52/glib-2.52.3.tar.xz',
+        url='https://ftp.gnome.org/pub/gnome/sources/glib/2.56/glib-2.56.0.tar.xz',
         phase=[Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h')],
         configure_args={
             'glib_cv_stack_grows': 'no',
@@ -251,7 +246,7 @@ for t in toolchains:
 
     t.add_library(
         name='openssl',
-        url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz',
+        url='https://www.openssl.org/source/openssl-1.1.0g.tar.gz',
         phases=[
             Shell(
                 configure='base_dir=$(pwd)'
@@ -269,14 +264,12 @@ for t in toolchains:
             Shell(install='cd {builds_dir}/$(basename {source})'
                   ' && make install')
         ],
-        env={
-            'CROSS_COMPILE': ' '
-        }
+        env={'CROSS_COMPILE': ' '}
     )
 
     t.add_library(
         name='python',
-        url='https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz',
+        url='https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tar.xz',
         env={
             # Configure cant run all tests
             'ac_cv_file__dev_ptmx': 'no',
@@ -301,12 +294,12 @@ for t in toolchains:
             'LDFLAGS': '{} -L{}'.format(t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'lib')),
 
             # We need to be able to find the systems python to perform cross-compilation
-            '_PYTHON_PROJECT_BASE': '{}'.format(os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3'))),
+            '_PYTHON_PROJECT_BASE': '{}'.format(os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.4'))),
             '_PYTHON_HOST_PLATFORM': 'linux-{arch}',
             'PYTHONPATH':
                 '{}{}{}'.format(
-                    os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.3')), os.pathsep,
-                    os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.3'))
+                    os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.4')), os.pathsep,
+                    os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.4'))
                 ),
             'PYTHON_FOR_BUILD': sys.executable
         },
@@ -322,7 +315,7 @@ for t in toolchains:
 
     t.add_library(
         name='xml2',
-        url='http://xmlsoft.org/sources/libxml2-2.9.3.tar.gz',
+        url='http://xmlsoft.org/sources/libxml2-2.9.8.tar.gz',
         env={
             'PYTHONPATH': os.path.abspath(os.path.join('{prefix_dir}', 'lib', 'python3.6', 'site-packages')),
         },
@@ -344,6 +337,8 @@ for t in toolchains:
 
     t.add_library(
         name='openblas',
+        # Unable to build version 0.2.20
+        # https://github.com/xianyi/OpenBLAS/issues/1252
         url='https://github.com/xianyi/OpenBLAS/archive/v0.2.19.tar.gz',
         build_tool='make',
         build_args={
@@ -360,7 +355,7 @@ for t in toolchains:
 
     t.add_library(
         name='armadillo',
-        url='https://downloads.sourceforge.net/project/arma/armadillo-7.950.1.tar.xz',
+        url='https://downloads.sourceforge.net/project/arma/armadillo-8.400.0.tar.xz',
         build_tool='cmake',
         configure_args={
             '-DLAPACK_LIBRARY': os.path.join('{prefix_dir}', 'lib', 'libopenblas.so'),
@@ -401,13 +396,11 @@ for t in toolchains:
 
     t.add_library(
         name='jpeg-turbo',
-        url='http://downloads.sourceforge.net/project/libjpeg-turbo/1.5.1/libjpeg-turbo-1.5.1.tar.gz',
-        configure_args={
-            'CCASFLAGS': '-f elf64'
-        }
+        url='http://downloads.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-1.5.3.tar.gz',
+        configure_args={'CCASFLAGS': '-f elf64'}
     )
 
-    t.add_library(name='fmt', url='https://github.com/fmtlib/fmt/archive/3.0.1.tar.gz')
+    t.add_library(name='fmt', url='https://github.com/fmtlib/fmt/archive/4.1.0.tar.gz')
 
     t.add_library(
         name='portaudio', url='http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz', phases=[UpdateConfigSub]
@@ -456,8 +449,10 @@ for t in toolchains:
     t.add_library(
         name='boost',
         url='https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz',
-        configure_args={'--with-python': 'python3',
-                        '--with-icu': '{prefix_dir}'},
+        configure_args={
+            '--with-python': 'python3',
+            '--with-icu': '{prefix_dir}'
+        },
         use_bjam=os.path.join('{parent_prefix_dir}', 'bin', 'bjam'),
         env={'BOOST_BUILD_PATH': os.path.abspath('{source}')},
         build_args=boost_args,
@@ -484,11 +479,9 @@ for t in toolchains:
         }
     )
 
-    t.add_library(
-        name='fswatch',
-        url='https://github.com/emcrisostomo/fswatch/releases/download/1.9.3/fswatch-1.9.3.tar.gz',
-        src_dir='fswatch-1.9.3'
-    )
+    t.add_library(name='fswatch', url='https://github.com/emcrisostomo/fswatch/archive/1.11.2.tar.gz')
+
+    t.add_library(name='libuv', url='https://github.com/libuv/libuv/archive/v1.19.2.tar.gz')
 
     t.add_library(name='udev', url='https://dev.gentoo.org/~blueness/eudev/eudev-3.2.5.tar.gz')
 
@@ -503,7 +496,7 @@ for t in toolchains:
 
     t.add_library(
         name='aravis',
-        url='http://ftp.gnome.org/pub/GNOME/sources/aravis/0.5/aravis-0.5.10.tar.xz',
+        url='http://ftp.gnome.org/pub/GNOME/sources/aravis/0.5/aravis-0.5.11.tar.xz',
         phases=[
             Shell(
                 post_install='cp -v {} {}'.format(
@@ -527,7 +520,7 @@ for t in toolchains:
 
     t.add_library(
         name='pybind11',
-        url='https://github.com/pybind/pybind11/archive/v2.2.1.tar.gz',
+        url='https://github.com/pybind/pybind11/archive/v2.2.2.tar.gz',
         configure_args={
             '-DPYBIND11_TEST': 'OFF',
             '-DPYBIND11_PYTHON_VERSION': '3',
@@ -537,7 +530,7 @@ for t in toolchains:
 
     t.add_library(
         name='numpy',
-        url='https://github.com/numpy/numpy/archive/v1.14.0.tar.gz',
+        url='https://github.com/numpy/numpy/archive/v1.14.2.tar.gz',
         phases=[Python(post_configure=generate_numpy_site_config)],
         env={
             'BLAS': 'openblas',
@@ -551,9 +544,7 @@ for t in toolchains:
             'LDFLAGS': '{} -L{}'.format(t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'lib')),
         },
         build_args={'--fcompiler': 'gfortran'},
-        install_args={
-            '-O2': True
-        }
+        install_args={'-O2': True}
     )
 
 r.build()

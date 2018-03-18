@@ -349,7 +349,7 @@ class Toolchain:
 
         self.add_library(
             name='freetype',
-            url='https://downloads.sourceforge.net/freetype/freetype-2.8.1.tar.bz2',
+            url='https://downloads.sourceforge.net/freetype/freetype-2.9.tar.bz2',
             phases=[
                 Shell(
                     post_extract='cd {source}'
@@ -367,55 +367,48 @@ class Toolchain:
 
         self.add_library(
             name='fontconfig',
-            url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.6.tar.bz2',
+            url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.13.0.tar.bz2',
             phases=[Shell(post_extract='cd {source} && rm -f src/fcobjshash.h')],
-            configure_args={
-                '--disable-docs': True
-            }
+            configure_args={'--disable-docs': True}
         )
 
-        self.add_library(url='https://www.x.org/pub/individual/util/util-macros-1.19.1.tar.bz2', name='util-macros')
+        self.add_library(url='https://www.x.org/pub/individual/util/util-macros-1.19.2.tar.bz2', name='util-macros')
 
-        self.add_library(
-            name='xcb-proto',
-            url='https://xcb.freedesktop.org/dist/xcb-proto-1.12.tar.bz2',
-            phases=[
-                Shell(
-                    post_extract='cd {source}'
-                    ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-schema-1.patch -O - | patch -Np1 || true'
-                    ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/xcb-proto-1.12-python3-1.patch -O - | patch -Np1 || true'
-                )
-            ]
-        )
+        self.add_library(name='xcb-proto', url='https://xcb.freedesktop.org/dist/xcb-proto-1.13.tar.bz2')
 
         # yapf: disable
         xorg_protos = [
-            ('bigreqsproto', '1.1.2'),
-            ('compositeproto', '0.4.2'),
-            ('damageproto', '1.2.1'),
-            ('dmxproto', '2.3.1'),
-            ('dri2proto', '2.8'),
-            ('dri3proto', '1.0'),
-            ('fixesproto', '5.0'),
-            ('fontsproto', '2.1.3'),
-            ('glproto', '1.4.17'),
-            ('inputproto', '2.3.2'),
-            ('kbproto', '1.0.7'),
-            ('presentproto', '1.1'),
-            ('randrproto', '1.5.0'),
-            ('recordproto', '1.14.2'),
-            ('renderproto', '0.11.1'),
-            ('resourceproto', '1.2.0'),
-            ('scrnsaverproto', '1.2.2'),
-            ('videoproto', '2.3.3'),
-            ('xcmiscproto', '1.2.2'),
-            ('xextproto', '7.3.0'),
-            ('xf86bigfontproto', '1.2.0'),
-            ('xf86dgaproto', '2.1'),
-            ('xf86driproto', '2.1.1'),
-            ('xf86vidmodeproto', '2.3.1'),
-            ('xineramaproto', '1.2.1'),
-            ('xproto', '7.0.31')
+            ('applewmproto',             '1.4.2'),
+            ('bigreqsproto',             '1.1.2'),
+            ('compositeproto',           '0.4.2'),
+            ('damageproto',              '1.2.1'),
+            ('dmxproto',                 '2.3.1'),
+            ('dri2proto',                '2.8'),
+            ('dri3proto',                '1.0'),
+            ('fixesproto',               '5.0'),
+            ('fontsproto',               '2.1.3'),
+            ('glproto',                  '1.4.17'),
+            ('inputproto',               '2.3.2'),
+            ('kbproto',                  '1.0.7'),
+            ('presentproto',             '1.1'),
+            ('randrproto',               '1.5.0'),
+            ('recordproto',              '1.14.2'),
+            ('renderproto',              '0.11.1'),
+            ('resourceproto',            '1.2.0'),
+            ('scrnsaverproto',           '1.2.2'),
+            ('trapproto',                '3.4.3'),
+            ('videoproto',               '2.3.3'),
+            ('windowswmproto',           '1.0.4'),
+            ('xcmiscproto',              '1.2.2'),
+            ('xextproto',                '7.3.0'),
+            ('xf86bigfontproto',         '1.2.0'),
+            ('xf86dgaproto',             '2.1'),
+            ('xf86driproto',             '2.1.1'),
+            ('xf86miscproto',            '0.9.3'),
+            ('xf86vidmodeproto',         '2.3.1'),
+            ('xineramaproto',            '1.2.1'),
+            ('xproto',                   '7.0.31'),
+            ('xproxymanagementprotocol', '1.0.3')
         ]
         # yapf: enable
 
@@ -432,13 +425,13 @@ class Toolchain:
 
         self.add_library(
             name='xcb',
-            url='https://xcb.freedesktop.org/dist/libxcb-1.12.tar.bz2',
+            url='https://xcb.freedesktop.org/dist/libxcb-1.13.tar.bz2',
             phases=[
                 Shell(
                     post_extract='cd {source}'
                     # Fixes incompatibilities between python2 and python3 (whitespace inconsistencies)
                     # https://bugs.freedesktop.org/show_bug.cgi?id=95490
-                    ' && wget http://www.linuxfromscratch.org/patches/blfs/svn/libxcb-1.12-python3-1.patch -O - | patch -Np1 || true'
+                    ' && wget http://www.linuxfromscratch.org/patches/blfs/7.10/libxcb-1.12-python3-1.patch -O - | patch -Np1 || true'
                     # pthread-stubs is useless on linux
                     ' && sed -i "s/pthread-stubs//" configure'
                 )
@@ -451,38 +444,38 @@ class Toolchain:
 
         # yapf: disable
         xorg_libs = [
-            ('xtrans', '1.3.5'),
-            ('libX11', '1.6.5'),
-            ('libXext', '1.3.3'),
-            ('libFS', '1.0.7'),
-            ('libICE', '1.0.9'),
-            ('libSM', '1.2.2'),
+            ('xtrans',        '1.3.5'),
+            ('libX11',        '1.6.5'),
+            ('libXext',       '1.3.3'),
+            ('libFS',         '1.0.7'),
+            ('libICE',        '1.0.9'),
+            ('libSM',         '1.2.2'),
             ('libXScrnSaver', '1.2.2'),
-            ('libXt', '1.1.5'),
-            ('libXmu', '1.1.2'),
-            ('libXpm', '3.5.12'),
-            ('libXaw', '1.0.13'),
-            ('libXfixes', '5.0.3'),
+            ('libXt',         '1.1.5'),
+            ('libXmu',        '1.1.2'),
+            ('libXpm',        '3.5.12'),
+            ('libXaw',        '1.0.13'),
+            ('libXfixes',     '5.0.3'),
             ('libXcomposite', '0.4.4'),
-            ('libXrender', '0.9.10'),
-            ('libXcursor', '1.1.14'),
-            ('libXdamage', '1.1.4'),
-            ('libfontenc', '1.1.3'),
-            ('libXfont2', '2.0.2'),
-            ('libXft', '2.3.2'),
-            ('libXi', '1.7.9'),
-            ('libXinerama', '1.1.3'),
-            ('libXrandr', '1.5.1'),
-            ('libXres', '1.2.0'),
-            ('libXtst', '1.2.3'),
-            ('libXv', '1.0.11'),
-            ('libXvMC', '1.0.10'),
-            ('libXxf86dga', '1.1.4'),
-            ('libXxf86vm', '1.1.4'),
-            ('libdmx', '1.1.3'),
-            ('libpciaccess', '0.14'),
-            ('libxkbfile', '1.0.9'),
-            ('libxshmfence', '1.2')
+            ('libXrender',    '0.9.10'),
+            ('libXcursor',    '1.1.15'),
+            ('libXdamage',    '1.1.4'),
+            ('libfontenc',    '1.1.3'),
+            ('libXfont2',     '2.0.3'),
+            ('libXft',        '2.3.2'),
+            ('libXi',         '1.7.9'),
+            ('libXinerama',   '1.1.3'),
+            ('libXrandr',     '1.5.1'),
+            ('libXres',       '1.2.0'),
+            ('libXtst',       '1.2.3'),
+            ('libXv',         '1.0.11'),
+            ('libXvMC',       '1.0.10'),
+            ('libXxf86dga',   '1.1.4'),
+            ('libXxf86vm',    '1.1.4'),
+            ('libdmx',        '1.1.3'),
+            ('libpciaccess',  '0.14'),
+            ('libxkbfile',    '1.0.9'),
+            ('libxshmfence',  '1.3')
         ]
         # yapf: enable
 
@@ -491,8 +484,10 @@ class Toolchain:
                 name='xorg-lib-{}'.format(lib[0]),
                 url='https://www.x.org/pub/individual/lib/{}-{}.tar.bz2'.format(*lib),
                 phases=[UpdateConfigSub],
-                env={'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
-                     'CFLAGS_FOR_BUILD': ''},
+                env={
+                    'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
+                    'CFLAGS_FOR_BUILD': ''
+                },
                 configure_args={
                     # musl returns a valid pointer for a 0 byte allocation
                     '--enable-malloc0returnsnull': 'no'
@@ -512,10 +507,12 @@ class Toolchain:
         # Tcl/Tk configures don't understand --enable-static
         self.add_library(
             name='tcl',
-            url='https://prdownloads.sourceforge.net/tcl/tcl8.6.7-src.tar.gz',
+            url='https://prdownloads.sourceforge.net/tcl/tcl8.6.8-src.tar.gz',
             src_dir='unix',
-            configure_args={'--enable-threads': True,
-                            '--enable-static': None},
+            configure_args={
+                '--enable-threads': True,
+                '--enable-static': None
+            },
             env=env
         )
 
@@ -523,10 +520,10 @@ class Toolchain:
 
         self.add_library(
             name='tk',
-            url='https://prdownloads.sourceforge.net/tcl/tk8.6.7-src.tar.gz',
+            url='https://prdownloads.sourceforge.net/tcl/tk8.6.8-src.tar.gz',
             src_dir='unix',
             configure_args={
-                '--with-tcl': os.path.join('..', 'tcl8.6.7-src'),
+                '--with-tcl': os.path.join('..', 'tcl8.6.8-src'),
                 m64: True,
                 '--x-includes': os.path.join('{prefix_dir}', 'include'),
                 '--x-libraries': os.path.join('{prefix_dir}', 'lib'),
@@ -589,8 +586,7 @@ class Toolchain:
 
         # A nice big banner to make it visible
         info = [
-            'Toolchain:    {}'.format(self.state['toolchain_name']),
-            'Architecture: {}'.format(self.triple),
+            'Toolchain:    {}'.format(self.state['toolchain_name']), 'Architecture: {}'.format(self.triple),
             'Directory:    {}'.format(self.state['prefix_dir'])
         ]
         max_string = max(len(l) for l in info)

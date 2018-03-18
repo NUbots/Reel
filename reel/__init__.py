@@ -44,7 +44,7 @@ class Reel:
 
         toolchain.add_library(
             name='automake',
-            url='{}/automake/automake-1.16.tar.xz'.format(self.gnu_mirror),
+            url='{}/automake/automake-1.16.1.tar.xz'.format(self.gnu_mirror),
         )
 
         toolchain.add_library(
@@ -162,16 +162,14 @@ class Reel:
 
         toolchain.add_library(
             name='openssl',
-            url='https://www.openssl.org/source/openssl-1.1.0f.tar.gz',
+            url='https://www.openssl.org/source/openssl-1.1.0g.tar.gz',
             phases=[Shell(**openssl_phases)],
-            env={
-                'CROSS_COMPILE': ' '
-            }
+            env={'CROSS_COMPILE': ' '}
         )
 
         toolchain.add_library(
             name='curl',
-            url='https://curl.haxx.se/download/curl-7.58.0.tar.xz',
+            url='https://curl.haxx.se/download/curl-7.59.0.tar.xz',
             configure_args={
                 '--with-sysroot': '"{prefix_dir}"',
                 '--with-ssl': '"{prefix_dir}"'
@@ -181,7 +179,7 @@ class Reel:
         # Bootstrapping cmake is a little weird too
         toolchain.add_library(
             name='cmake',
-            url='https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz',
+            url='https://cmake.org/files/v3.11/cmake-3.11.0-rc3.tar.gz',
             phases=[
                 Shell(
                     configure='base_dir=$(pwd)'
