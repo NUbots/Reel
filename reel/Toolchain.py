@@ -634,7 +634,9 @@ def generate_toolchain_files(env, log_file=None, **state):
         SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
         SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-        INCLUDE_DIRECTORIES(SYSTEM "{include_dir}")
+        # Usually this would be a SYSTEM directive, but gcc-7.3.0 seems to fail using include_next with -isystem
+        # https://patchwork.openembedded.org/patch/148218/
+        INCLUDE_DIRECTORIES("{include_dir}")
 
         {compile_options}
 
