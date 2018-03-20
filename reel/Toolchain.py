@@ -494,7 +494,7 @@ class Toolchain:
                 }
             )
 
-    def install_tcltk(self, **kwargs):
+    def install_tcltk(self, version='8.6.8', **kwargs):
 
         if kwargs.get('install_X11', False):
             self.install_X11()
@@ -507,12 +507,10 @@ class Toolchain:
         # Tcl/Tk configures don't understand --enable-static
         self.add_library(
             name='tcl',
-            url='https://prdownloads.sourceforge.net/tcl/tcl8.6.8-src.tar.gz',
+            url='https://prdownloads.sourceforge.net/tcl/tcl{}-src.tar.gz'.format(version),
             src_dir='unix',
-            configure_args={
-                '--enable-threads': True,
-                '--enable-static': None
-            },
+            configure_args={'--enable-threads': True,
+                            '--enable-static': None},
             env=env
         )
 
@@ -520,10 +518,10 @@ class Toolchain:
 
         self.add_library(
             name='tk',
-            url='https://prdownloads.sourceforge.net/tcl/tk8.6.8-src.tar.gz',
+            url='https://prdownloads.sourceforge.net/tcl/tk{}-src.tar.gz'.format(version),
             src_dir='unix',
             configure_args={
-                '--with-tcl': os.path.join('..', 'tcl8.6.8-src'),
+                '--with-tcl': os.path.join('..', 'tcl{}-src'.format(version)),
                 m64: True,
                 '--x-includes': os.path.join('{prefix_dir}', 'include'),
                 '--x-libraries': os.path.join('{prefix_dir}', 'lib'),
