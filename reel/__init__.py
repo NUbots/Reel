@@ -84,12 +84,15 @@ class Reel:
             configure_args={
                 '--with-sysroot': '"{prefix_dir}"',
                 '--with-build-cc': '"$CC"',
+                '--with-pkg-config': True,
+                '--enable-pc-files': True,
                 '--with-normal': True,
                 '--with-debug': True,
                 '--with-profile': True,
                 '--with-termlib': True,
                 '--with-ticlib': True,
                 '--with-gpm': True,
+                '--with-pthread': True,
                 '--enable-sp-funcs': True,
                 '--enable-const': True,
                 '--enable-ext-colors': True,
@@ -97,7 +100,9 @@ class Reel:
                 '--enable-ext-putwin': True,
                 '--enable-no-padding': True,
                 '--enable-sigwinch': True,
-                '--enable-tcap-names': True
+                '--enable-tcap-names': True,
+                '--without-manpages': True,
+                '--without-tests': True
             }
         )
 

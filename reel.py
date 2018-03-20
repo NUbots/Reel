@@ -227,13 +227,17 @@ for t in toolchains:
             'ac_cv_path_install': '/usr/bin/install -c --strip-program={prefix_dir}/{target_triple}/bin/strip'
         },
         configure_args={
+            # We need the parents compiler for building here.
             '--with-build-cc': r.toolchain.env['CC'],
+            '--with-pkg-config': True,
+            '--enable-pc-files': True,
             '--with-normal': True,
             '--with-debug': True,
             '--with-profile': True,
             '--with-termlib': True,
             '--with-ticlib': True,
             '--with-gpm': True,
+            '--with-pthread': True,
             '--enable-sp-funcs': True,
             '--enable-const': True,
             '--enable-ext-colors': True,
@@ -241,7 +245,9 @@ for t in toolchains:
             '--enable-ext-putwin': True,
             '--enable-no-padding': True,
             '--enable-sigwinch': True,
-            '--enable-tcap-names': True
+            '--enable-tcap-names': True,
+            '--without-manpages': True,
+            '--without-tests': True
         }
     )
 
