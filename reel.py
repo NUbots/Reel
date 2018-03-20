@@ -55,6 +55,36 @@ r.add_library(
     install_targets=[]
 )
 
+r.add_library(
+    name='intltool',
+    url='http://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz',
+    # intltool-update has some regex that is incompatible with Perl 5.26
+    # https://bugs.launchpad.net/intltool/+bug/1696658
+    phases=[
+        Shell(
+            post_extract='cd {source} && '
+            'wget https://raw.githubusercontent.com/Alexpux/MSYS2-packages/master/intltool/perl-5.22-compatibility.patch -O patch'
+            ' && patch -Np1 --dry-run -i patch'
+            ' ; if [ $? -eq 0 ]; then patch -Np1 -i patch; else exit 0; fi'
+        ),
+        Shell(
+            pre_configure=
+            'echo "This library depends on the Perl module \'XML::Parser\', please make sure it is installed."'
+        )
+    ]
+)
+
+r.add_library(
+    name='gettext',
+    url='https://ftpmirror.gnu.org/gnu/gettext/gettext-0.19.8.1.tar.xz',
+    configure_args={
+        '--with-sysroot': '"{prefix_dir}"',
+        '--disable-java': True,
+        '--disable-csharp': True,
+        '--enable-relocatable': True
+    }
+)
+
 nuc7i7bnh_flags = [
     '-march=broadwell', '-mtune=broadwell', '-mmmx', '-mno-3dnow', '-msse', '-msse2', '-msse3', '-mssse3', '-mno-sse4a',
     '-mcx16', '-msahf', '-mmovbe', '-maes', '-mno-sha', '-mpclmul', '-mpopcnt', '-mabm', '-mno-lwp', '-mfma',

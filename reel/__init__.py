@@ -57,31 +57,6 @@ class Reel:
         )
 
         toolchain.add_library(
-            name='gettext',
-            url='{}/gettext/gettext-0.19.8.1.tar.xz'.format(self.gnu_mirror),
-            configure_args={'--with-sysroot': '"{prefix_dir}"'}
-        )
-
-        toolchain.add_library(
-            name='intltool',
-            url='http://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz',
-            # intltool-update has some regex that is incompatible with Perl 5.26
-            # https://bugs.launchpad.net/intltool/+bug/1696658
-            phases=[
-                Shell(
-                    post_extract='cd {source} && '
-                    'wget https://raw.githubusercontent.com/Alexpux/MSYS2-packages/master/intltool/perl-5.22-compatibility.patch -O patch'
-                    ' && patch -Np1 --dry-run -i patch'
-                    ' ; if [ $? -eq 0 ]; then patch -Np1 -i patch; else exit 0; fi'
-                ),
-                Shell(
-                    pre_configure=
-                    'echo "This library depends on the Perl module \'XML::Parser\', please make sure it is installed."'
-                )
-            ]
-        )
-
-        toolchain.add_library(
             name='nasm',
             url='http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.xz',
             configure_args={
