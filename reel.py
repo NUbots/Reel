@@ -515,7 +515,6 @@ for t in toolchains:
         # Unable to cross compule boost.context for ARM (other modules depend on boost.context)
         '--without-context': True if t.arch == 'aarch64' else None,
         '--without-coroutine': True if t.arch == 'aarch64' else None,
-        '--without-coroutine2': True if t.arch == 'aarch64' else None,
         '--without-fiber': True if t.arch == 'aarch64' else None
     }
 
