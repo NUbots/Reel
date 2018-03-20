@@ -150,7 +150,9 @@ class Toolchain:
 
                 # Overwrite the compiler and compiler flags
                 'CC': '{}-gcc'.format(self.triple),
+                'CPP': '{}-gcc -E'.format(self.triple),
                 'CXX': '{}-g++'.format(self.triple),
+                'CXXCPP': '{}-g++ -E'.format(self.triple),
                 'FC': '{}-gfortran'.format(self.triple),
                 'AR': '{}-ar'.format(self.triple),
                 'RANLIB': '{}-ranlib'.format(self.triple),
