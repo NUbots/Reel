@@ -147,7 +147,9 @@ class Reel:
             name='openssl',
             url='https://www.openssl.org/source/openssl-1.1.0g.tar.gz',
             phases=[Shell(**openssl_phases)],
-            env={'CROSS_COMPILE': ' '}
+            env={
+                'CROSS_COMPILE': ' '
+            }
         )
 
         toolchain.add_library(
