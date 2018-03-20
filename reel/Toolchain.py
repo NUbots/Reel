@@ -371,7 +371,9 @@ class Toolchain:
             name='fontconfig',
             url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.13.0.tar.bz2',
             phases=[Shell(post_extract='cd {source} && rm -f src/fcobjshash.h')],
-            configure_args={'--disable-docs': True}
+            configure_args={
+                '--disable-docs': True
+            }
         )
 
         self.add_library(url='https://www.x.org/pub/individual/util/util-macros-1.19.2.tar.bz2', name='util-macros')
@@ -486,10 +488,8 @@ class Toolchain:
                 name='xorg-lib-{}'.format(lib[0]),
                 url='https://www.x.org/pub/individual/lib/{}-{}.tar.bz2'.format(*lib),
                 phases=[UpdateConfigSub],
-                env={
-                    'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
-                    'CFLAGS_FOR_BUILD': ''
-                },
+                env={'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
+                     'CFLAGS_FOR_BUILD': ''},
                 configure_args={
                     # musl returns a valid pointer for a 0 byte allocation
                     '--enable-malloc0returnsnull': 'no'
