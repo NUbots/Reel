@@ -222,7 +222,10 @@ for t in toolchains:
     t.add_library(
         name='ncurses',
         url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.1.tar.gz',
-        env={'CPPFLAGS': '-P'},
+        env={
+            'CPPFLAGS': '-P',
+            'ac_cv_path_install': '/usr/bin/install -c --strip-program={prefix_dir}/{target_triple}/bin/strip'
+        },
         configure_args={
             '--with-build-cc': r.toolchain.env['CC'],
             '--with-normal': True,
