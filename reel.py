@@ -39,23 +39,6 @@ r.add_library(
 r.add_library(name='icu', src_dir='source', url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz')
 
 r.add_library(
-    name='bjam',
-    url='https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2',
-    phases=[
-        Shell(
-            post_configure='cp -v {} {}'.
-            format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
-        )
-    ],
-    configure_args={
-        '--with-python': sys.executable,
-        '--with-icu': '{prefix_dir}'
-    },
-    build_targets=[],
-    install_targets=[]
-)
-
-r.add_library(
     name='intltool',
     url='http://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz',
     # intltool-update has some regex that is incompatible with Perl 5.26
@@ -83,6 +66,66 @@ r.add_library(
         '--disable-csharp': True,
         '--enable-relocatable': True
     }
+)
+
+r.install_X11()
+r.install_tcltk()
+
+r.add_library(
+    name='mpdec',
+    url='http://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.4.2.tar.gz',
+    phases=[UpdateConfigSub],
+    in_source_build=True,
+    build_targets=['default']
+)
+
+r.add_library(
+    name='python',
+    url='https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tar.xz',
+    env={
+        # Configure needs some help finding the curses headers
+        'CPPFLAGS':
+            '{} -I{} -I{}'.format(
+                r.toolchain.env.get('CPPFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
+                os.path.join('{prefix_dir}', 'include', 'ncurses')
+            ),
+        'CFLAGS':
+            '{} -I{} -I{}'.format(
+                r.toolchain.env.get('CFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
+                os.path.join('{prefix_dir}', 'include', 'ncurses')
+            ),
+        'CXXFLAGS':
+            '{} -I{} -I{}'.format(
+                r.toolchain.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
+                os.path.join('{prefix_dir}', 'include', 'ncurses')
+            ),
+        'LDFLAGS': '{} -L{}'.format(r.toolchain.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'lib'))
+    },
+    in_source_build=True,
+    configure_args={
+        '--enable-ipv6': True,
+        '--with-system-ffi': True,
+        '--with-system-expat': True,
+        '--with-system-libmpdec': True,
+        '--with-threads': True
+    }
+)
+
+r.add_library(
+    name='bjam',
+    url='https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2',
+    phases=[
+        Shell(
+            post_configure='cp -v {} {}'.
+            format(os.path.join('{build}', 'bjam'), os.path.join('{prefix_dir}', 'bin', 'bjam'))
+        )
+    ],
+    configure_args={
+        '--with-python': os.path.join('{parent_prefix_dir}', 'bin', 'python3'),
+        '--with-icu': '{prefix_dir}'
+    },
+    build_targets=[],
+    install_targets=[]
 )
 
 nuc7i7bnh_flags = [
@@ -309,11 +352,11 @@ for t in toolchains:
             '_PYTHON_PROJECT_BASE': '{}'.format(os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.4'))),
             '_PYTHON_HOST_PLATFORM': 'linux-{arch}',
             'PYTHONPATH':
-                '{}{}{}'.format(
-                    os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.4')), os.pathsep,
+                os.pathsep.join([
+                    os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.4')),
                     os.path.abspath(os.path.join(t.state['sources_dir'], 'Python-3.6.4'))
-                ),
-            'PYTHON_FOR_BUILD': sys.executable
+                ]),
+            'PYTHON_FOR_BUILD': os.path.join('{parent_prefix_dir}', 'bin', 'python3')
         },
         in_source_build=True,
         configure_args={
@@ -536,7 +579,12 @@ for t in toolchains:
         configure_args={
             '-DPYBIND11_TEST': 'OFF',
             '-DPYBIND11_PYTHON_VERSION': '3',
-            '-DPYTHON_EXECUTABLE': sys.executable
+
+            # Prevent cmake from trying to execute python to find its libraries.
+            '-DPYTHON_EXECUTABLE': os.path.join('{prefix_dir}', 'bin', 'python3'),
+            '-DPYTHON_LIBRARY': os.path.join('{prefix_dir}', 'lib', 'libpython3.6m.so'),
+            '-DPYTHONLIBS_FOUND': 'ON',
+            '-DPYTHON_MODULE_EXTENSION': '.cpython-36m-{}-linux-gnu.so'.format(t.arch)
         }
     )
 
