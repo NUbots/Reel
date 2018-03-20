@@ -68,6 +68,23 @@ r.add_library(
     }
 )
 
+# Trent: If you cant do the headers and util-linux then try this https://sourceforge.net/projects/libuuid/
+#        fontconfig (in X11) requires libuuid, I assume this library is the same as the util-linux one
+r.install_linux_headers()
+
+r.add_library(
+    name='util-linux',
+    url='https://www.kernel.org/pub/linux/utils/util-linux/v2.31/util-linux-2.31.tar.xz',
+    configure_args={
+        '--disable-all-programs': True,
+        '--enable-libblkid': True,
+        '--enable-libmount': True,
+        '--enable-libuuid': True,
+        '--without-python': True,
+        '--with-bashcompletiondir': os.path.join('{prefix_dir}', 'share', 'bash-completion', 'completions')
+    }
+)
+
 r.install_X11()
 r.install_tcltk()
 
