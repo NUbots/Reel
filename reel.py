@@ -431,7 +431,8 @@ for t in toolchains:
         build_tool='cmake',
         configure_args={
             '-DLAPACK_LIBRARY': os.path.join('{prefix_dir}', 'lib', 'libopenblas.so'),
-            '-DARPACK_LIBRARY': os.path.join('{prefix_dir}', 'lib', 'libopenblas.so')
+            '-DARPACK_LIBRARY': os.path.join('{prefix_dir}', 'lib', 'libopenblas.so'),
+            '-DDETECT_HDF5': 'OFF'
         }
     )
 
