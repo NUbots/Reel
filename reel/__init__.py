@@ -77,10 +77,7 @@ class Reel:
         toolchain.add_library(
             name='ncurses',
             url='{}/ncurses/ncurses-6.1.tar.gz'.format(self.gnu_mirror),
-            env={
-                'CPPFLAGS': '-P',
-                'ac_cv_path_install': '/usr/bin/install -c --strip-program={prefix_dir}/{target_triple}/bin/strip'
-            },
+            env={'CPPFLAGS': '-P'},
             configure_args={
                 '--with-sysroot': '"{prefix_dir}"',
                 '--with-build-cc': '"$CC"',
