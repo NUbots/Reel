@@ -146,7 +146,11 @@ class Toolchain:
 
             self.env.update({
                 # Extend the path
-                'PATH': os.pathsep.join([os.path.join(self.state['prefix_dir'], 'bin'), self.env['PATH']]),
+                'PATH':
+                    os.pathsep.join([
+                        os.path.join(self.state['prefix_dir'], 'bin'),
+                        os.path.join(self.state['prefix_dir'], self.triple, 'bin'), self.env['PATH']
+                    ]),
 
                 # Overwrite the compiler and compiler flags
                 'CC': '{}-gcc'.format(self.triple),
