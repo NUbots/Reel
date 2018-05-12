@@ -57,3 +57,12 @@ def parse_args(dict_args, **state):
                 args.append(k)
 
     return args
+
+
+def is_sequence(item):
+    if isinstance(item, (str, bytes)):
+        return False
+    elif not hasattr(item, "strip") and hasattr(item, "__getitem__") or hasattr(item, "__iter__"):
+        return True
+    else:
+        return False
