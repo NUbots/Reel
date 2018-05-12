@@ -6,15 +6,14 @@ import subprocess
 from termcolor import cprint
 import multiprocessing
 
+from .build import SmartBuild
 from .download import SmartDownload
 from .extract import SmartExtract
-from .build import SmartBuild
+from .Library import Library
 from .patch import UpdateConfigSub
+from .Patch import Patch
 from .Shell import Shell
 from .Python import Python
-
-from .Library import Library
-
 from .util import dedent
 
 
@@ -198,7 +197,7 @@ class Toolchain:
 
             # We use this gcc build a few times, so make sure args are the same
             gcc_args = {
-                'url': '{}/gcc/gcc-7.3.0/gcc-7.3.0.tar.xz'.format(gnu_mirror),
+                'url': '{}/gcc/gcc-8.1.0/gcc-8.1.0.tar.xz'.format(gnu_mirror),
                 'env': {
                     'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
                     'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
@@ -214,14 +213,43 @@ class Toolchain:
                     '--disable-multilib': True,
                     '--disable-bootstrap': True,
                     '--disable-werror': True,
+                    '--enable-libquadmath': True,
+                    '--enable-libquadmath-support': True,
                     '{}'.format('--enable-shared' if not static else '--disable-shared'): True
                 }
             }
 
             # Build gcc so we can build basic c programs (like musl)
+            # gcc x86 has a "bug"
+            # error: declaration of 'int posix_memalign(void**, size_t, size_t) throw ()' has a different exception specifier
+            # Only x86 + musl produces this error, apparently glibc actually has the exception specifier, but musl doesn't
+            # https://github.com/android-ndk/ndk/issues/91
+            gcc_patch = dedent(
+                """\
+            --- a/gcc/config/i386/pmm_malloc.h
+            +++ b/gcc/config/i386/pmm_malloc.h
+            @@ -31,8 +31,12 @@
+             #ifndef __cplusplus
+             extern int posix_memalign (void **, size_t, size_t);
+             #else
+            +#ifdef __GLIBC__
+             extern "C" int posix_memalign (void **, size_t, size_t) throw ();
+            -#endif
+            +#else
+            +extern "C" int posix_memalign (void **, size_t, size_t);
+            +#endif  // __GLIBC__
+            +#endif  // __cplusplus
+
+             static __inline void *
+             _mm_malloc (size_t __size, size_t __alignment)
+             {{
+               void * __ptr;
+            """
+            )
             self.add_tool(
-                name='gcc7',
-                phases=[Shell(post_extract='cd {source} && ./contrib/download_prerequisites')],
+                name='gcc',
+                phases=[Python(post_extract=gcc_post_extract),
+                        Patch(pre_configure=gcc_patch)],
                 build_targets=['all-gcc'],
                 install_targets=['install-strip-gcc'],
                 **gcc_args
@@ -704,3 +732,17 @@ def generate_toolchain_files(env, log_file=None, **state):
     if log_file is not None:
         log_file.write('Successfully wrote cmake toolchain file to "{}"\n'.format(cmake_toolchain_file))
         log_file.write('\n\nCompleted with no errors\n')
+
+
+def gcc_post_extract(env, log_file, **state):
+    process = subprocess.Popen(
+        args='cd {source} && ./contrib/download_prerequisites'.format(**state),
+        shell=True,
+        env={k: v.format(**state)
+             for (k, v) in env.items()},
+        stdout=log_file,
+        stderr=log_file
+    )
+
+    if process.wait() != 0:
+        raise Exception('Failed to download GCC prerequisites')
