@@ -63,6 +63,7 @@ class Toolchain:
         self.setup_dir = os.path.join(self.toolchain_dir, 'setup')
         self.archives_dir = os.path.join(self.setup_dir, 'archive')
         self.sources_dir = os.path.join(self.setup_dir, 'src')
+        self.patches_dir = os.path.join(self.setup_dir, 'patches')
 
         # Toolchain directories
         self.prefix_dir = os.path.join(self.toolchain_dir, self.name)
@@ -81,6 +82,7 @@ class Toolchain:
             'setup_dir': self.setup_dir,
             'archives_dir': self.archives_dir,
             'sources_dir': self.sources_dir,
+            'patches_dir': self.patches_dir,
             'prefix_dir': os.path.abspath(self.prefix_dir),
             'working_dir': self.working_dir,
             'builds_dir': self.builds_dir,
@@ -584,6 +586,7 @@ class Toolchain:
         os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.archives_dir, exist_ok=True)
         os.makedirs(self.sources_dir, exist_ok=True)
+        os.makedirs(self.patches_dir, exist_ok=True)
         os.makedirs(self.builds_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
         os.makedirs(self.status_dir, exist_ok=True)
