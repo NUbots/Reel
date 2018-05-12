@@ -639,7 +639,7 @@ class Toolchain:
             l.build()
 
 
-def generate_toolchain_files(env, log_file=None, **state):
+def generate_toolchain_files(env, log_file, **state):
     gcc_template = dedent(
         """\
         *c_opts:
@@ -685,10 +685,10 @@ def generate_toolchain_files(env, log_file=None, **state):
     for flag in state['c_flags'] + state['cxx_flags'] + state['fc_flags']:
         if '-march=' in flag:
             march = 'ADD_COMPILE_OPTIONS({})'.format(flag)
-            if log_file is not None: log_file.write('Found architecture parameter: {}\n'.format(march))
         if '-mtune=' in flag:
             mtune = 'ADD_COMPILE_OPTIONS({})'.format(flag)
-            if log_file is not None: log_file.write('Found tuning parameter: {}\n'.format(mtune))
+            log_file.write('Found architecture parameter: {}\n'.format(march))
+            log_file.write('Found tuning parameter: {}\n'.format(mtune))
 
     # Find the location of the GCC specs file
     libgcc = subprocess.check_output(
@@ -703,7 +703,7 @@ def generate_toolchain_files(env, log_file=None, **state):
     specs_file = os.path.join(os.path.dirname(libgcc), 'specs')
     cmake_toolchain_file = os.path.join(state['prefix_dir'], '{}.cmake'.format(state['toolchain_name']))
 
-    if log_file is not None: log_file.write('Using gcc specs: {}\n'.format(specs_file))
+    log_file.write('Using gcc specs: {}\n'.format(specs_file))
 
     # Write out the new GCC specs
     with open(specs_file, 'a') as specs:
@@ -714,7 +714,7 @@ def generate_toolchain_files(env, log_file=None, **state):
             )
         )
 
-    if log_file is not None: log_file.write('Successfully wrote new specs file to "{}"\n'.format(specs_file))
+    log_file.write('Successfully wrote new specs file to "{}"\n'.format(specs_file))
 
     # Write out the CMake toolchain file
     with open(cmake_toolchain_file, 'w') as f:
@@ -729,9 +729,8 @@ def generate_toolchain_files(env, log_file=None, **state):
             )
         )
 
-    if log_file is not None:
-        log_file.write('Successfully wrote cmake toolchain file to "{}"\n'.format(cmake_toolchain_file))
-        log_file.write('\n\nCompleted with no errors\n')
+    log_file.write('Successfully wrote cmake toolchain file to "{}"\n'.format(cmake_toolchain_file))
+    log_file.write('\n\nCompleted with no errors\n')
 
 
 def gcc_post_extract(env, log_file, **state):
