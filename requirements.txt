@@ -4,3 +4,4 @@ rfc6266
 tqdm
 python-dateutil
 yapf
+patch==1.16
