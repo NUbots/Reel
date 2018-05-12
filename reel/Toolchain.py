@@ -658,24 +658,53 @@ def generate_toolchain_files(env, log_file, **state):
 
     cmake_template = dedent(
         """\
+        # Set default system parameters
         SET(CMAKE_SYSTEM_NAME Linux)
+        SET(CMAKE_SYSTEM_PROCESSOR {arch})
+        SET(TRIPLE "{triple}" CACHE STRING "Compiler triple of the build system" FORCE)
+        SET(CMAKE_C_COMPILER ${{TRIPLE}}-gcc)
+        SET(CMAKE_CXX_COMPILER ${{TRIPLE}}-g++)
+        SET(CMAKE_Fortran_COMPILER ${{TRIPLE}}-gfortran)
 
-        SET(CMAKE_C_COMPILER {cc})
-        SET(CMAKE_CXX_COMPILER {cxx})
-
-        SET(CMAKE_FIND_ROOT_PATH "{prefix_dir}")
+        SET(CMAKE_FIND_ROOT_PATH "${{TOOLCHAIN_ROOT}}"
+                                 "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}"
+                                 "${{TOOLCHAIN_ROOT}}/.."
+        )
         SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
         SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
         SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
         SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-        # Usually this would be a SYSTEM directive, but gcc-7.3.0 seems to fail using include_next with -isystem
-        # https://patchwork.openembedded.org/patch/148218/
-        INCLUDE_DIRECTORIES("{include_dir}")
+        # C system search directories
+        SET(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include"
+                                                 "${{TOOLCHAIN_ROOT}}/usr/include"
+                                                 "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/7.3.0/include"
+        )
 
-        {compile_options}
+        # CXX system search directories
+        SET(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/7.3.0"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/7.3.0/${{TRIPLE}}"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/7.3.0/backward"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include"
+                                                   "${{TOOLCHAIN_ROOT}}/usr/include"
+                                                   "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/7.3.0/include"
+        )
 
-        SET(PLATFORM "{arch}" CACHE STRING "The platform to build for." FORCE)
+
+        INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include")
+        INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include/python3.6m")
+
+        SET(PLATFORM "{platform}" CACHE STRING "The platform to build for." FORCE)
+
+        # Prevent cmake from trying to execute python to find its libraries.
+        SET(PYTHON_EXECUTABLE {python_exec} CACHE STRING "" FORCE)
+        SET(PYTHON_LIBRARY {python_lib} CACHE STRING "" FORCE)
+        SET(PYTHONLIBS_FOUND ON CACHE BOOLEAN "" FORCE)
+        SET(PYTHON_MODULE_EXTENSION ".cpython-36m-{arch}-linux-gnu.so" CACHE STRING "" FORCE)
+
+        SET(Protobuf_PROTOC_EXECUTABLE {protoc_exec} CACHE STRING "The Google Protocol Buffers Compiler" FORCE)
+        SET(Protobuf_PROTOC_LIBRARY_DEBUG {protoc_lib} CACHE STRING "Path to a library" FORCE)
+        SET(Protobuf_PROTOC_LIBRARY_RELEASE {protoc_lib} CACHE STRING "Path to a library" FORCE)
         """
     )
 
@@ -683,11 +712,11 @@ def generate_toolchain_files(env, log_file, **state):
     march = ''
     mtune = ''
     for flag in state['c_flags'] + state['cxx_flags'] + state['fc_flags']:
-        if '-march=' in flag:
-            march = 'ADD_COMPILE_OPTIONS({})'.format(flag)
-        if '-mtune=' in flag:
-            mtune = 'ADD_COMPILE_OPTIONS({})'.format(flag)
+        if flag.startswith('-march='):
+            march = flag[1:]
             log_file.write('Found architecture parameter: {}\n'.format(march))
+        if flag.startswith('-mtune='):
+            mtune = flag[1:]
             log_file.write('Found tuning parameter: {}\n'.format(mtune))
 
     # Find the location of the GCC specs file
@@ -699,6 +728,13 @@ def generate_toolchain_files(env, log_file, **state):
         env=env
     ).decode('utf-8')
 
+    if march != '' and mtune != '':
+        arch = '%<march=* -{0} %>{0}'.format(march)
+        tune = '%{{!mtune=*:%>{0}}} %{{{0}:%>{0}}}'.format(mtune)
+        compile_options = '{} {} '.format(arch, tune)
+    else:
+        compile_options = ''
+
     # Form our output file names
     specs_file = os.path.join(os.path.dirname(libgcc), 'specs')
     cmake_toolchain_file = os.path.join(state['prefix_dir'], '{}.cmake'.format(state['toolchain_name']))
@@ -709,8 +745,18 @@ def generate_toolchain_files(env, log_file, **state):
     with open(specs_file, 'a') as specs:
         specs.write(
             gcc_template.format(
-                c_compile_options=' '.join([flag for flag in state['c_flags'] if flag != march and flag != mtune]),
-                cxx_compile_options=' '.join([flag for flag in state['cxx_flags'] if flag != march and flag != mtune])
+                c_compile_options='{}{}'.format(
+                    compile_options, ' '.join([
+                        flag for flag in state['c_flags']
+                        if flag != '-{}'.format(march) and flag != '-{}'.format(mtune)
+                    ])
+                ),
+                cxx_compile_options='{}{}'.format(
+                    compile_options, ' '.join([
+                        flag for flag in state['cxx_flags']
+                        if flag != '-{}'.format(march) and flag != '-{}'.format(mtune)
+                    ])
+                )
             )
         )
 
@@ -720,12 +766,22 @@ def generate_toolchain_files(env, log_file, **state):
     with open(cmake_toolchain_file, 'w') as f:
         f.write(
             cmake_template.format(
-                arch=state['toolchain_name'],
+                platform=state['toolchain_name'],
+                arch=state['arch'],
                 cc='{}-gcc'.format(state['target_triple']),
                 cxx='{}-g++'.format(state['target_triple']),
-                include_dir=os.path.join(state['prefix_dir'], 'include'),
-                compile_options='{}\n{}'.format(march, mtune),
-                prefix_dir=state['prefix_dir']
+                triple=state['target_triple'],
+                parent_triple=state['parent_target_triple'],
+                python_exec=os.path.join(
+                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'bin', 'python3'
+                ),
+                python_lib=os.path.join('${TOOLCHAIN_ROOT}', 'lib', 'libpython3.6m.so'),
+                protoc_exec=os.path.join(
+                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'bin', 'protoc'
+                ),
+                protoc_lib=os.path.join(
+                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'lib', 'libprotoc.so'
+                )
             )
         )
 
