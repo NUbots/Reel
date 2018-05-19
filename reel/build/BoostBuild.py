@@ -28,9 +28,7 @@ class BoostBuild:
             'library-path': '{prefix_dir}/lib',
             '-q': True,
             '-a': True,
-            'cflags': '"{}"'.format(self.env.get('CFLAGS', '')),
-            'cxxflags': '"{}"'.format(self.env.get('CXXFLAGS', '')),
-            '--python-buildid': 'py36'
+            '--python-buildid': 'py36',
         }
 
         self.install_args = {
@@ -40,9 +38,7 @@ class BoostBuild:
             'library-path': '{prefix_dir}/lib',
             '-q': True,
             '-a': True,
-            'cflags': '"{}"'.format(self.env.get('CFLAGS', '')),
-            'cxxflags': '"{}"'.format(self.env.get('CXXFLAGS', '')),
-            '--python-buildid': 'py36'
+            '--python-buildid': 'py36',
         }
 
         self.configure_args.update(build_args.get('configure_args', {}))
