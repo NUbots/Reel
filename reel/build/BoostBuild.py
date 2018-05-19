@@ -110,7 +110,7 @@ class BoostBuild:
 
             # Open a log file and run configure
             with open(os.path.join(logs_path, '{}_configure.log'.format(base_src)), 'w') as logfile:
-                cmd = '{}/bootstrap.sh {}'.format(os.path.abspath(os.path.join(src_path, self.src_dir)), ' '.join(args))
+                cmd = '{}/bootstrap.sh {}'.format(self.src_dir, ' '.join(args))
                 print(indent(' $ {}'.format(cmd), 8))
                 process = Popen(
                     args=cmd,
