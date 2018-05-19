@@ -101,15 +101,12 @@ class BoostBuild:
                         status = update_status(status_path, {'clone': True})
 
             # Make sure boost is going to use our compiler.
-            template = dedent(
-                """\
-                # Configure specific gcc version, giving alternative name to use.
-                using gcc : : {CXX} ;
-                """
-            ).format(CXX=os.path.join(state['prefix_dir'], 'bin', '{}-g++'.format(state['target_triple'])))
-
-            with open(os.path.join(os.path.abspath(src_path), 'user-config.jam'), 'w') as config:
-                config.write(template)
+            with open(os.path.join(os.path.abspath(build_path), 'user-config.jam'), 'w') as config:
+                config.write('# Configure specific gcc version, giving alternative name to use.\n')
+                config.write('using gcc : : {} ;\n'.format(
+                        os.path.join(state['prefix_dir'], 'bin', self.env['CXX'])
+                    )
+                )
 
             # Open a log file and run configure
             with open(os.path.join(logs_path, '{}_configure.log'.format(base_src)), 'w') as logfile:
