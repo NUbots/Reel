@@ -47,8 +47,9 @@ def update_status(status_file, args):
 
 
 def is_sequence(item):
-    if not hasattr(item, "strip") and hasattr(item, "__getitem__") or hasattr(item, "__iter__"
-                                                                              ) and not isinstance(item, str):
+    if isinstance(item, (str, bytes)):
+        return False
+    elif not hasattr(item, "strip") and hasattr(item, "__getitem__") or hasattr(item, "__iter__"):
         return True
     else:
         return False
