@@ -5,7 +5,7 @@ import shutil
 from subprocess import Popen
 from termcolor import cprint
 
-from ..util import get_status, update_status, indent, parse_args, dedent
+from ..util import get_status, update_status, indent, parse_args, dedent, get_paths
 
 
 class BoostBuild:
@@ -66,7 +66,7 @@ class BoostBuild:
     def configure(self, **state):
 
         # Work out our real full paths
-        src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
+        src_path, base_src, logs_path, build_path, status_path = get_paths(self.build_postfix, **state)
 
         # Apply our state
         args = parse_args(self.configure_args, **state)
@@ -145,7 +145,7 @@ class BoostBuild:
     def build(self, **state):
 
         # Work out our real full paths
-        src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
+        _, base_src, logs_path, build_path, status_path = get_paths(self.build_postfix, **state)
 
         # Apply our state
         args = parse_args(self.build_args, **state)
@@ -185,7 +185,7 @@ class BoostBuild:
     def install(self, **state):
 
         # Work out our real full paths
-        src_path, base_src, logs_path, build_path, status_path = self.get_paths(state)
+        _, base_src, logs_path, build_path, status_path = get_paths(self.build_postfix, **state)
 
         # Apply our state
         args = parse_args(self.install_args, **state)
@@ -222,12 +222,3 @@ class BoostBuild:
                 cprint(
                     indent('Install step for {} complete... Skipping...'.format(base_src), 8), 'yellow', attrs=['bold']
                 )
-
-    def get_paths(self, state):
-        src_path = state['source']
-        base_src = '{}{}'.format(os.path.basename(src_path), self.build_postfix)
-        logs_path = os.path.join(state['logs_dir'], base_src)
-        build_path = os.path.join(state['builds_dir'], base_src)
-        status_path = os.path.join(state['status_dir'], '{}.json'.format(base_src))
-
-        return src_path, base_src, logs_path, build_path, status_path

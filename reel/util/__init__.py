@@ -26,6 +26,16 @@ def get_status(status_file):
         return json.load(f)
 
 
+def get_paths(build_postfix, **state):
+    src_path = state['source']
+    base_src = '{}{}'.format(os.path.basename(src_path), build_postfix)
+    logs_path = os.path.join(state['logs_dir'], base_src)
+    build_path = os.path.join(state['builds_dir'], base_src)
+    status_path = os.path.join(state['status_dir'], '{}.json'.format(base_src))
+
+    return src_path, base_src, logs_path, build_path, status_path
+
+
 def update_status(status_file, args):
     status = get_status(status_file)
     status.update(args)
