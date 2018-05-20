@@ -655,7 +655,6 @@ def generate_toolchain_files(env, log_file, **state):
 
         SET(CMAKE_FIND_ROOT_PATH "${{TOOLCHAIN_ROOT}}"
                                  "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}"
-                                 "${{TOOLCHAIN_ROOT}}/.."
         )
         SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
         SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
@@ -665,18 +664,36 @@ def generate_toolchain_files(env, log_file, **state):
         # C system search directories
         SET(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include"
                                                  "${{TOOLCHAIN_ROOT}}/usr/include"
-                                                 "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/7.3.0/include"
+                                                 "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/include"
+        )
+
+
+        SET(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/"
+                                              "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib64/"
+                                              "${{TOOLCHAIN_ROOT}}/lib64/"
+                                              "${{TOOLCHAIN_ROOT}}/usr/lib64/"
+                                              "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib/"
+                                              "${{TOOLCHAIN_ROOT}}/lib/"
+                                              "${{TOOLCHAIN_ROOT}}/usr/lib/"
         )
 
         # CXX system search directories
-        SET(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/7.3.0"
-                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/7.3.0/${{TRIPLE}}"
-                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/7.3.0/backward"
+        SET(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/8.1.0"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/8.1.0/${{TRIPLE}}"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/8.1.0/backward"
                                                    "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include"
                                                    "${{TOOLCHAIN_ROOT}}/usr/include"
-                                                   "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/7.3.0/include"
+                                                   "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/include"
         )
 
+        SET(CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/"
+                                                "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib64/"
+                                                "${{TOOLCHAIN_ROOT}}/lib64/"
+                                                "${{TOOLCHAIN_ROOT}}/usr/lib64/"
+                                                "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib/"
+                                                "${{TOOLCHAIN_ROOT}}/lib/"
+                                                "${{TOOLCHAIN_ROOT}}/usr/lib/"
+        )
 
         INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include")
         INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include/python3.6m")
