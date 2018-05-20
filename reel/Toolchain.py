@@ -589,7 +589,7 @@ class Toolchain:
 
         if os.path.exists(os.path.join(self.state['prefix_dir'], 'usr')):
             if not os.path.islink(os.path.join(self.state['prefix_dir'], 'usr')):
-                os.path.unlink(os.path.join(self.state['prefix_dir'], 'usr'))
+                os.unlink(os.path.join(self.state['prefix_dir'], 'usr'))
                 os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
 
         else:
