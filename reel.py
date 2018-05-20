@@ -32,9 +32,7 @@ r.add_library(
 r.add_library(
     name='expat',
     url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
-    configure_args={
-        '--without-docbook': True
-    }
+    configure_args={'--without-docbook': True}
 )
 
 r.add_library(name='png', url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz')
@@ -48,9 +46,7 @@ r.add_library(
 r.add_library(
     name='protobuf',
     url='https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-cpp-3.5.1.tar.gz',
-    configure_args={
-        '--with-zlib': True
-    }
+    configure_args={'--with-zlib': True}
 )
 
 r.add_library(name='icu', src_dir='source', url='http://download.icu-project.org/files/icu4c/60.2/icu4c-60_2-src.tgz')
@@ -264,8 +260,10 @@ for t in toolchains:
     t.add_library(
         name='protobuf',
         url='https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-cpp-3.5.1.tar.gz',
-        env={'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
-             'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']},
+        env={
+            'CC_FOR_BUILD': t.parent_toolchain.env['CC'],
+            'CXX_FOR_BUILD': t.parent_toolchain.env['CXX']
+        },
         configure_args={
             '--with-zlib': True,
             '--with-protoc': os.path.join('{parent_prefix_dir}', 'bin', 'protoc')
@@ -275,9 +273,7 @@ for t in toolchains:
     t.add_library(
         name='expat',
         url='https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2',
-        configure_args={
-            '--without-docbook': True
-        }
+        configure_args={'--without-docbook': True}
     )
 
     t.add_library(name='ffi', url='https://github.com/libffi/libffi/archive/v3.2.1.tar.gz')
@@ -386,13 +382,11 @@ for t in toolchains:
                 '    linux-{arch}'
             ),
             Shell(build='cd {builds_dir}/$(basename {source})'
-                  ' && make'),
+                ' && make'),
             Shell(install='cd {builds_dir}/$(basename {source})'
-                  ' && make install')
+                ' && make install')
         ],
-        env={
-            'CROSS_COMPILE': ' '
-        }
+        env={'CROSS_COMPILE': ' '}
     )
 
     t.add_library(
@@ -526,9 +520,7 @@ for t in toolchains:
     t.add_library(
         name='jpeg-turbo',
         url='http://downloads.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-1.5.3.tar.gz',
-        configure_args={
-            'CCASFLAGS': '-f elf64'
-        }
+        configure_args={'CCASFLAGS': '-f elf64'}
     )
 
     t.add_library(name='fmt', url='https://github.com/fmtlib/fmt/archive/4.1.0.tar.gz')
@@ -579,8 +571,10 @@ for t in toolchains:
     t.add_library(
         name='boost',
         url='https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz',
-        configure_args={'--with-python': 'python3',
-                        '--with-icu': '{prefix_dir}'},
+        configure_args={
+            '--with-python': 'python3',
+            '--with-icu': '{prefix_dir}'
+        },
         use_bjam=os.path.join('{parent_prefix_dir}', 'bin', 'bjam'),
         env={'BOOST_BUILD_PATH': os.path.abspath('{source}')},
         build_args=boost_args,

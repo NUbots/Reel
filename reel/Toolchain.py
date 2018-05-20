@@ -120,7 +120,7 @@ class Toolchain:
             # System toolchains need environment too
             self.env.update({
                 # Update our path to include where we build binaries too
-                'PATH': os.pathsep.join([os.path.join(self.state['prefix_dir'], 'bin'), self.env['PATH']]),
+                'PATH': os.pathsep.join([os.path.join(self.state['prefix_dir'], 'bin'), self.env['PATH'],]),
                 'CFLAGS': ' '.join(self.c_flags),
                 'CXXFLAGS': ' '.join(self.cxx_flags),
                 'FCFLAGS': ' '.join(self.fc_flags),
@@ -151,7 +151,8 @@ class Toolchain:
                 'PATH':
                     os.pathsep.join([
                         os.path.join(self.state['prefix_dir'], 'bin'),
-                        os.path.join(self.state['prefix_dir'], self.triple, 'bin'), self.env['PATH']
+                        os.path.join(self.state['prefix_dir'], self.triple, 'bin'),
+                        self.env['PATH'],
                     ]),
 
                 # Overwrite the compiler and compiler flags
@@ -392,9 +393,7 @@ class Toolchain:
             name='fontconfig',
             url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.13.0.tar.bz2',
             phases=[Shell(post_extract='cd {source} && rm -f src/fcobjshash.h')],
-            configure_args={
-                '--disable-docs': True
-            }
+            configure_args={'--disable-docs': True}
         )
 
         self.add_library(url='https://www.x.org/pub/individual/util/util-macros-1.19.2.tar.bz2', name='util-macros')
@@ -509,8 +508,10 @@ class Toolchain:
                 name='xorg-lib-{}'.format(lib[0]),
                 url='https://www.x.org/pub/individual/lib/{}-{}.tar.bz2'.format(*lib),
                 phases=[UpdateConfigSub],
-                env={'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
-                     'CFLAGS_FOR_BUILD': ''},
+                env={
+                    'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
+                    'CFLAGS_FOR_BUILD': ''
+                },
                 configure_args={
                     # musl returns a valid pointer for a 0 byte allocation
                     '--enable-malloc0returnsnull': 'no'
@@ -532,8 +533,10 @@ class Toolchain:
             name='tcl',
             url='https://prdownloads.sourceforge.net/tcl/tcl{}-src.tar.gz'.format(version),
             src_dir='unix',
-            configure_args={'--enable-threads': True,
-                            '--enable-static': None},
+            configure_args={
+                '--enable-threads': True,
+                '--enable-static': None
+            },
             env=env
         )
 
