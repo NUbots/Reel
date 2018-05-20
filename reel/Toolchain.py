@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import sys
 import subprocess
 from termcolor import cprint
@@ -275,13 +276,7 @@ class Toolchain:
             # Build libgcc (our low level api)
             self.add_tool(
                 name='libgcc',
-                phases=[
-                    Shell(
-                        post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
-                        ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
-                        ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
-                    )
-                ],
+                phases=[Python(post_install=gcc_post_install)],
                 build_targets=['all-target-libgcc'],
                 install_targets=['install-strip-target-libgcc'],
                 **gcc_args
@@ -293,12 +288,7 @@ class Toolchain:
                     name='musl_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.19.tar.gz',
                     build_postfix='_shared',
-                    phases=[
-                        Shell(
-                            post_install=
-                            'echo "{prefix_dir}/lib:{prefix_dir}/lib64" > {prefix_dir}/etc/ld-musl-{arch}.path'
-                        )
-                    ],
+                    phases=[Python(post_install=musl_post_install)],
                     configure_args={
                         '--target': '{target_triple}',
                         '--syslibdir': os.path.join('{prefix_dir}', 'lib'),
@@ -310,15 +300,7 @@ class Toolchain:
             # Build the other gnu libraries
             self.add_tool(
                 name='gnulibs',
-                phases=[
-                    Shell(
-                        pre_build='echo "{build}/gcc/"'
-                        ' && {build}/gcc/xgcc -dumpspecs'
-                        ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
-                        ' > {build}/gcc/specs'
-                    ),
-                    Python(pre_install=generate_toolchain_files)
-                ],
+                phases=[Python(pre_build=gnulibs_pre_build, pre_install=generate_toolchain_files)],
                 build_targets=[
                     'all-target-libstdc++-v3', 'all-target-libquadmath', 'all-target-libgfortran', 'all-target-libgomp'
                 ],
@@ -727,7 +709,8 @@ def generate_toolchain_files(env, log_file, **state):
     # Find the location of the GCC specs file
     libgcc = subprocess.check_output(
         '{} {}'.format(
-            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple'])), '-print-libgcc-file-name'
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple'])),
+            '-print-libgcc-file-name'
         ),
         shell=True,
         env=env
@@ -806,3 +789,61 @@ def gcc_post_extract(env, log_file, **state):
 
     if process.wait() != 0:
         raise Exception('Failed to download GCC prerequisites')
+
+
+def gcc_post_install(env, log_file, **state):
+    # Get the default GCC specs file
+    specs = subprocess.check_output(
+        '{} -dumpspecs'.format(
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple']))
+        ),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Set the path to our dynamic loader
+    specs = re.sub('/lib/ld-', '{prefix_dir}/lib/ld-'.format(**state), specs)
+
+    # Find the location of GCC specs file (via the libgcc location)
+    libgcc = subprocess.check_output(
+        '{} -print-libgcc-file-name'.format(
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple']))
+        ),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Write out the modified specs file
+    with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'w') as f:
+        f.write(specs)
+
+def musl_post_install(env, log_file, **state):
+    with open(os.path.join(state['prefix_dir'], 'etc', 'ld-musl-{}.path'.format(state['arch'])), 'w') as f:
+        f.write(os.pathsep.join(['{prefix_dir}/lib',
+                                 '{prefix_dir}/lib64',
+                                 '{prefix_dir}/{target_triple}/lib',
+                                 '{prefix_dir}/{target_triple}/lib64']).format(**state))
+
+
+def gnulibs_pre_build(env, log_file, **state):
+    # Get the default GCC specs file
+    specs = subprocess.check_output('{} -dumpspecs'.format(os.path.join(state['build'], 'gcc', 'xgcc')),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Set the path to our dynamic loader
+    specs = re.sub('/lib/ld-', '{prefix_dir}/lib/ld-'.format(**state), specs)
+
+    # Find the location of GCC specs file (via the libgcc location)
+    libgcc = subprocess.check_output(
+        '{} -print-libgcc-file-name'.format(
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple']))
+        ),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Write out the modified specs file
+    with open(os.path.join(state['build'], 'gcc', 'specs'), 'w') as f:
+        f.write(specs)
