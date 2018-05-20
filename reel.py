@@ -114,6 +114,22 @@ r.add_library(
 )
 
 r.add_library(
+    name='openblas',
+    # Unable to build version 0.2.20
+    # https://github.com/xianyi/OpenBLAS/issues/1252
+    url='https://github.com/xianyi/OpenBLAS/archive/v0.2.19.tar.gz',
+    build_tool='make',
+    build_args={
+        'DYNAMIC_ARCH': '1',
+        'USE_THREAD': '1',
+        'TARGET': 'ATOM',
+        'BINARY': '64',
+        'NUM_THREADS': '2',
+    },
+    install_args={'DYNAMIC_ARCH': '1'}
+)
+
+r.add_library(
     name='python',
     url='https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tar.xz',
     env={
