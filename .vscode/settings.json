@@ -1,0 +1,30 @@
+{
+    "files.exclude": {
+        "**/toolchain/": true,
+    },
+    "search.exclude": {
+        "**/toolchain/": true,
+    },
+    "python.formatting.provider": "yapf",
+    "python.autoComplete.addBrackets": true,
+    "python.formatting.yapfArgs": [
+        "-i",
+        "-p"
+    ],
+    "python.pythonPath": "/usr/bin/python3",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.eol": "\n",
+    "editor.rulers": [
+        120
+    ],
+    "editor.wordWrap": "on",
+    "files.watcherExclude": {
+        "**/toolchain/**": true
+    },
+    "editor.fontSize": 15,
+}
