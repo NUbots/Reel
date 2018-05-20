@@ -163,7 +163,24 @@ r.add_library(
         '--with-system-expat': True,
         '--with-system-libmpdec': True,
         '--with-threads': True
-    }
+    },
+    phases=[
+        Shell(
+            post_install='pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/pip --upgrade pip'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/numpy numpy'
+            ' && LDFLAGS="$LDFLAGS -shared" pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/scipy scipy'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/matplotlib matplotlib'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --global-option="build_ext" --global-option="--disable-platform-guessing" --build {prefix_dir}/temp/pillow pillow'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/scikit-image scikit-image'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/pyyaml pyyaml'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/yapf yapf'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/xxhash xxhash'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/protobuf protobuf==3.5.1'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/termcolor termcolor'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/stringcase stringcase'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/pillow pillow'
+        )
+    ]
 )
 
 r.add_library(
