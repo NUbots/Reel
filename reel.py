@@ -672,152 +672,6 @@ for t in toolchains:
         }
     )
 
-r.build()
-
-# libasound2    Dont know if we actually need this
-
-# tcmalloc      Needs patching for musl
-# catch
-
-# command => '/usr/bin/pip3 install pyparsing &&
-#             /usr/bin/pip3 install pydotplus &&
-#             /usr/bin/pip3 install pygments &&
-#             /usr/bin/pip3 install termcolor &&
-#             /usr/bin/pip3 install protobuf &&
-#             /usr/bin/pip3 install xxhash &&
-#             /usr/bin/pip3 install wheel &&
-#             /usr/bin/pip3 install numpy &&
-#             /usr/bin/pip3 install tensorflow &&
-#             /usr/bin/pip3 install mako &&
-#             /usr/bin/pip3 install scikit-image &&
-#             /usr/bin/pip3 install PyYAML',
-
-# Mesa
-# http://www.linuxfromscratch.org/blfs/view/svn/x/mesa.html
-# 'pybeaker'     => {'url'         => 'https://files.pythonhosted.org/packages/source/B/Beaker/Beaker-1.9.0.tar.gz',
-#                    'args'        => { 'native'   => [ ' --optimize=1',  ],
-#                                       'nuc7i7bnh' => [ ' --optimize=1', ], },
-#                    'method'      => 'python', },
-# 'pymarkupsafe' => {'url'         => 'https://files.pythonhosted.org/packages/source/M/MarkupSafe/MarkupSafe-1.0.tar.gz',
-#                    'args'        => { 'native'   => [ ' --optimize=1',  ],
-#                                       'nuc7i7bnh' => [ ' --optimize=1', ], },
-#                    'method'      => 'python', },
-# 'pymako'       => {'url'         => 'https://files.pythonhosted.org/packages/source/M/Mako/Mako-1.0.4.tar.gz',
-#                    'args'        => { 'native'   => [ ' --optimize=1',  ],
-#                                       'nuc7i7bnh' => [ ' --optimize=1', ], },
-#                    'require'     => [ Installer['pybeaker'], Installer['pymarkupsafe'], ],
-#                    'method'      => 'python', },
-# 'drm'          => {'url'         => 'https://dri.freedesktop.org/libdrm/libdrm-2.4.85.tar.bz2',
-#                    'args'        => { 'native'   => [ '--enable-udev', ],
-#                                       'nuc7i7bnh' => [ '--enable-udev', ], },
-#                    'creates'     => 'lib/libdrm.so',
-#                    'require'     => [ Installer['xorg-libs'], ],
-#                    'method'      => 'autotools', },
-# 'mesa'         => {'url'         => 'https://mesa.freedesktop.org/archive/mesa-17.2.3.tar.xz',
-#                    'args'        => { 'native'   => [ '--enable-texture-float', '--enable-osmesa', '--enable-xa', '--enable-glx-tls', '--with-platforms="drm,x11"', '--enable-gles1', '--enable-gles2', '--enable-shared-glapi', '--enable-egl', '--with-dri-drivers="i965,i915"', '--with-gallium-drivers="swrast,svga"', '--with-vulkan-drivers=intel', '--enable-gbm', ],
-#                                       'nuc7i7bnh' => [ '--enable-texture-float', '--enable-osmesa', '--enable-xa', '--enable-glx-tls', '--with-platforms="drm,x11"', '--enable-gles1', '--enable-gles2', '--enable-shared-glapi', '--enable-egl', '--with-dri-drivers="i965,i915"', '--with-gallium-drivers="swrast,svga"', '--with-vulkan-drivers=intel', '--enable-gbm', ], },
-#                    'creates'     => 'lib/libEGL.so',
-#                    'require'     => [ Installer['xorg-libs'], Installer['drm'], ], #Installer['pymako'], ],
-#                    'method'      => 'autotools', },
-# 'glm'          => {'url'         => 'https://github.com/g-truc/glm/archive/0.9.8.5.tar.gz',
-#                    'args'        => { 'native'   => [ '-DGLM_TEST_ENABLE_CXX_14=ON', '-DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON', '-DGLM_TEST_ENABLE_FAST_MATH=ON',  ],
-#                                       'nuc7i7bnh' => [ '-DGLM_TEST_ENABLE_CXX_14=ON', '-DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON', '-DGLM_TEST_ENABLE_FAST_MATH=ON',  ], },
-#                    'creates'     => 'include/glm/glm.hpp',
-#                    'method'      => 'cmake', },
-
-# # Caffe OpenCL
-# 'gflags'       => {'url'         => 'https://github.com/gflags/gflags/archive/v2.2.1.tar.gz',
-#                    'args'        => { 'native'   => [ '-DBUILD_TESTING=OFF', ],
-#                                       'nuc7i7bnh' => [ '-DBUILD_TESTING=OFF', ], },
-#                    'creates'     => 'lib/libgflags.a',
-#                    'method'      => 'cmake', },
-# 'gtest'        => {'url'         => 'https://github.com/google/googletest/archive/release-1.8.0.tar.gz',
-#                    'creates'     => 'lib/libgtest.a',
-#                    'method'      => 'cmake', },
-# 'snappy'       => {'url'         => 'https://github.com/google/snappy/archive/1.1.7.tar.gz',
-#                    'args'        => { 'native'   => [ '-DSNAPPY_BUILD_TESTS=OFF', ],
-#                                       'nuc7i7bnh' => [ '-DSNAPPY_BUILD_TESTS=OFF', ], },
-#                    'require'     => [ Installer['gtest'], Installer['gflags'], ],
-#                    'creates'     => 'lib/libsnappy.a',
-#                    'method'      => 'cmake', },
-# 'leveldb'      => {'url'         => '',
-#                    'creates'     => 'lib/leveldb.a',
-#                    'prebuild'    => 'wget -N https://github.com/google/leveldb/archive/v1.20.tar.gz &&
-#                                      tar -xf v1.20.tar.gz &&
-#                                      cd leveldb-1.20 &&
-#                                      make -j$(nproc) &&
-#                                      cp out-static/lib* out-shared/lib* PREFIX/lib/ &&
-#                                      cp -r include/* PREFIX/include/',
-#                    'creates'     => 'lib/libleveldb.a',
-#                    'require'     => [ Installer['snappy'], ],
-#                    'method'      => 'custom', },
-# 'lmdb'         => {'url'         => 'https://github.com/LMDB/lmdb/archive/LMDB_0.9.21.tar.gz',
-#                    'creates'     => 'lib/liblmdb.so',
-#                    'args'        => { 'native'   => [ 'prefix=PREFIX', ],
-#                                       'nuc7i7bnh' => [ 'prefix=PREFIX', ], },
-#                    'src_dir'     => 'libraries/liblmdb',
-#                    'method'      => 'make', },
-# 'hdf5'         => {'url'         => 'https://support.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.10.1.tar.gz',
-#                    'args'        => { 'native'   => [ '-DHDF5_BUILD_CPP_LIB=ON', '-DHDF5_ENABLE_Z_LIB_SUPPORT=ON', ],
-#                                       'nuc7i7bnh' => [ '-DHDF5_BUILD_CPP_LIB=ON', '-DHDF5_ENABLE_Z_LIB_SUPPORT=ON', ], },
-#                    'creates'     => 'lib/libhdf5.so',
-#                    'method'      => 'cmake', },
-# 'glog'         => {'url'         => 'https://github.com/google/glog/archive/v0.3.5.tar.gz',
-#                    'args'        => { 'native'   => [ '-DBUILD_TESTING=OFF', ],
-#                                       'nuc7i7bnh' => [ '-DBUILD_TESTING=OFF', ], },
-#                    'require'     => [ Installer['gflags'], ],
-#                    'creates'     => 'lib/libglog.a',
-#                    'method'      => 'cmake', },
-# 'opencv'       => {'url'         => 'https://github.com/opencv/opencv/archive/3.3.1.tar.gz',
-#                    'args'        => { 'native'   => [ '-DOPENCV_ENABLE_NONFREE=ON', '-DWITH_CUDA=OFF', '-DWITH_CUFFT=OFF', '-DWITH_CUBLAS=OFF', '-DWITH_NVCUVID=OFF', '-DWITH_EIGEN=ON', '-DWITH_ARAVIS=ON', '-DWITH_TBB=ON', '-DWITH_OPENMP=ON', '-DWITH_OPENCL=ON', '-DBUILD_opencv_apps=OFFF', '-DBUILD_opencv_js=OFF', '-DBUILD_opencv_python3=ON', '-DBUILD_DOCS=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_PERF_TESTS=OFF', '-DBUILD_TESTS=OFF', '-DBUILD_WITH_DEBUG_INFO=OFF', '-DBUILD_ZLIB=OFF', '-DBUILD_TIFF=ON', '-DBUILD_JASPER=ON', '-DBUILD_JPEG=ON', '-DBUILD_PNG=ON', '-DBUILD_TBB=ON', ],
-#                                       'nuc7i7bnh' => [ '-DOPENCV_ENABLE_NONFREE=ON', '-DWITH_CUDA=OFF', '-DWITH_CUFFT=OFF', '-DWITH_CUBLAS=OFF', '-DWITH_NVCUVID=OFF', '-DWITH_EIGEN=ON', '-DWITH_ARAVIS=ON', '-DWITH_TBB=ON', '-DWITH_OPENMP=ON', '-DWITH_OPENCL=ON', '-DBUILD_opencv_apps=OFFF', '-DBUILD_opencv_js=OFF', '-DBUILD_opencv_python3=ON', '-DBUILD_DOCS=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_PERF_TESTS=OFF', '-DBUILD_TESTS=OFF', '-DBUILD_WITH_DEBUG_INFO=OFF', '-DBUILD_ZLIB=OFF', '-DBUILD_TIFF=ON', '-DBUILD_JASPER=ON', '-DBUILD_JPEG=ON', '-DBUILD_PNG=ON', '-DBUILD_TBB=ON', ], },
-#                    'require'     => [ Installer['aravis'], Installer['eigen3'], ],
-#                    'creates'     => 'lib/libopencv_core.so',
-#                    'method'      => 'cmake', },
-# 'viennacl'     => {'url'         => 'https://github.com/viennacl/viennacl-dev/archive/release-1.7.1.tar.gz',
-#                    'args'        => { 'native'   => [ '-DBUILD_EXAMPLES=OFF', '-DBUILD_TESTING=OFF', '-DOPENCL_LIBRARY=PREFIX/opt/intel/opencl/libOpenCL.so', ],
-#                                       'nuc7i7bnh' => [ '-DBUILD_EXAMPLES=OFF', '-DBUILD_TESTING=OFF', '-DOPENCL_LIBRARY=PREFIX/opt/intel/opencl/libOpenCL.so', ], },
-#                    'creates'     => 'include/viennacl/version.hpp',
-#                    'method'      => 'cmake', },
-# 'clfft'        => {'url'         => 'https://github.com/clMathLibraries/clFFT/archive/v2.12.2.tar.gz',
-#                    'args'        => { 'native'   => [ '-DBUILD_CLIENT=OFF', '-DBUILD_TEST=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_CALLBACK_CLIENT=OFF', '-DSUFFIX_LIB=""', ],
-#                                       'nuc7i7bnh' => [ '-DBUILD_CLIENT=OFF', '-DBUILD_TEST=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_CALLBACK_CLIENT=OFF', '-DSUFFIX_LIB=""', ], },
-#                    'creates'     => 'lib/libclFFT.so',
-#                    'src_dir'     => 'src',
-#                    'require'     => [ Installer['viennacl'], Installer['fftw3f'], Installer['fftw3'], Installer['boost'], ],
-#                    'method'      => 'cmake', },
-# 'isaac'        => {'url'         => 'https://github.com/intel/isaac/archive/master.tar.gz',
-#                    'creates'     => 'lib/libisaac.so',
-#                    'require'     => [ Installer['viennacl'], ],
-#                    'method'      => 'cmake', },
-# 'libdnn'       => {'url'         => 'https://github.com/naibaf7/libdnn/archive/master.tar.gz',
-#                    'args'        => { 'native'   => [ '-DUSE_CUDA=OFF', '-DUSE_OPENCL=ON', '-DUSE_INDEX_64=OFF', ],
-#                                       'nuc7i7bnh' => [ '-DUSE_CUDA=OFF', '-DUSE_OPENCL=ON', '-DUSE_INDEX_64=OFF', ], },
-#                    'creates'     => 'lib/libgreentea_libdnn.so',
-#                    'require'     => [ Installer['viennacl'], ],
-#                    'method'      => 'cmake', },
-# 'caffe'        => {'url'         => 'https://github.com/01org/caffe/archive/inference-optimize.tar.gz',
-#                    'prebuild'    => 'export ISAAC_HOME=PREFIX',
-#                    'args'        => { 'native'   => [ '-DUSE_GREENTEA=ON', '-DUSE_CUDA=OFF', '-DUSE_INTEL_SPATIAL=ON', '-DBUILD_docs=OFF', '-DUSE_ISAAC=ON', '-DViennaCL_INCLUDE_DIR=PREFIX/include', '-DBLAS=Open', '-DOPENCL_LIBRARIES=PREFIX/opt/intel/opencl/libOpenCL.so', '-DOPENCL_INCLUDE_DIRS=PREFIX/opt/intel/opencl/include', '-Dpython_version=3', '-DUSE_OPENMP=ON', '-DUSE_INDEX_64=OFF', '-DUSE_FFT=OFF', '-DBUILD_examples=OFF', '-DBUILD_tools=OFF', ],
-#                                       'nuc7i7bnh' => [ '-DUSE_GREENTEA=ON', '-DUSE_CUDA=OFF', '-DUSE_INTEL_SPATIAL=ON', '-DBUILD_docs=OFF', '-DUSE_ISAAC=ON', '-DViennaCL_INCLUDE_DIR=PREFIX/include', '-DBLAS=Open', '-DOPENCL_LIBRARIES=PREFIX/opt/intel/opencl/libOpenCL.so', '-DOPENCL_INCLUDE_DIRS=PREFIX/opt/intel/opencl/include', '-Dpython_version=3', '-DUSE_OPENMP=ON', '-DUSE_INDEX_64=OFF', '-DUSE_FFT=OFF', '-DBUILD_examples=OFF', '-DBUILD_tools=OFF', ], },
-#                    'require'     => [ Installer['isaac'], Installer['boost'], Installer['hdf5'], Installer['leveldb'], Installer['lmdb'], Installer['glog'], Installer['gflags'], Installer['clfft'], Installer['libdnn'], Installer['opencv'], ],
-#                    'creates'     => 'lib/libcaffe.so',
-#                    'method'      => 'cmake', },
-# 'tensorflow'   => {'url'         => 'https://github.com/tensorflow/tensorflow/archive/master.tar.gz',
-#                    'prebuild'    => "patch -Np1 -i PREFIX/src/tensorflow.patch &&
-#                                      cp PREFIX/src/tensorflow_eigen3.patch PREFIX/src/tensorflow/third_party/eigen3/remove_unsupported_devices.patch &&
-#                                      /usr/bin/python3 tensorflow/tools/git/gen_git_source.py --configure .  &&
-#                                      echo \"export PYTHON_BIN_PATH=/usr/bin/python3\" > tools/python_bin_path.sh &&
-#                                      export BAZELRC=PREFIX/src/tensorflow.bazelrc",
-#                    'postbuild'   => "./bazel-bin/tensorflow/tools/pip_package/build_pip_package PREFIX/tmp/tensorflow_pkg &&
-#                                      /usr/bin/pip3 install --target PREFIX/lib/python3.5/site-packages PREFIX/tmp/tensorflow_pkg/tensorflow-1.4.0-cp35-cp35m-linux_x86_64.whl &&
-#                                      cp PREFIX/lib/python3.5/site-packages/tensorflow/libtensorflow_framework.so PREFIX/lib/ &&
-#                                      cp -r PREFIX/lib/python3.5/site-packages/tensorflow/include/tensorflow PREFIX/include/",
-#                    'args'        => { 'native'   => [ '-c opt', '--config=sycl', '//tensorflow/tools/pip_package:build_pip_package', '--verbose_failures', ],
-#                                       'nuc7i7bnh' => [ '-c opt', '--config=sycl', '//tensorflow/tools/pip_package:build_pip_package', '--verbose_failures', ], },
-#                    'require'     => [ Installer['protobuf'], ],
-#                    'creates'     => 'lib/libtensorflow_framework.so',
-#                    'method'      => 'bazel', },
     t.add_library(
         name='catch',
         url='https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp',
@@ -828,3 +682,334 @@ r.build()
         ]
     )
 
+def build():
+    r.build()
+
+    # libasound2    Dont know if we actually need this
+
+    # tcmalloc      Needs patching for musl
+    # catch
+
+    # command => '/usr/bin/pip3 install pyparsing &&
+    #             /usr/bin/pip3 install pydotplus &&
+    #             /usr/bin/pip3 install pygments &&
+    #             /usr/bin/pip3 install termcolor &&
+    #             /usr/bin/pip3 install protobuf &&
+    #             /usr/bin/pip3 install xxhash &&
+    #             /usr/bin/pip3 install wheel &&
+    #             /usr/bin/pip3 install numpy &&
+    #             /usr/bin/pip3 install tensorflow &&
+    #             /usr/bin/pip3 install mako &&
+    #             /usr/bin/pip3 install scikit-image &&
+    #             /usr/bin/pip3 install PyYAML',
+
+    # Mesa
+    # http://www.linuxfromscratch.org/blfs/view/svn/x/mesa.html
+    # 'pybeaker'     => {'url'         => 'https://files.pythonhosted.org/packages/source/B/Beaker/Beaker-1.9.0.tar.gz',
+    #                    'args'        => { 'native'   => [ ' --optimize=1',  ],
+    #                                       'nuc7i7bnh' => [ ' --optimize=1', ], },
+    #                    'method'      => 'python', },
+    # 'pymarkupsafe' => {'url'         => 'https://files.pythonhosted.org/packages/source/M/MarkupSafe/MarkupSafe-1.0.tar.gz',
+    #                    'args'        => { 'native'   => [ ' --optimize=1',  ],
+    #                                       'nuc7i7bnh' => [ ' --optimize=1', ], },
+    #                    'method'      => 'python', },
+    # 'pymako'       => {'url'         => 'https://files.pythonhosted.org/packages/source/M/Mako/Mako-1.0.4.tar.gz',
+    #                    'args'        => { 'native'   => [ ' --optimize=1',  ],
+    #                                       'nuc7i7bnh' => [ ' --optimize=1', ], },
+    #                    'require'     => [ Installer['pybeaker'], Installer['pymarkupsafe'], ],
+    #                    'method'      => 'python', },
+    # 'drm'          => {'url'         => 'https://dri.freedesktop.org/libdrm/libdrm-2.4.85.tar.bz2',
+    #                    'args'        => { 'native'   => [ '--enable-udev', ],
+    #                                       'nuc7i7bnh' => [ '--enable-udev', ], },
+    #                    'creates'     => 'lib/libdrm.so',
+    #                    'require'     => [ Installer['xorg-libs'], ],
+    #                    'method'      => 'autotools', },
+    # 'mesa'         => {'url'         => 'https://mesa.freedesktop.org/archive/mesa-17.2.3.tar.xz',
+    #                    'args'        => { 'native'   => [ '--enable-texture-float', '--enable-osmesa', '--enable-xa', '--enable-glx-tls', '--with-platforms="drm,x11"', '--enable-gles1', '--enable-gles2', '--enable-shared-glapi', '--enable-egl', '--with-dri-drivers="i965,i915"', '--with-gallium-drivers="swrast,svga"', '--with-vulkan-drivers=intel', '--enable-gbm', ],
+    #                                       'nuc7i7bnh' => [ '--enable-texture-float', '--enable-osmesa', '--enable-xa', '--enable-glx-tls', '--with-platforms="drm,x11"', '--enable-gles1', '--enable-gles2', '--enable-shared-glapi', '--enable-egl', '--with-dri-drivers="i965,i915"', '--with-gallium-drivers="swrast,svga"', '--with-vulkan-drivers=intel', '--enable-gbm', ], },
+    #                    'creates'     => 'lib/libEGL.so',
+    #                    'require'     => [ Installer['xorg-libs'], Installer['drm'], ], #Installer['pymako'], ],
+    #                    'method'      => 'autotools', },
+    # 'glm'          => {'url'         => 'https://github.com/g-truc/glm/archive/0.9.8.5.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DGLM_TEST_ENABLE_CXX_14=ON', '-DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON', '-DGLM_TEST_ENABLE_FAST_MATH=ON',  ],
+    #                                       'nuc7i7bnh' => [ '-DGLM_TEST_ENABLE_CXX_14=ON', '-DGLM_TEST_ENABLE_LANG_EXTENSIONS=ON', '-DGLM_TEST_ENABLE_FAST_MATH=ON',  ], },
+    #                    'creates'     => 'include/glm/glm.hpp',
+    #                    'method'      => 'cmake', },
+
+    # # Caffe OpenCL
+    # 'gflags'       => {'url'         => 'https://github.com/gflags/gflags/archive/v2.2.1.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DBUILD_TESTING=OFF', ],
+    #                                       'nuc7i7bnh' => [ '-DBUILD_TESTING=OFF', ], },
+    #                    'creates'     => 'lib/libgflags.a',
+    #                    'method'      => 'cmake', },
+    # 'gtest'        => {'url'         => 'https://github.com/google/googletest/archive/release-1.8.0.tar.gz',
+    #                    'creates'     => 'lib/libgtest.a',
+    #                    'method'      => 'cmake', },
+    # 'snappy'       => {'url'         => 'https://github.com/google/snappy/archive/1.1.7.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DSNAPPY_BUILD_TESTS=OFF', ],
+    #                                       'nuc7i7bnh' => [ '-DSNAPPY_BUILD_TESTS=OFF', ], },
+    #                    'require'     => [ Installer['gtest'], Installer['gflags'], ],
+    #                    'creates'     => 'lib/libsnappy.a',
+    #                    'method'      => 'cmake', },
+    # 'leveldb'      => {'url'         => '',
+    #                    'creates'     => 'lib/leveldb.a',
+    #                    'prebuild'    => 'wget -N https://github.com/google/leveldb/archive/v1.20.tar.gz &&
+    #                                      tar -xf v1.20.tar.gz &&
+    #                                      cd leveldb-1.20 &&
+    #                                      make -j$(nproc) &&
+    #                                      cp out-static/lib* out-shared/lib* PREFIX/lib/ &&
+    #                                      cp -r include/* PREFIX/include/',
+    #                    'creates'     => 'lib/libleveldb.a',
+    #                    'require'     => [ Installer['snappy'], ],
+    #                    'method'      => 'custom', },
+    # 'lmdb'         => {'url'         => 'https://github.com/LMDB/lmdb/archive/LMDB_0.9.21.tar.gz',
+    #                    'creates'     => 'lib/liblmdb.so',
+    #                    'args'        => { 'native'   => [ 'prefix=PREFIX', ],
+    #                                       'nuc7i7bnh' => [ 'prefix=PREFIX', ], },
+    #                    'src_dir'     => 'libraries/liblmdb',
+    #                    'method'      => 'make', },
+    # 'hdf5'         => {'url'         => 'https://support.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.10.1.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DHDF5_BUILD_CPP_LIB=ON', '-DHDF5_ENABLE_Z_LIB_SUPPORT=ON', ],
+    #                                       'nuc7i7bnh' => [ '-DHDF5_BUILD_CPP_LIB=ON', '-DHDF5_ENABLE_Z_LIB_SUPPORT=ON', ], },
+    #                    'creates'     => 'lib/libhdf5.so',
+    #                    'method'      => 'cmake', },
+    # 'glog'         => {'url'         => 'https://github.com/google/glog/archive/v0.3.5.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DBUILD_TESTING=OFF', ],
+    #                                       'nuc7i7bnh' => [ '-DBUILD_TESTING=OFF', ], },
+    #                    'require'     => [ Installer['gflags'], ],
+    #                    'creates'     => 'lib/libglog.a',
+    #                    'method'      => 'cmake', },
+    # 'opencv'       => {'url'         => 'https://github.com/opencv/opencv/archive/3.3.1.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DOPENCV_ENABLE_NONFREE=ON', '-DWITH_CUDA=OFF', '-DWITH_CUFFT=OFF', '-DWITH_CUBLAS=OFF', '-DWITH_NVCUVID=OFF', '-DWITH_EIGEN=ON', '-DWITH_ARAVIS=ON', '-DWITH_TBB=ON', '-DWITH_OPENMP=ON', '-DWITH_OPENCL=ON', '-DBUILD_opencv_apps=OFFF', '-DBUILD_opencv_js=OFF', '-DBUILD_opencv_python3=ON', '-DBUILD_DOCS=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_PERF_TESTS=OFF', '-DBUILD_TESTS=OFF', '-DBUILD_WITH_DEBUG_INFO=OFF', '-DBUILD_ZLIB=OFF', '-DBUILD_TIFF=ON', '-DBUILD_JASPER=ON', '-DBUILD_JPEG=ON', '-DBUILD_PNG=ON', '-DBUILD_TBB=ON', ],
+    #                                       'nuc7i7bnh' => [ '-DOPENCV_ENABLE_NONFREE=ON', '-DWITH_CUDA=OFF', '-DWITH_CUFFT=OFF', '-DWITH_CUBLAS=OFF', '-DWITH_NVCUVID=OFF', '-DWITH_EIGEN=ON', '-DWITH_ARAVIS=ON', '-DWITH_TBB=ON', '-DWITH_OPENMP=ON', '-DWITH_OPENCL=ON', '-DBUILD_opencv_apps=OFFF', '-DBUILD_opencv_js=OFF', '-DBUILD_opencv_python3=ON', '-DBUILD_DOCS=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_PERF_TESTS=OFF', '-DBUILD_TESTS=OFF', '-DBUILD_WITH_DEBUG_INFO=OFF', '-DBUILD_ZLIB=OFF', '-DBUILD_TIFF=ON', '-DBUILD_JASPER=ON', '-DBUILD_JPEG=ON', '-DBUILD_PNG=ON', '-DBUILD_TBB=ON', ], },
+    #                    'require'     => [ Installer['aravis'], Installer['eigen3'], ],
+    #                    'creates'     => 'lib/libopencv_core.so',
+    #                    'method'      => 'cmake', },
+    # 'viennacl'     => {'url'         => 'https://github.com/viennacl/viennacl-dev/archive/release-1.7.1.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DBUILD_EXAMPLES=OFF', '-DBUILD_TESTING=OFF', '-DOPENCL_LIBRARY=PREFIX/opt/intel/opencl/libOpenCL.so', ],
+    #                                       'nuc7i7bnh' => [ '-DBUILD_EXAMPLES=OFF', '-DBUILD_TESTING=OFF', '-DOPENCL_LIBRARY=PREFIX/opt/intel/opencl/libOpenCL.so', ], },
+    #                    'creates'     => 'include/viennacl/version.hpp',
+    #                    'method'      => 'cmake', },
+    # 'clfft'        => {'url'         => 'https://github.com/clMathLibraries/clFFT/archive/v2.12.2.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DBUILD_CLIENT=OFF', '-DBUILD_TEST=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_CALLBACK_CLIENT=OFF', '-DSUFFIX_LIB=""', ],
+    #                                       'nuc7i7bnh' => [ '-DBUILD_CLIENT=OFF', '-DBUILD_TEST=OFF', '-DBUILD_EXAMPLES=OFF', '-DBUILD_CALLBACK_CLIENT=OFF', '-DSUFFIX_LIB=""', ], },
+    #                    'creates'     => 'lib/libclFFT.so',
+    #                    'src_dir'     => 'src',
+    #                    'require'     => [ Installer['viennacl'], Installer['fftw3f'], Installer['fftw3'], Installer['boost'], ],
+    #                    'method'      => 'cmake', },
+    # 'isaac'        => {'url'         => 'https://github.com/intel/isaac/archive/master.tar.gz',
+    #                    'creates'     => 'lib/libisaac.so',
+    #                    'require'     => [ Installer['viennacl'], ],
+    #                    'method'      => 'cmake', },
+    # 'libdnn'       => {'url'         => 'https://github.com/naibaf7/libdnn/archive/master.tar.gz',
+    #                    'args'        => { 'native'   => [ '-DUSE_CUDA=OFF', '-DUSE_OPENCL=ON', '-DUSE_INDEX_64=OFF', ],
+    #                                       'nuc7i7bnh' => [ '-DUSE_CUDA=OFF', '-DUSE_OPENCL=ON', '-DUSE_INDEX_64=OFF', ], },
+    #                    'creates'     => 'lib/libgreentea_libdnn.so',
+    #                    'require'     => [ Installer['viennacl'], ],
+    #                    'method'      => 'cmake', },
+    # 'caffe'        => {'url'         => 'https://github.com/01org/caffe/archive/inference-optimize.tar.gz',
+    #                    'prebuild'    => 'export ISAAC_HOME=PREFIX',
+    #                    'args'        => { 'native'   => [ '-DUSE_GREENTEA=ON', '-DUSE_CUDA=OFF', '-DUSE_INTEL_SPATIAL=ON', '-DBUILD_docs=OFF', '-DUSE_ISAAC=ON', '-DViennaCL_INCLUDE_DIR=PREFIX/include', '-DBLAS=Open', '-DOPENCL_LIBRARIES=PREFIX/opt/intel/opencl/libOpenCL.so', '-DOPENCL_INCLUDE_DIRS=PREFIX/opt/intel/opencl/include', '-Dpython_version=3', '-DUSE_OPENMP=ON', '-DUSE_INDEX_64=OFF', '-DUSE_FFT=OFF', '-DBUILD_examples=OFF', '-DBUILD_tools=OFF', ],
+    #                                       'nuc7i7bnh' => [ '-DUSE_GREENTEA=ON', '-DUSE_CUDA=OFF', '-DUSE_INTEL_SPATIAL=ON', '-DBUILD_docs=OFF', '-DUSE_ISAAC=ON', '-DViennaCL_INCLUDE_DIR=PREFIX/include', '-DBLAS=Open', '-DOPENCL_LIBRARIES=PREFIX/opt/intel/opencl/libOpenCL.so', '-DOPENCL_INCLUDE_DIRS=PREFIX/opt/intel/opencl/include', '-Dpython_version=3', '-DUSE_OPENMP=ON', '-DUSE_INDEX_64=OFF', '-DUSE_FFT=OFF', '-DBUILD_examples=OFF', '-DBUILD_tools=OFF', ], },
+    #                    'require'     => [ Installer['isaac'], Installer['boost'], Installer['hdf5'], Installer['leveldb'], Installer['lmdb'], Installer['glog'], Installer['gflags'], Installer['clfft'], Installer['libdnn'], Installer['opencv'], ],
+    #                    'creates'     => 'lib/libcaffe.so',
+    #                    'method'      => 'cmake', },
+    # 'tensorflow'   => {'url'         => 'https://github.com/tensorflow/tensorflow/archive/master.tar.gz',
+    #                    'prebuild'    => "patch -Np1 -i PREFIX/src/tensorflow.patch &&
+    #                                      cp PREFIX/src/tensorflow_eigen3.patch PREFIX/src/tensorflow/third_party/eigen3/remove_unsupported_devices.patch &&
+    #                                      /usr/bin/python3 tensorflow/tools/git/gen_git_source.py --configure .  &&
+    #                                      echo \"export PYTHON_BIN_PATH=/usr/bin/python3\" > tools/python_bin_path.sh &&
+    #                                      export BAZELRC=PREFIX/src/tensorflow.bazelrc",
+    #                    'postbuild'   => "./bazel-bin/tensorflow/tools/pip_package/build_pip_package PREFIX/tmp/tensorflow_pkg &&
+    #                                      /usr/bin/pip3 install --target PREFIX/lib/python3.5/site-packages PREFIX/tmp/tensorflow_pkg/tensorflow-1.4.0-cp35-cp35m-linux_x86_64.whl &&
+    #                                      cp PREFIX/lib/python3.5/site-packages/tensorflow/libtensorflow_framework.so PREFIX/lib/ &&
+    #                                      cp -r PREFIX/lib/python3.5/site-packages/tensorflow/include/tensorflow PREFIX/include/",
+    #                    'args'        => { 'native'   => [ '-c opt', '--config=sycl', '//tensorflow/tools/pip_package:build_pip_package', '--verbose_failures', ],
+    #                                       'nuc7i7bnh' => [ '-c opt', '--config=sycl', '//tensorflow/tools/pip_package:build_pip_package', '--verbose_failures', ], },
+    #                    'require'     => [ Installer['protobuf'], ],
+    #                    'creates'     => 'lib/libtensorflow_framework.so',
+    #                    'method'      => 'bazel', },
+
+def install(install_path, force):
+    # Make sure we are dealing with an absolute path
+    install_path = os.path.abspath(install_path)
+
+    # First, copy the toolchains into the install location
+    if os.path.exists(install_path) and not force:
+        cprint('Destination already exists. Not overwriting it unless you force me.', 'red', attrs=['bold'])
+        return
+
+    elif os.path.exists(install_path) and force:
+        cprint('Destination already exists. Wiping it. You forced me to.', 'red', attrs=['bold'])
+        confirm = input('Type "yes" to continue\n')
+        if confirm.lower() != 'yes':
+            cprint('Aborting installation!', 'red', attrs=['bold'])
+            return
+
+        shutil.rmtree(install_path)
+
+    # Create the installation folder
+    os.makedirs(install_path)
+
+    # Make sure we exclude any unnecesary files/folders
+    rsync_args = ['-avuPlhm',
+                  '--exclude=toolchain/bootstrap*',
+                  '--exclude=toolchain/setup*',
+                  '--exclude=toolchain/temp*',
+                  *['--exclude=toolchain/{}/temp*'.format(t.name) for t in r.toolchains],
+                  '--exclude=.git*',
+                  '--exclude=.vscode*',
+                  '--exclude=*__pycache__*',
+                  '--exclude=.style.yapf',
+                  '--exclude=README.md',
+                  '--exclude=reel*',
+                  '--exclude=Reel.sublime*',
+                  '--exclude=install.log',
+                  os.path.join(os.path.dirname(os.path.realpath(__file__)), '*'),
+                  install_path,
+                ]
+
+    # Get the total number of files to install
+    cprint('Syncing Reel toolchains into "{}"'.format(install_path), 'blue', attrs=['bold'])
+    cprint('This will take some time ....', 'blue', attrs=['bold'])
+    with open('install.log', 'w') as logfile:
+        cmd = 'rsync --stats --dry-run {}'.format(' '.join(rsync_args))
+        logfile.write(cmd)
+        proc = Popen(cmd, shell=True, stdout=PIPE)
+        output = proc.communicate()[0].decode('utf-8')
+        total_files = int(re.findall(r'Number of files: (\d+,\d+)', output)[0].replace(',', ''))
+        logfile.write(output)
+
+        # Now actually perform the installation
+        cmd = 'rsync {}'.format(' '.join(rsync_args))
+        logfile.write(cmd)
+        proc = Popen(cmd, shell=True, stdout=PIPE)
+
+        total_transferred = 0
+        with tqdm(total=total_files, unit=' files', unit_scale=True) as progress:
+            while True:
+                output = proc.stdout.readline().decode('utf-8')
+                logfile.write(output)
+                if 'to-chk' in output:
+                    m = re.findall(r'to-chk=(\d+)/(\d+)', output)
+                    count = int(m[0][1]) - int(m[0][0])
+                    progress.update(count - total_transferred)
+                    total_transferred = count
+                    if int(m[0][0]) == 0:
+                        break
+                elif output == '':
+                    break
+
+
+    # Now patch the musl search files and the gcc specs file
+    cprint('Patching linker files ....', 'blue', attrs=['bold'])
+    toolchains = [(t.name, t.triple, t.arch, os.path.abspath(t.prefix_dir)) for t in r.toolchains if t.name != 'bootstrap']
+
+    for toolchain in tqdm(toolchains, unit=' toolchains'):
+        rpath = os.pathsep.join([
+                        os.path.join(install_path, 'toolchain', toolchain[0], 'lib'),
+                        os.path.join(install_path, 'toolchain', toolchain[0], 'lib64'),
+                        os.path.join(install_path, 'toolchain', toolchain[0], toolchain[1], 'lib'),
+                        os.path.join(install_path, 'toolchain', toolchain[0], toolchain[1], 'lib64')
+                    ]
+                )
+
+        musl_file = os.path.join(install_path, 'toolchain', toolchain[0], 'etc', 'ld-musl-{}.path'.format(toolchain[2]))
+        with open(musl_file, 'w') as f:
+            f.write(rpath)
+
+        # Find the location of GCC specs file (via the libgcc location)
+        gcc = os.path.join(install_path, 'toolchain', toolchain[0], 'bin', '{}-gcc'.format(toolchain[1]))
+        libgcc = check_output('{} -print-libgcc-file-name'.format(gcc), shell=True).decode('utf-8')
+
+        # Load the specs file
+        with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'r') as f:
+            specs = f.read()
+
+        # Set the path to our dynamic loader
+        specs = re.sub('{}/lib/ld-'.format(toolchain[3]),
+                       '{}/lib/ld-'.format(os.path.join(install_path, 'toolchain', t.name)),
+                       specs
+                )
+
+        # Write out the modified specs file
+        with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'w') as f:
+            f.write(specs)
+
+        # Finally, set rpath and interpreter to reflect the installation paths
+        # bins = [bin for bin in glob.glob(os.path.join(install_path, 'toolchain', toolchain[0], 'bin', '*'), recursive=True)
+        #         if os.access(bin, os.X_OK)]
+
+        # interp = os.path.join(install_path, 'toolchain', toolchain[0], 'lib', 'ld-musl-{}.so.1'.format(toolchain[2]))
+
+        # for bin in bins:
+        #     try:
+        #         check_output('patchelf --print-interpreter "{}"'.format(bin), shell=True, check=True, stdout=PIPE, stderr=PIPE)
+
+        #     # patchelf returns non-zero if the executable file is not an ELF file or is lacking a .interp section
+        #     except:
+        #         print('Checking interpreter of {} failed'.format(bin))
+        #         pass
+
+        #     else:
+        #         print('Setting interpreter of {} to {}'.format(bin, interp))
+        #         if os.access(lib, os.W_OK):
+        #             run('patchelf --set-interpreter "{}" "{}"'.format(interp, bin), shell=True, check=True, stdout=PIPE, stderr=PIPE)
+        #             run('patchelf --set-rpath "{}" "{}"'.format(rpath, bin), shell=True, check=True, stdout=PIPE, stderr=PIPE)
+
+        # libs = [lib for lib in glob.glob(os.path.join(install_path, 'toolchain', toolchain[0], 'lib*', '*.so'), recursive=True)]
+        # libs = libs + [lib for lib in glob.glob(os.path.join(install_path, 'toolchain', toolchain[0], toolchain[1], 'lib*', '*.so'), recursive=True)]
+
+        # for lib in libs:
+        #     try:
+        #         run('patchelf --print-rpath "{}"'.format(lib), shell=True, check=True, stdout=PIPE, stderr=PIPE)
+
+        #     # patchelf returns non-zero if the executable file is not an ELF file
+        #     except:
+        #         pass
+
+        #     else:
+        #         if os.access(lib, os.W_OK):
+        #             run('patchelf --set-rpath "{}" "{}"'.format(rpath, lib), shell=True, check=True, stdout=PIPE, stderr=PIPE)
+
+
+    cprint('Installation complete!', 'green', attrs=['bold'])
+
+    # Now we need to patch rpaths and other library search directory indicators
+    # ldscript search directories
+    # cprint('Patching ldscripts ....', 'blue', attrs=['bold'])
+    # ldscripts = glob.glob(os.path.join(install_path, 'toolchain', '**', 'tools', 'ldscripts', '*.x*'), recursive=True)
+
+    # with open('install.log', 'a') as logfile:
+    #     logfile.write('\n\nPatching ldscripts ....\n')
+    #     for ldscript in ldscripts:
+    #         logfile.write('Patching "{}"'.format(ldscript))
+    #         with open(ldscript, 'r') as f:
+    #             script = f.read()
+
+    #         script = re.sub(os.path.realpath(__file__), os.path.abspath(install_path), script)
+
+    #         with open(ldscript, 'w') as f:
+    #             f.write(script)
+
+
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--build', action='store_true', help='Build the Reel toolchains')
+parser.add_argument('--install', action='store_true', help='Install the Reel toolchains')
+parser.add_argument('--install_path', default=os.path.join(os.path.expanduser('~'), 'Reel'), help='Install location')
+parser.add_argument('--force',
+                    action='store_true',
+                    help='Force installation. This will overwrite the specified install location. DATA WILL BE LOST!!'
+)
+args = parser.parse_args()
+
+if __name__ == "__main__":
+    if args.build:
+        build()
+    elif args.install:
+        install(args.install_path, args.force)
+    else:
+        cprint('No action specified. Doing nothing', 'red', attrs=['bold'])
