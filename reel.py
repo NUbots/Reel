@@ -312,7 +312,7 @@ for t in toolchains:
     t.add_library(
         name='glib2',
         url='https://ftp.gnome.org/pub/gnome/sources/glib/2.56/glib-2.56.0.tar.xz',
-        phase=[Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h')],
+        phases=[Shell(post_install='cp -v {build}/glib/glibconfig.h {prefix_dir}/include/glibconfig.h')],
         configure_args={
             'glib_cv_stack_grows': 'no',
             'glib_cv_uscore': 'no',
