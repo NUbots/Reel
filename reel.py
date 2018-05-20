@@ -349,7 +349,6 @@ for t in toolchains:
             '--with-termlib': True,
             '--with-ticlib': True,
             '--with-gpm': True,
-            '--with-pthread': True,
             '--enable-sp-funcs': True,
             '--enable-const': True,
             '--enable-ext-colors': True,
