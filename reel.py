@@ -40,6 +40,12 @@ r.add_library(
 r.add_library(name='png', url='https://downloads.sourceforge.net/project/libpng/libpng16/1.6.34/libpng-1.6.34.tar.xz')
 
 r.add_library(
+    name='jpeg-turbo',
+    url='http://downloads.sourceforge.net/project/libjpeg-turbo/1.5.3/libjpeg-turbo-1.5.3.tar.gz',
+    configure_args={'CCASFLAGS': '-f elf64'}
+)
+
+r.add_library(
     name='protobuf',
     url='https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-cpp-3.5.1.tar.gz',
     configure_args={
