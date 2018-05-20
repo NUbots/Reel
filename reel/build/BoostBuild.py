@@ -37,7 +37,6 @@ class BoostBuild:
                         os.path.join('{prefix_dir}', 'include', 'python3.6m')],
             'library-path': '{prefix_dir}/lib',
             '-q': True,
-            '-a': True,
             '--python-buildid': 'py36',
         }
 
