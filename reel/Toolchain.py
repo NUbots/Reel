@@ -566,7 +566,7 @@ class Toolchain:
             name='linux-headers',
             url='https://git.kernel.org/torvalds/t/linux-4.16-rc5.tar.gz',
             phases=[
-                Shell(pre_install='mkdir -p {}'.format('{prefix_dir}', 'temp')),
+                Shell(pre_install='mkdir -p {}'.format(os.path.join('{prefix_dir}', 'temp'))),
                 Shell(
                     post_install=
                     'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -rv {} {} && rm -rf {dest}'.
