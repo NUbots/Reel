@@ -588,6 +588,17 @@ for t in toolchains:
     )
 
     t.add_library(
+        name='alsa',
+        url='http://www.mirrorservice.org/sites/ftp.alsa-project.org/pub/lib/alsa-lib-1.1.5.tar.bz2',
+        phases=[UpdateConfigSub],
+        configure_args={
+            '--enable-static': None,
+            # Assumes python2
+            '--disable-python': True
+        }
+    )
+
+    t.add_library(
         name='espeak',
         url='https://github.com/Bidski/espeak/archive/master.tar.gz',
         phases=[
