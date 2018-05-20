@@ -2,15 +2,22 @@
 
 import os
 import sys
+import argparse
+import shutil
+import glob
+import re
 
-from reel.patch import UpdateConfigSub
+from subprocess import Popen, check_output, PIPE, run
+from termcolor import cprint
+from tqdm import tqdm
+
 from reel import Python
 from reel import Reel
 from reel import Shell
-
+from reel.patch import UpdateConfigSub
 from reel.util import dedent
 
-r = Reel()  #gnu_mirror='http://gnu.uberglobalmirror.com')
+r = Reel()
 
 r.add_library(
     name='gperf',
