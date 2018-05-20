@@ -818,3 +818,13 @@ r.build()
 #                    'require'     => [ Installer['protobuf'], ],
 #                    'creates'     => 'lib/libtensorflow_framework.so',
 #                    'method'      => 'bazel', },
+    t.add_library(
+        name='catch',
+        url='https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp',
+        phases=[
+            Shell(configure=''),
+            Shell(build=''),
+            Shell(install='cp -v {} {}'.format('{source}', os.path.join('{prefix_dir}', 'include')))
+        ]
+    )
+
