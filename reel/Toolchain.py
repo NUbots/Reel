@@ -184,13 +184,18 @@ class Toolchain:
                     '--host': self.parent_toolchain.triple,
                     '--build': self.parent_toolchain.triple,
                     '--target': '{target_triple}',
-                    '--with-lib-path': os.path.join('{prefix_dir}', 'lib'),
+                    '--with-lib-path': os.pathsep.join([os.path.join('=', 'usr', 'lib'),
+                                                        os.path.join('=', 'usr', 'lib64'),
+                                                        os.path.join('=', 'usr', '{target_triple}', 'lib'),
+                                                        os.path.join('=', 'usr', '{target_triple}', 'lib64')]),
                     '--with-sysroot': '"{prefix_dir}"',
                     '--disable-nls': True,
                     '--disable-bootstrap': True,
                     '--disable-werror': True,
                     '--enable-static': True,
-                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True
+                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True,
+                    '--enable-64-bit-bfd': True,
+                    '--enable-plugins': True,
                 },
                 install_targets=['install-strip']
             )
