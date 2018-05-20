@@ -419,7 +419,7 @@ for t in toolchains:
                     t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
                     os.path.join('{prefix_dir}', 'include', 'ncurses')
                 ),
-            'LDFLAGS': '{} -L{}'.format(t.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'lib')),
+            'LDFLAGS': '{} -L{}'.format(t.env.get('LDFLAGS', ''), os.path.join('{prefix_dir}', 'lib')),
 
             # We need to be able to find the systems python to perform cross-compilation
             '_PYTHON_PROJECT_BASE': '{}'.format(os.path.abspath(os.path.join(t.state['builds_dir'], 'Python-3.6.4'))),
