@@ -149,7 +149,12 @@ r.add_library(
                 r.toolchain.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'include'),
                 os.path.join('{prefix_dir}', 'include', 'ncurses')
             ),
-        'LDFLAGS': '{} -L{}'.format(r.toolchain.env.get('CXXFLAGS', ''), os.path.join('{prefix_dir}', 'lib'))
+        'LDFLAGS': '{} -L{}'.format(r.toolchain.env.get('LDFLAGS', ''), os.path.join('{prefix_dir}', 'lib')),
+        'LD_LIBRARY_PATH': os.pathsep.join([os.path.join('{prefix_dir}', 'lib'),
+                                            os.path.join('{prefix_dir}', 'lib64')]),
+
+        # For installing matplotlib
+        'MPLBASEDIRLIST': '{prefix_dir}'
     },
     in_source_build=True,
     configure_args={
