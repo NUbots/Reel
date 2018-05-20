@@ -337,7 +337,10 @@ for t in toolchains:
     t.add_library(
         name='ncurses',
         url='https://ftpmirror.gnu.org/gnu/ncurses/ncurses-6.1.tar.gz',
-        env={'CPPFLAGS': '-P'},
+        env={
+            'CPPFLAGS': '-P',
+            'TIC_PATH': os.path.join('{parent_prefix_dir}', 'bin', 'tic')
+        },
         configure_args={
             # We need the parents compiler for building here.
             '--with-build-cc': r.toolchain.env['CC'],
