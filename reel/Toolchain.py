@@ -161,9 +161,9 @@ class Toolchain:
                 'CXX': '{}-g++'.format(self.triple),
                 'CXXCPP': '{}-g++ -E'.format(self.triple),
                 'FC': '{}-gfortran'.format(self.triple),
-                'AR': 'ar',
-                'RANLIB': 'ranlib',
-                'NM': 'nm',
+                'AR': '{}-ar'.format(self.triple),
+                'RANLIB': '{}-ranlib'.format(self.triple),
+                'NM': '{}-nm'.format(self.triple),
                 'CFLAGS': ' '.join(self.c_flags),
                 'CXXFLAGS': ' '.join(self.cxx_flags),
                 'FCFLAGS': ' '.join(self.fc_flags),
@@ -182,6 +182,7 @@ class Toolchain:
             self.add_tool(
                 name='binutils',
                 url='{}/binutils/binutils-2.30.tar.xz'.format(gnu_mirror),
+                phases=[Python(post_install=binutils_post_install)],
                 configure_args={
                     '--host': self.parent_toolchain.triple,
                     '--build': self.parent_toolchain.triple,
@@ -196,8 +197,6 @@ class Toolchain:
                     '--disable-werror': True,
                     '--enable-static': True,
                     '{}'.format('--enable-shared' if not static else '--disable-shared'): True,
-                    '--enable-64-bit-bfd': True,
-                    '--enable-plugins': True,
                 },
                 install_targets=['install-strip']
             )
@@ -627,6 +626,17 @@ class Toolchain:
         # Build all our libraries
         for l in self.libraries:
             l.build()
+
+def binutils_post_install(env, log_file, **state):
+    for f in ['addr2line', 'ar', 'as', 'c++filt', 'elfedit', 'gprof', 'ld', 'ld.bfd', 'nm', 'objcopy', 'objdump',
+              'ranlib', 'readelf', 'size', 'strings', 'strip']:
+        if not os.path.exists(os.path.join(state['prefix_dir'], 'bin', '{}-{}'.format(state['target_triple'], f))):
+            log_file.write('{} does not exist, creating link ....\n'.format(
+                os.path.join(state['prefix_dir'], 'bin', '{}-{}'.format(state['target_triple'], f)))
+            )
+            os.symlink(os.path.join(state['prefix_dir'], 'bin', f),
+                       os.path.join(state['prefix_dir'], 'bin', '{}-{}'.format(state['target_triple'], f))
+            )
 
 
 def generate_toolchain_files(env, log_file, **state):
