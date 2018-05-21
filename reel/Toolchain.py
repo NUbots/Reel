@@ -221,6 +221,7 @@ class Toolchain:
                     '--disable-werror': True,
                     '--enable-libquadmath': True,
                     '--enable-libquadmath-support': True,
+                    '--disable-libstdcxx-pch': True,
                     '{}'.format('--enable-shared' if not static else '--disable-shared'): True
                 }
             }
