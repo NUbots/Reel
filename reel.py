@@ -986,12 +986,50 @@ def install(install_path, force):
     #         with open(ldscript, 'w') as f:
     #             f.write(script)
 
+def clean(expunge):
+    if not expunge:
+        cprint('Are you sure you want to delete all build files and build products?', 'red', attrs=['bold'])
+
+    else:
+        cprint('Are you sure you want to delete EVERYTHING?', 'red', attrs=['bold'])
+
+    confirm = input('Type "yes" to continue\n')
+    if confirm.lower() != 'yes':
+        cprint('Aborting cleanse!', 'red', attrs=['bold'])
+        return
+
+    toolchain_root = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'toolchain')
+
+    if expunge:
+        shutil.rmtree(toolchain_root)
+
+    else:
+        # We need to preserve the following
+        # toolchain/setup/archive
+        # toolchain/setup/patches
+        # toolchain/setup/src
+        for dir in os.listdir(toolchain_root):
+            if dir.endswith('setup'):
+                for setup_dir in os.listdir(os.path.join(toolchain_root, dir)):
+                    if setup_dir not in ('archive', 'patches', 'src'):
+                        shutil.rmtree(os.path.join(toolchain_root, 'setup', setup_dir))
+            elif os.path.islink(os.path.join(toolchain_root, dir)):
+                os.unlink(os.path.join(toolchain_root, dir))
+            elif os.path.isfile(os.path.join(toolchain_root, dir)):
+                os.remove(os.path.join(toolchain_root, dir))
+            else:
+                shutil.rmtree(os.path.join(toolchain_root, dir))
 
 
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build', action='store_true', help='Build the Reel toolchains')
+parser.add_argument('--clean', action='store_true', help='Delete the Reel toolchains')
+parser.add_argument('--expunge',
+                    action='store_true',
+                    help='When used with "--clean" this will delete downloaded archives and extracted source files'
+)
 parser.add_argument('--install', action='store_true', help='Install the Reel toolchains')
 parser.add_argument('--install_path', default=os.path.join(os.path.expanduser('~'), 'Reel'), help='Install location')
 parser.add_argument('--force',
@@ -1005,5 +1043,7 @@ if __name__ == "__main__":
         build()
     elif args.install:
         install(args.install_path, args.force)
+    elif args.clean:
+        clean(args.expunge)
     else:
         cprint('No action specified. Doing nothing', 'red', attrs=['bold'])
