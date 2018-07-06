@@ -3,10 +3,12 @@
 import os
 import platform
 
-from .Toolchain import Toolchain
-from .Shell import Shell
-from .Python import Python
+from .Patch import Patch
 from .patch import UpdateConfigSub
+from .Python import Python
+from .Shell import Shell
+from .Toolchain import Toolchain
+from .util import dedent
 
 
 class Reel:
@@ -56,9 +58,28 @@ class Reel:
             }
         )
 
+        nasm_patch = dedent(
+            """\
+        --- a/include/nasmlib.h
+        +++ b/include/nasmlib.h
+        @@ -188,10 +188,8 @@
+         int64_t readstrnum(char *str, int length, bool *warn);
+
+         /*
+        - * seg_init: Initialise the segment-number allocator.
+          * seg_alloc: allocate a hitherto unused segment number.
+          */
+        -void pure_func seg_init(void);
+         int32_t pure_func seg_alloc(void);
+
+         /*
+        """
+        )
+
         toolchain.add_library(
             name='nasm',
-            url='http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.xz',
+            url='http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.xz',
+            phases=[Patch(post_extract=nasm_patch)],
             configure_args={
                 '--target': '{target_triple}',
             }
@@ -89,7 +110,6 @@ class Reel:
                 '--with-termlib': True,
                 '--with-ticlib': True,
                 '--with-gpm': True,
-                '--with-pthread': True,
                 '--enable-sp-funcs': True,
                 '--enable-const': True,
                 '--enable-ext-colors': True,
@@ -144,9 +164,7 @@ class Reel:
             name='openssl',
             url='https://www.openssl.org/source/openssl-1.1.0g.tar.gz',
             phases=[Shell(**openssl_phases)],
-            env={
-                'CROSS_COMPILE': ' '
-            }
+            env={'CROSS_COMPILE': ' '}
         )
 
         toolchain.add_library(

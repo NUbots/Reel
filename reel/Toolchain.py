@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import sys
 import subprocess
 from termcolor import cprint
 import multiprocessing
 
+from .build import SmartBuild
 from .download import SmartDownload
 from .extract import SmartExtract
-from .build import SmartBuild
+from .Library import Library
 from .patch import UpdateConfigSub
+from .Patch import Patch
 from .Shell import Shell
 from .Python import Python
-
-from .Library import Library
-
 from .util import dedent
 
 
@@ -63,6 +63,7 @@ class Toolchain:
         self.setup_dir = os.path.join(self.toolchain_dir, 'setup')
         self.archives_dir = os.path.join(self.setup_dir, 'archive')
         self.sources_dir = os.path.join(self.setup_dir, 'src')
+        self.patches_dir = os.path.join(self.setup_dir, 'patches')
 
         # Toolchain directories
         self.prefix_dir = os.path.join(self.toolchain_dir, self.name)
@@ -81,6 +82,7 @@ class Toolchain:
             'setup_dir': self.setup_dir,
             'archives_dir': self.archives_dir,
             'sources_dir': self.sources_dir,
+            'patches_dir': self.patches_dir,
             'prefix_dir': os.path.abspath(self.prefix_dir),
             'working_dir': self.working_dir,
             'builds_dir': self.builds_dir,
@@ -118,7 +120,7 @@ class Toolchain:
             # System toolchains need environment too
             self.env.update({
                 # Update our path to include where we build binaries too
-                'PATH': os.pathsep.join([os.path.join(self.state['prefix_dir'], 'bin'), self.env['PATH']]),
+                'PATH': os.pathsep.join([os.path.join(self.state['prefix_dir'], 'bin'), self.env['PATH'],]),
                 'CFLAGS': ' '.join(self.c_flags),
                 'CXXFLAGS': ' '.join(self.cxx_flags),
                 'FCFLAGS': ' '.join(self.fc_flags),
@@ -149,7 +151,8 @@ class Toolchain:
                 'PATH':
                     os.pathsep.join([
                         os.path.join(self.state['prefix_dir'], 'bin'),
-                        os.path.join(self.state['prefix_dir'], self.triple, 'bin'), self.env['PATH']
+                        os.path.join(self.state['prefix_dir'], self.triple, 'bin'),
+                        self.env['PATH'],
                     ]),
 
                 # Overwrite the compiler and compiler flags
@@ -179,24 +182,28 @@ class Toolchain:
             self.add_tool(
                 name='binutils',
                 url='{}/binutils/binutils-2.30.tar.xz'.format(gnu_mirror),
+                phases=[Python(post_install=binutils_post_install)],
                 configure_args={
                     '--host': self.parent_toolchain.triple,
                     '--build': self.parent_toolchain.triple,
                     '--target': '{target_triple}',
-                    '--with-lib-path': os.path.join('{prefix_dir}', 'lib'),
+                    '--with-lib-path': os.pathsep.join([os.path.join('=', 'usr', 'lib'),
+                                                        os.path.join('=', 'usr', 'lib64'),
+                                                        os.path.join('=', 'usr', '{target_triple}', 'lib'),
+                                                        os.path.join('=', 'usr', '{target_triple}', 'lib64')]),
                     '--with-sysroot': '"{prefix_dir}"',
                     '--disable-nls': True,
                     '--disable-bootstrap': True,
                     '--disable-werror': True,
                     '--enable-static': True,
-                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True
+                    '{}'.format('--enable-shared' if not static else '--disable-shared'): True,
                 },
                 install_targets=['install-strip']
             )
 
             # We use this gcc build a few times, so make sure args are the same
             gcc_args = {
-                'url': '{}/gcc/gcc-7.3.0/gcc-7.3.0.tar.xz'.format(gnu_mirror),
+                'url': '{}/gcc/gcc-8.1.0/gcc-8.1.0.tar.xz'.format(gnu_mirror),
                 'env': {
                     'CFLAGS_FOR_TARGET': self.env['CFLAGS'],
                     'CXXFLAGS_FOR_TARGET': self.env['CXXFLAGS'],
@@ -212,14 +219,44 @@ class Toolchain:
                     '--disable-multilib': True,
                     '--disable-bootstrap': True,
                     '--disable-werror': True,
+                    '--enable-libquadmath': True,
+                    '--enable-libquadmath-support': True,
+                    '--disable-libstdcxx-pch': True,
                     '{}'.format('--enable-shared' if not static else '--disable-shared'): True
                 }
             }
 
             # Build gcc so we can build basic c programs (like musl)
+            # gcc x86 has a "bug"
+            # error: declaration of 'int posix_memalign(void**, size_t, size_t) throw ()' has a different exception specifier
+            # Only x86 + musl produces this error, apparently glibc actually has the exception specifier, but musl doesn't
+            # https://github.com/android-ndk/ndk/issues/91
+            gcc_patch = dedent(
+                """\
+            --- a/gcc/config/i386/pmm_malloc.h
+            +++ b/gcc/config/i386/pmm_malloc.h
+            @@ -31,8 +31,12 @@
+             #ifndef __cplusplus
+             extern int posix_memalign (void **, size_t, size_t);
+             #else
+            +#ifdef __GLIBC__
+             extern "C" int posix_memalign (void **, size_t, size_t) throw ();
+            -#endif
+            +#else
+            +extern "C" int posix_memalign (void **, size_t, size_t);
+            +#endif  // __GLIBC__
+            +#endif  // __cplusplus
+
+             static __inline void *
+             _mm_malloc (size_t __size, size_t __alignment)
+             {{
+               void * __ptr;
+            """
+            )
             self.add_tool(
-                name='gcc7',
-                phases=[Shell(post_extract='cd {source} && ./contrib/download_prerequisites')],
+                name='gcc',
+                phases=[Python(post_extract=gcc_post_extract),
+                        Patch(pre_configure=gcc_patch)],
                 build_targets=['all-gcc'],
                 install_targets=['install-strip-gcc'],
                 **gcc_args
@@ -240,13 +277,7 @@ class Toolchain:
             # Build libgcc (our low level api)
             self.add_tool(
                 name='libgcc',
-                phases=[
-                    Shell(
-                        post_install='{prefix_dir}/bin/{target_triple}-gcc -dumpspecs'
-                        ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
-                        ' > $(dirname $({prefix_dir}/bin/{target_triple}-gcc -print-libgcc-file-name))/specs'
-                    )
-                ],
+                phases=[Python(post_install=gcc_post_install)],
                 build_targets=['all-target-libgcc'],
                 install_targets=['install-strip-target-libgcc'],
                 **gcc_args
@@ -258,12 +289,7 @@ class Toolchain:
                     name='musl_shared',
                     url='https://www.musl-libc.org/releases/musl-1.1.19.tar.gz',
                     build_postfix='_shared',
-                    phases=[
-                        Shell(
-                            post_install=
-                            'echo "{prefix_dir}/lib:{prefix_dir}/lib64" > {prefix_dir}/etc/ld-musl-{arch}.path'
-                        )
-                    ],
+                    phases=[Python(post_install=musl_post_install)],
                     configure_args={
                         '--target': '{target_triple}',
                         '--syslibdir': os.path.join('{prefix_dir}', 'lib'),
@@ -275,15 +301,7 @@ class Toolchain:
             # Build the other gnu libraries
             self.add_tool(
                 name='gnulibs',
-                phases=[
-                    Shell(
-                        pre_build='echo "{build}/gcc/"'
-                        ' && {build}/gcc/xgcc -dumpspecs'
-                        ' | sed "s@/lib/ld-@{prefix_dir}/lib/ld-@g"'
-                        ' > {build}/gcc/specs'
-                    ),
-                    Python(pre_install=generate_toolchain_files)
-                ],
+                phases=[Python(pre_build=gnulibs_pre_build, pre_install=generate_toolchain_files)],
                 build_targets=[
                     'all-target-libstdc++-v3', 'all-target-libquadmath', 'all-target-libgfortran', 'all-target-libgomp'
                 ],
@@ -375,9 +393,7 @@ class Toolchain:
             name='fontconfig',
             url='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.13.0.tar.bz2',
             phases=[Shell(post_extract='cd {source} && rm -f src/fcobjshash.h')],
-            configure_args={
-                '--disable-docs': True
-            }
+            configure_args={'--disable-docs': True}
         )
 
         self.add_library(url='https://www.x.org/pub/individual/util/util-macros-1.19.2.tar.bz2', name='util-macros')
@@ -492,8 +508,10 @@ class Toolchain:
                 name='xorg-lib-{}'.format(lib[0]),
                 url='https://www.x.org/pub/individual/lib/{}-{}.tar.bz2'.format(*lib),
                 phases=[UpdateConfigSub],
-                env={'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
-                     'CFLAGS_FOR_BUILD': ''},
+                env={
+                    'CC_FOR_BUILD': '{}-gcc'.format('{parent_target_triple}'),
+                    'CFLAGS_FOR_BUILD': ''
+                },
                 configure_args={
                     # musl returns a valid pointer for a 0 byte allocation
                     '--enable-malloc0returnsnull': 'no'
@@ -515,8 +533,10 @@ class Toolchain:
             name='tcl',
             url='https://prdownloads.sourceforge.net/tcl/tcl{}-src.tar.gz'.format(version),
             src_dir='unix',
-            configure_args={'--enable-threads': True,
-                            '--enable-static': None},
+            configure_args={
+                '--enable-threads': True,
+                '--enable-static': None
+            },
             env=env
         )
 
@@ -549,7 +569,7 @@ class Toolchain:
             name='linux-headers',
             url='https://git.kernel.org/torvalds/t/linux-4.16-rc5.tar.gz',
             phases=[
-                Shell(pre_install='mkdir -p {}'.format('{prefix_dir}', 'temp')),
+                Shell(pre_install='mkdir -p {}'.format(os.path.join('{prefix_dir}', 'temp'))),
                 Shell(
                     post_install=
                     'find {dest} \( -name .install -o -name ..install.cmd \) -delete && cp -rv {} {} && rm -rf {dest}'.
@@ -572,7 +592,7 @@ class Toolchain:
 
         if os.path.exists(os.path.join(self.state['prefix_dir'], 'usr')):
             if not os.path.islink(os.path.join(self.state['prefix_dir'], 'usr')):
-                os.path.unlink(os.path.join(self.state['prefix_dir'], 'usr'))
+                os.unlink(os.path.join(self.state['prefix_dir'], 'usr'))
                 os.symlink(self.state['prefix_dir'], os.path.join(self.state['prefix_dir'], 'usr'))
 
         else:
@@ -584,6 +604,7 @@ class Toolchain:
         os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.archives_dir, exist_ok=True)
         os.makedirs(self.sources_dir, exist_ok=True)
+        os.makedirs(self.patches_dir, exist_ok=True)
         os.makedirs(self.builds_dir, exist_ok=True)
         os.makedirs(self.logs_dir, exist_ok=True)
         os.makedirs(self.status_dir, exist_ok=True)
@@ -607,8 +628,19 @@ class Toolchain:
         for l in self.libraries:
             l.build()
 
+def binutils_post_install(env, log_file, **state):
+    for f in ['addr2line', 'ar', 'as', 'c++filt', 'elfedit', 'gprof', 'ld', 'ld.bfd', 'nm', 'objcopy', 'objdump',
+              'ranlib', 'readelf', 'size', 'strings', 'strip']:
+        if not os.path.exists(os.path.join(state['prefix_dir'], 'bin', '{}-{}'.format(state['target_triple'], f))):
+            log_file.write('{} does not exist, creating link ....\n'.format(
+                os.path.join(state['prefix_dir'], 'bin', '{}-{}'.format(state['target_triple'], f)))
+            )
+            os.symlink(os.path.join(state['prefix_dir'], 'bin', f),
+                       os.path.join(state['prefix_dir'], 'bin', '{}-{}'.format(state['target_triple'], f))
+            )
 
-def generate_toolchain_files(env, log_file=None, **state):
+
+def generate_toolchain_files(env, log_file, **state):
     gcc_template = dedent(
         """\
         *c_opts:
@@ -627,24 +659,70 @@ def generate_toolchain_files(env, log_file=None, **state):
 
     cmake_template = dedent(
         """\
+        # Set default system parameters
         SET(CMAKE_SYSTEM_NAME Linux)
+        SET(CMAKE_SYSTEM_PROCESSOR {arch})
+        SET(TRIPLE "{triple}" CACHE STRING "Compiler triple of the build system" FORCE)
+        SET(CMAKE_C_COMPILER ${{TRIPLE}}-gcc)
+        SET(CMAKE_CXX_COMPILER ${{TRIPLE}}-g++)
+        SET(CMAKE_Fortran_COMPILER ${{TRIPLE}}-gfortran)
 
-        SET(CMAKE_C_COMPILER {cc})
-        SET(CMAKE_CXX_COMPILER {cxx})
-
-        SET(CMAKE_FIND_ROOT_PATH "{prefix_dir}")
+        SET(CMAKE_FIND_ROOT_PATH "${{TOOLCHAIN_ROOT}}"
+                                 "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}"
+        )
         SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
         SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
         SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
         SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-        # Usually this would be a SYSTEM directive, but gcc-7.3.0 seems to fail using include_next with -isystem
-        # https://patchwork.openembedded.org/patch/148218/
-        INCLUDE_DIRECTORIES("{include_dir}")
+        # C system search directories
+        SET(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include"
+                                                 "${{TOOLCHAIN_ROOT}}/usr/include"
+                                                 "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/include"
+        )
 
-        {compile_options}
 
-        SET(PLATFORM "{arch}" CACHE STRING "The platform to build for." FORCE)
+        SET(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/"
+                                              "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib64/"
+                                              "${{TOOLCHAIN_ROOT}}/lib64/"
+                                              "${{TOOLCHAIN_ROOT}}/usr/lib64/"
+                                              "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib/"
+                                              "${{TOOLCHAIN_ROOT}}/lib/"
+                                              "${{TOOLCHAIN_ROOT}}/usr/lib/"
+        )
+
+        # CXX system search directories
+        SET(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/8.1.0"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/8.1.0/${{TRIPLE}}"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include/c++/8.1.0/backward"
+                                                   "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/include"
+                                                   "${{TOOLCHAIN_ROOT}}/usr/include"
+                                                   "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/include"
+        )
+
+        SET(CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "${{TOOLCHAIN_ROOT}}/lib/gcc/${{TRIPLE}}/8.1.0/"
+                                                "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib64/"
+                                                "${{TOOLCHAIN_ROOT}}/lib64/"
+                                                "${{TOOLCHAIN_ROOT}}/usr/lib64/"
+                                                "${{TOOLCHAIN_ROOT}}/${{TRIPLE}}/lib/"
+                                                "${{TOOLCHAIN_ROOT}}/lib/"
+                                                "${{TOOLCHAIN_ROOT}}/usr/lib/"
+        )
+
+        INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include")
+        INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include/python3.6m")
+
+        SET(PLATFORM "{platform}" CACHE STRING "The platform to build for." FORCE)
+
+        # Prevent cmake from trying to execute python to find its libraries.
+        SET(PYTHON_EXECUTABLE {python_exec} CACHE STRING "" FORCE)
+        SET(PYTHON_LIBRARY {python_lib} CACHE STRING "" FORCE)
+        SET(PYTHONLIBS_FOUND ON CACHE BOOLEAN "" FORCE)
+        SET(PYTHON_MODULE_EXTENSION ".cpython-36m-{arch}-linux-gnu.so" CACHE STRING "" FORCE)
+
+        SET(Protobuf_PROTOC_EXECUTABLE {protoc_exec} CACHE STRING "The Google Protocol Buffers Compiler" FORCE)
+        SET(Protobuf_PROTOC_LIBRARY_DEBUG {protoc_lib} CACHE STRING "Path to a library" FORCE)
+        SET(Protobuf_PROTOC_LIBRARY_RELEASE {protoc_lib} CACHE STRING "Path to a library" FORCE)
         """
     )
 
@@ -652,52 +730,151 @@ def generate_toolchain_files(env, log_file=None, **state):
     march = ''
     mtune = ''
     for flag in state['c_flags'] + state['cxx_flags'] + state['fc_flags']:
-        if '-march=' in flag:
-            march = 'ADD_COMPILE_OPTIONS({})'.format(flag)
-            if log_file is not None: log_file.write('Found architecture parameter: {}\n'.format(march))
-        if '-mtune=' in flag:
-            mtune = 'ADD_COMPILE_OPTIONS({})'.format(flag)
-            if log_file is not None: log_file.write('Found tuning parameter: {}\n'.format(mtune))
+        if flag.startswith('-march='):
+            march = flag[1:]
+            log_file.write('Found architecture parameter: {}\n'.format(march))
+        if flag.startswith('-mtune='):
+            mtune = flag[1:]
+            log_file.write('Found tuning parameter: {}\n'.format(mtune))
 
     # Find the location of the GCC specs file
     libgcc = subprocess.check_output(
         '{} {}'.format(
-            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple'])), '-print-libgcc-file-name'
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple'])),
+            '-print-libgcc-file-name'
         ),
         shell=True,
         env=env
     ).decode('utf-8')
 
+    if march != '' and mtune != '':
+        arch = '%<march=* -{0} %>{0}'.format(march)
+        tune = '%{{!mtune=*:%>{0}}} %{{{0}:%>{0}}}'.format(mtune)
+        compile_options = '{} {} '.format(arch, tune)
+    else:
+        compile_options = ''
+
     # Form our output file names
     specs_file = os.path.join(os.path.dirname(libgcc), 'specs')
     cmake_toolchain_file = os.path.join(state['prefix_dir'], '{}.cmake'.format(state['toolchain_name']))
 
-    if log_file is not None: log_file.write('Using gcc specs: {}\n'.format(specs_file))
+    log_file.write('Using gcc specs: {}\n'.format(specs_file))
 
     # Write out the new GCC specs
     with open(specs_file, 'a') as specs:
         specs.write(
             gcc_template.format(
-                c_compile_options=' '.join([flag for flag in state['c_flags'] if flag != march and flag != mtune]),
-                cxx_compile_options=' '.join([flag for flag in state['cxx_flags'] if flag != march and flag != mtune])
+                c_compile_options='{}{}'.format(
+                    compile_options, ' '.join([
+                        flag for flag in state['c_flags']
+                        if flag != '-{}'.format(march) and flag != '-{}'.format(mtune)
+                    ])
+                ),
+                cxx_compile_options='{}{}'.format(
+                    compile_options, ' '.join([
+                        flag for flag in state['cxx_flags']
+                        if flag != '-{}'.format(march) and flag != '-{}'.format(mtune)
+                    ])
+                )
             )
         )
 
-    if log_file is not None: log_file.write('Successfully wrote new specs file to "{}"\n'.format(specs_file))
+    log_file.write('Successfully wrote new specs file to "{}"\n'.format(specs_file))
 
     # Write out the CMake toolchain file
     with open(cmake_toolchain_file, 'w') as f:
         f.write(
             cmake_template.format(
-                arch=state['toolchain_name'],
+                platform=state['toolchain_name'],
+                arch=state['arch'],
                 cc='{}-gcc'.format(state['target_triple']),
                 cxx='{}-g++'.format(state['target_triple']),
-                include_dir=os.path.join(state['prefix_dir'], 'include'),
-                compile_options='{}\n{}'.format(march, mtune),
-                prefix_dir=state['prefix_dir']
+                triple=state['target_triple'],
+                parent_triple=state['parent_target_triple'],
+                python_exec=os.path.join(
+                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'bin', 'python3'
+                ),
+                python_lib=os.path.join('${TOOLCHAIN_ROOT}', 'lib', 'libpython3.6m.so'),
+                protoc_exec=os.path.join(
+                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'bin', 'protoc'
+                ),
+                protoc_lib=os.path.join(
+                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'lib', 'libprotoc.so'
+                )
             )
         )
 
-    if log_file is not None:
-        log_file.write('Successfully wrote cmake toolchain file to "{}"\n'.format(cmake_toolchain_file))
-        log_file.write('\n\nCompleted with no errors\n')
+    log_file.write('Successfully wrote cmake toolchain file to "{}"\n'.format(cmake_toolchain_file))
+    log_file.write('\n\nCompleted with no errors\n')
+
+
+def gcc_post_extract(env, log_file, **state):
+    process = subprocess.Popen(
+        args='cd {source} && ./contrib/download_prerequisites'.format(**state),
+        shell=True,
+        env={k: v.format(**state)
+             for (k, v) in env.items()},
+        stdout=log_file,
+        stderr=log_file
+    )
+
+    if process.wait() != 0:
+        raise Exception('Failed to download GCC prerequisites')
+
+
+def gcc_post_install(env, log_file, **state):
+    # Get the default GCC specs file
+    specs = subprocess.check_output(
+        '{} -dumpspecs'.format(
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple']))
+        ),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Set the path to our dynamic loader
+    specs = re.sub('/lib/ld-', '{prefix_dir}/lib/ld-'.format(**state), specs)
+
+    # Find the location of GCC specs file (via the libgcc location)
+    libgcc = subprocess.check_output(
+        '{} -print-libgcc-file-name'.format(
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple']))
+        ),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Write out the modified specs file
+    with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'w') as f:
+        f.write(specs)
+
+def musl_post_install(env, log_file, **state):
+    with open(os.path.join(state['prefix_dir'], 'etc', 'ld-musl-{}.path'.format(state['arch'])), 'w') as f:
+        f.write(os.pathsep.join(['{prefix_dir}/lib',
+                                 '{prefix_dir}/lib64',
+                                 '{prefix_dir}/{target_triple}/lib',
+                                 '{prefix_dir}/{target_triple}/lib64']).format(**state))
+
+
+def gnulibs_pre_build(env, log_file, **state):
+    # Get the default GCC specs file
+    specs = subprocess.check_output('{} -dumpspecs'.format(os.path.join(state['build'], 'gcc', 'xgcc')),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Set the path to our dynamic loader
+    specs = re.sub('/lib/ld-', '{prefix_dir}/lib/ld-'.format(**state), specs)
+
+    # Find the location of GCC specs file (via the libgcc location)
+    libgcc = subprocess.check_output(
+        '{} -print-libgcc-file-name'.format(
+            os.path.join(state['prefix_dir'], 'bin', '{}-gcc'.format(state['target_triple']))
+        ),
+        shell=True,
+        env=env
+    ).decode('utf-8')
+
+    # Write out the modified specs file
+    with open(os.path.join(state['build'], 'gcc', 'specs'), 'w') as f:
+        f.write(specs)
