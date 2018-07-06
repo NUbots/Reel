@@ -27,4 +27,5 @@
         "**/toolchain/**": true
     },
     "editor.fontSize": 15,
+    "python.linting.pylintEnabled": false,
 }
