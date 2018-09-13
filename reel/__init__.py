@@ -59,7 +59,7 @@ class Reel:
         )
 
         nasm_patch = dedent(
-            """\
+        """\
         --- a/include/nasmlib.h
         +++ b/include/nasmlib.h
         @@ -188,10 +188,8 @@
