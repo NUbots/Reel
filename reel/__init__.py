@@ -134,7 +134,16 @@ class Reel:
                 ),
                 Shell(build='cd {builds_dir}/$(basename {source}) && ./configure.py --bootstrap'),
                 Shell(install='cd {builds_dir}/$(basename {source}) && cp -v ninja {prefix_dir}/bin')
-            ]
+            ],
+            env={
+                # We are going through a weird python/ninja layer here, need to do things differently.
+                # $$ escapes as a single $ in ninja, backslash to escape the single $ in terminal (I think).
+                'LDFLAGS': ' '.join(['-Wl,-z,origin',
+                                    os.path.join(r"-Wl,-rpath,\$$ORIGIN", '..', 'lib'),
+                                    os.path.join(r"-Wl,-rpath,\$$ORIGIN", '..', 'lib64'),
+                                    os.path.join(r"-Wl,-rpath,\$$ORIGIN", '..', '{target_triple}', 'lib'),
+                                    os.path.join(r"-Wl,-rpath,\$$ORIGIN", '..', '{target_triple}', 'lib64')]),
+            }
         )
 
         # Building openssl is weird because they don't like being normal

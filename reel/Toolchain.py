@@ -168,6 +168,11 @@ class Toolchain:
                 'CXXFLAGS': ' '.join(self.cxx_flags),
                 'FCFLAGS': ' '.join(self.fc_flags),
                 'LD_LIBRARY_PATH': '',
+                'LDFLAGS': ' '.join(['-Wl,-z,origin',
+                                    os.path.join(r"-Wl,-rpath,\$\$$ORIGIN", '..', 'lib'),
+                                    os.path.join(r"-Wl,-rpath,\$\$$ORIGIN", '..', 'lib64'),
+                                    os.path.join(r"-Wl,-rpath,\$\$$ORIGIN", '..', self.triple, 'lib'),
+                                    os.path.join(r"-Wl,-rpath,\$\$$ORIGIN", '..', self.triple, 'lib64')]),
                 'PKG_CONFIG_PATH':
                     os.pathsep.join([
                         os.path.join(self.state['prefix_dir'], 'lib', 'pkgconfig'),
