@@ -799,14 +799,14 @@ def generate_toolchain_files(env, log_file, **state):
                 triple=state['target_triple'],
                 parent_triple=state['parent_target_triple'],
                 python_exec=os.path.join(
-                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'bin', 'python3'
+                    '${REEL_ROOT}', 'root', 'bin', 'python3'
                 ),
                 python_lib=os.path.join('${TOOLCHAIN_ROOT}', 'lib', 'libpython3.6m.so'),
                 protoc_exec=os.path.join(
-                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'bin', 'protoc'
+                    '${REEL_ROOT}', 'root', 'bin', 'protoc'
                 ),
                 protoc_lib=os.path.join(
-                    '${TOOLCHAIN_ROOT}', '..' if state['toolchain_name'] != 'root' else '', 'lib', 'libprotoc.so'
+                    '${REEL_ROOT}', 'root', 'lib', 'libprotoc.so'
                 )
             )
         )
