@@ -1063,7 +1063,7 @@ parser.add_argument('--expunge',
                     help='When used with "--clean" this will delete downloaded archives and extracted source files'
 )
 parser.add_argument('--install', action='store_true', help='Install the Reel toolchains')
-parser.add_argument('--install_path', default=os.path.join(os.path.expanduser('~'), 'Reel'), help='Install location')
+parser.add_argument('--install-path', default=os.path.join(os.path.expanduser('~'), 'Reel'), help='Install location')
 parser.add_argument('--force',
                     action='store_true',
                     help='Force installation. This will overwrite the specified install location. DATA WILL BE LOST!!'
