@@ -238,7 +238,7 @@ class Reel:
             # The final toolchain gets all the tools
             self.add_build_tools(self.toolchain)
 
-    def add_toolchain(self, name, triple='', abi='64', c_flags=None, cxx_flags=None, fc_flags=None):
+    def add_toolchain(self, name, triple='', abi='64', c_flags=None, cxx_flags=None, fc_flags=None, static=None):
         # Create a new toolchain and return it and build using our toolchain
         t = Toolchain(
             name,
@@ -248,7 +248,8 @@ class Reel:
             abi=abi,
             c_flags=c_flags,
             cxx_flags=cxx_flags,
-            fc_flags=fc_flags
+            fc_flags=fc_flags,
+            static=static
         )
         self.toolchains.append(t)
         return t

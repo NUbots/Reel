@@ -197,6 +197,7 @@ class Toolchain:
                     '--disable-werror': True,
                     '--enable-static': True,
                     '{}'.format('--enable-shared' if not static else '--disable-shared'): True,
+                    '--enable-interwork': 'none' in self.triple,
                 },
                 install_targets=['install-strip']
             )
@@ -213,7 +214,8 @@ class Toolchain:
                     '--host': self.parent_toolchain.triple,
                     '--build': self.parent_toolchain.triple,
                     '--target': '{target_triple}',
-                    '--enable-languages': 'c,c++,fortran',
+                    '--enable-languages': 'c,c++,fortran' if 'none' not in self.triple else 'c,c++',
+                    '--enable-interwork': True if 'none' in self.triple else None,
                     '--with-sysroot': '"{prefix_dir}"',
                     '--disable-nls': True,
                     '--disable-multilib': True,
@@ -304,11 +306,11 @@ class Toolchain:
                 phases=[Python(pre_build=gnulibs_pre_build, pre_install=generate_toolchain_files)],
                 build_targets=[
                     'all-target-libstdc++-v3', 'all-target-libquadmath', 'all-target-libgfortran', 'all-target-libgomp'
-                ],
+                ] if 'none' not in self.triple else [],
                 install_targets=[
                     'install-strip-target-libstdc++-v3', 'install-strip-target-libquadmath',
                     'install-strip-target-libgfortran', 'install-strip-target-libgomp'
-                ],
+                ] if 'none' not in self.triple else [],
                 **gcc_args
             )
 

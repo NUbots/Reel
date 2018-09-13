@@ -232,6 +232,17 @@ toolchains = [
     )
 ]
 
+# Separate from the other toolchains as we don't want to install any other libraries for the CM730 toolchain
+r.add_toolchain(
+    'cm730',
+    triple='arm-none-eabi',
+    abi='32',
+    c_flags=['-mcpu=cortex-m3', '-mthumb'],
+    cxx_flags=['-mcpu=cortex-m3', '-mthumb'],
+    fc_flags=['-mcpu=cortex-m3', '-mthumb'],
+    static=True
+)
+
 for t in toolchains:
     t.add_library(
         name='libbacktrace',
