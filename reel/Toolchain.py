@@ -33,7 +33,7 @@ class Toolchain:
             abi='64'
     ):
 
-        self.name = name
+        self.name = name if name else 'root'
         self.parent_toolchain = parent_toolchain
 
         # If we don't have a triple, work out the systems one
@@ -66,7 +66,7 @@ class Toolchain:
         self.patches_dir = os.path.join(self.setup_dir, 'patches')
 
         # Toolchain directories
-        self.prefix_dir = os.path.join(self.toolchain_dir, self.name)
+        self.prefix_dir = os.path.join(self.toolchain_dir, self.name if self.name else 'root')
         self.working_dir = os.path.join(self.setup_dir, self.name if self.name else 'root')
         self.builds_dir = os.path.join(self.working_dir, 'build')
         self.logs_dir = os.path.join(self.working_dir, 'log')
