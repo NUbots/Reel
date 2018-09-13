@@ -5,3 +5,4 @@ tqdm
 python-dateutil
 yapf
 patch==1.16
+lief

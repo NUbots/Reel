@@ -6,6 +6,7 @@ import argparse
 import shutil
 import glob
 import re
+import lief
 
 from subprocess import Popen, check_output, PIPE, run
 from termcolor import cprint
@@ -864,6 +865,77 @@ def clean_symlinks():
         os.symlink(os.path.relpath(os.path.realpath(link), os.path.dirname(link)), tmpLink)
         os.replace(tmpLink, link)
 
+def patch_toolchain_files(chains, install_path):
+    toolchains = [(t.name, t.triple, t.arch, os.path.abspath(t.prefix_dir)) for t in chains if t.name != 'bootstrap']
+
+    for toolchain in tqdm(toolchains, unit=' toolchains'):
+        toolchain_root = os.path.join(install_path, 'toolchain', toolchain[0])
+        rpath = os.pathsep.join([
+                        os.path.join(toolchain_root, 'lib'),
+                        os.path.join(toolchain_root, 'lib64'),
+                        os.path.join(toolchain_root, toolchain[1], 'lib'),
+                        os.path.join(toolchain_root, toolchain[1], 'lib64')
+                    ]
+                )
+
+        musl_file = os.path.join(toolchain_root, 'etc', 'ld-musl-{}.path'.format(toolchain[2]))
+        if os.path.exists(musl_file):
+            with open(musl_file, 'w') as f:
+                f.write(rpath)
+
+        # Find the location of GCC specs file (via the libgcc location)
+        gcc = os.path.join(toolchain_root, 'bin', '{}-gcc'.format(toolchain[1]))
+        libgcc = check_output('{} -print-libgcc-file-name'.format(gcc), shell=True).decode('utf-8')
+
+        # Load the specs file
+        with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'r') as f:
+            specs = f.read()
+
+        # Set the path to our dynamic loader
+        specs = re.sub('{}/lib/ld-'.format(toolchain[3]),
+                       '{}/lib/ld-'.format(os.path.join(install_path, 'toolchain', t.name)),
+                       specs
+                )
+
+        # Write out the modified specs file
+        with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'w') as f:
+            f.write(specs)
+
+def patch_interpreter(build_root, install_root):
+    binaries = []
+    for dpath, dnames, fnames in os.walk(install_root, topdown=True, followlinks=False):
+        # Make sure we ignore symlink directories
+        for d in dnames:
+            current = os.path.join(dpath, d)
+            if os.path.islink(current):
+                dnames.remove(d)
+
+        for f in fnames:
+            current = os.path.join(dpath, f)
+            # Ignore symlinked files
+            if not os.path.islink(current):
+                # Only process ELF files
+                if lief.is_elf(current):
+                    binary = lief.parse(current)
+
+                    # Only process files with an interpreter
+                    if binary.has_interpreter:
+                        binaries.append(current)
+
+    for binary in tqdm(binaries):
+        # Use LIEF to get the current interpreter
+        b = lief.parse(binary)
+
+        # Use patchelf to set the new interpreter
+        # LIEF seems to struggle with some files
+        process = Popen(
+            args='patchelf --set-interpreter {} {}'.format(b.interpreter.replace(build_root, install_root), binary),
+            shell=True
+        )
+
+        if process.wait() != 0:
+            raise Exception('Failed to patch interpreter for {}'.format(binary))
+
 def install(install_path, force):
     # Make sure we are dealing with an absolute path
     install_path = os.path.abspath(install_path)
@@ -934,97 +1006,15 @@ def install(install_path, force):
                 elif output == '':
                     break
 
-
     # Now patch the musl search files and the gcc specs file
     cprint('Patching linker files ....', 'blue', attrs=['bold'])
-    toolchains = [(t.name, t.triple, t.arch, os.path.abspath(t.prefix_dir)) for t in r.toolchains if t.name != 'bootstrap']
+    patch_toolchain_files(r.toolchains, install_path)
 
-    for toolchain in tqdm(toolchains, unit=' toolchains'):
-        rpath = os.pathsep.join([
-                        os.path.join(install_path, 'toolchain', toolchain[0], 'lib'),
-                        os.path.join(install_path, 'toolchain', toolchain[0], 'lib64'),
-                        os.path.join(install_path, 'toolchain', toolchain[0], toolchain[1], 'lib'),
-                        os.path.join(install_path, 'toolchain', toolchain[0], toolchain[1], 'lib64')
-                    ]
-                )
-
-        musl_file = os.path.join(install_path, 'toolchain', toolchain[0], 'etc', 'ld-musl-{}.path'.format(toolchain[2]))
-        with open(musl_file, 'w') as f:
-            f.write(rpath)
-
-        # Find the location of GCC specs file (via the libgcc location)
-        gcc = os.path.join(install_path, 'toolchain', toolchain[0], 'bin', '{}-gcc'.format(toolchain[1]))
-        libgcc = check_output('{} -print-libgcc-file-name'.format(gcc), shell=True).decode('utf-8')
-
-        # Load the specs file
-        with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'r') as f:
-            specs = f.read()
-
-        # Set the path to our dynamic loader
-        specs = re.sub('{}/lib/ld-'.format(toolchain[3]),
-                       '{}/lib/ld-'.format(os.path.join(install_path, 'toolchain', t.name)),
-                       specs
-                )
-
-        # Write out the modified specs file
-        with open(os.path.join(os.path.dirname(libgcc), 'specs'), 'w') as f:
-            f.write(specs)
-
-        # Finally, set rpath and interpreter to reflect the installation paths
-        # bins = [bin for bin in glob.glob(os.path.join(install_path, 'toolchain', toolchain[0], 'bin', '*'), recursive=True)
-        #         if os.access(bin, os.X_OK)]
-
-        # interp = os.path.join(install_path, 'toolchain', toolchain[0], 'lib', 'ld-musl-{}.so.1'.format(toolchain[2]))
-
-        # for bin in bins:
-        #     try:
-        #         check_output('patchelf --print-interpreter "{}"'.format(bin), shell=True, check=True, stdout=PIPE, stderr=PIPE)
-
-        #     # patchelf returns non-zero if the executable file is not an ELF file or is lacking a .interp section
-        #     except:
-        #         print('Checking interpreter of {} failed'.format(bin))
-        #         pass
-
-        #     else:
-        #         print('Setting interpreter of {} to {}'.format(bin, interp))
-        #         if os.access(lib, os.W_OK):
-        #             run('patchelf --set-interpreter "{}" "{}"'.format(interp, bin), shell=True, check=True, stdout=PIPE, stderr=PIPE)
-        #             run('patchelf --set-rpath "{}" "{}"'.format(rpath, bin), shell=True, check=True, stdout=PIPE, stderr=PIPE)
-
-        # libs = [lib for lib in glob.glob(os.path.join(install_path, 'toolchain', toolchain[0], 'lib*', '*.so'), recursive=True)]
-        # libs = libs + [lib for lib in glob.glob(os.path.join(install_path, 'toolchain', toolchain[0], toolchain[1], 'lib*', '*.so'), recursive=True)]
-
-        # for lib in libs:
-        #     try:
-        #         run('patchelf --print-rpath "{}"'.format(lib), shell=True, check=True, stdout=PIPE, stderr=PIPE)
-
-        #     # patchelf returns non-zero if the executable file is not an ELF file
-        #     except:
-        #         pass
-
-        #     else:
-        #         if os.access(lib, os.W_OK):
-        #             run('patchelf --set-rpath "{}" "{}"'.format(rpath, lib), shell=True, check=True, stdout=PIPE, stderr=PIPE)
-
+    # Patch the interpreter for the installed files
+    cprint('Patching interpeter path for dynamic files ....', 'blue', attrs=['bold'])
+    patch_interpreter(os.path.dirname(os.path.realpath(__file__)), install_path)
 
     cprint('Installation complete!', 'green', attrs=['bold'])
-
-    # Now we need to patch rpaths and other library search directory indicators
-    # ldscript search directories
-    # cprint('Patching ldscripts ....', 'blue', attrs=['bold'])
-    # ldscripts = glob.glob(os.path.join(install_path, 'toolchain', '**', 'tools', 'ldscripts', '*.x*'), recursive=True)
-
-    # with open('install.log', 'a') as logfile:
-    #     logfile.write('\n\nPatching ldscripts ....\n')
-    #     for ldscript in ldscripts:
-    #         logfile.write('Patching "{}"'.format(ldscript))
-    #         with open(ldscript, 'r') as f:
-    #             script = f.read()
-
-    #         script = re.sub(os.path.realpath(__file__), os.path.abspath(install_path), script)
-
-    #         with open(ldscript, 'w') as f:
-    #             f.write(script)
 
 def clean(expunge):
     if not expunge:
