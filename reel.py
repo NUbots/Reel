@@ -837,6 +837,33 @@ def build():
     #                    'creates'     => 'lib/libtensorflow_framework.so',
     #                    'method'      => 'bazel', },
 
+# Traverse all toolchains and convert absolute symlinks to relative symlinks
+def clean_symlinks():
+    cprint('Cleaning symlinks ....', 'blue', attrs=['bold'])
+    # First, find all the absolute symlinks
+    links = []
+    for dpath, dnames, fnames in os.walk(os.path.dirname(os.path.realpath(__file__)), topdown=True, followlinks=False):
+        for d in dnames:
+            if d in ('archive', 'patches', 'src'):
+                dnames.remove(d)
+
+            current = os.path.join(dpath, d)
+            if os.path.islink(current) and os.path.isabs(os.path.realpath(f)):
+                links.append(current)
+                dnames.remove(d)
+
+        for f in fnames:
+            current = os.path.join(dpath, f)
+            if os.path.islink(current) and os.path.isabs(os.path.realpath(f)):
+                links.append(current)
+
+    # Now convert absolute symlinks to relative symlinks
+    # First, make a temporary relative link, then replace the original absolute link with the temporary one
+    for link in tqdm(links, unit='files'):
+        tmpLink = os.path.join(os.path.dirname(link), 'tmpLink')
+        os.symlink(os.path.relpath(os.path.realpath(link), os.path.dirname(link)), tmpLink)
+        os.replace(tmpLink, link)
+
 def install(install_path, force):
     # Make sure we are dealing with an absolute path
     install_path = os.path.abspath(install_path)
@@ -1049,14 +1076,26 @@ parser.add_argument('--force',
                     action='store_true',
                     help='Force installation. This will overwrite the specified install location. DATA WILL BE LOST!!'
 )
+parser.add_argument('--preserve-symlinks', action='store_true', help="Don't convert absolute symlinks to relative symlinks")
 args = parser.parse_args()
 
 if __name__ == "__main__":
-    if args.build:
-        build()
-    elif args.install:
-        install(args.install_path, args.force)
-    elif args.clean:
+    # Delete everything (optionally delete archives)
+    if args.clean:
         clean(args.expunge)
+
     else:
-        cprint('No action specified. Doing nothing', 'red', attrs=['bold'])
+        # Build Reel
+        if args.build:
+            build()
+
+            # Convert absolute symlinks to relative symlinks
+            if not args.preserve_symlinks:
+                clean_symlinks()
+
+        # Install Reel
+        elif args.install:
+            install(args.install_path, args.force)
+
+        else:
+            cprint('No action specified. Doing nothing', 'red', attrs=['bold'])
