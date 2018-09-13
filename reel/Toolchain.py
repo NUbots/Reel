@@ -716,7 +716,7 @@ def generate_toolchain_files(env, log_file, **state):
                                                 "${{TOOLCHAIN_ROOT}}/usr/lib/"
         )
 
-        INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include")
+        # Make sure we can find the python include files
         INCLUDE_DIRECTORIES(SYSTEM "${{TOOLCHAIN_ROOT}}/include/python3.6m")
 
         SET(PLATFORM "{platform}" CACHE STRING "The platform to build for." FORCE)
