@@ -162,7 +162,9 @@ r.add_library(
     },
     phases=[
         Shell(
-            post_install='pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/pip --upgrade pip'
+            post_install=
+            'pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/pip --upgrade pip'
+            ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/Cython Cython'
             ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/numpy numpy'
             ' && LDFLAGS="$LDFLAGS -shared" pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/scipy scipy'
             ' && pip3 --cache-dir {prefix_dir}/temp install --build {prefix_dir}/temp/matplotlib matplotlib'
