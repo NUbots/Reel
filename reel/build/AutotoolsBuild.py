@@ -54,13 +54,13 @@ class AutotoolsBuild:
             # Load the status file.
             status = get_status(status_path)
 
-            if 'pre_configure' not in status or not status['pre_configure']:
+            if 'autogen_pre_configure' not in status or not status['autogen_pre_configure']:
                 # Make our build directory and log directory
                 os.makedirs(build_path, exist_ok=True)
                 os.makedirs(logs_path, exist_ok=True)
 
                 # Open a log file and run configure
-                with open(os.path.join(logs_path, '{}_pre_configure.log'.format(base_src)), 'w') as logfile:
+                with open(os.path.join(logs_path, '{}_autogen_pre_configure.log'.format(base_src)), 'w') as logfile:
                     self.env.update({'NOCONFIGURE': '1'})
                     cmd = os.path.abspath(os.path.join(src_path, 'autogen.sh'))
                     print(indent(' $ {}'.format(cmd), 8))
@@ -74,14 +74,14 @@ class AutotoolsBuild:
                         stderr=logfile
                     )
                     if process.wait() != 0:
-                        raise Exception('Failed to pre_configure')
+                        raise Exception('Failed to the autogen pre-configure step for {}'.format(base_src))
 
                     else:
-                        status = update_status(status_path, {'pre_configure': True})
+                        status = update_status(status_path, {'autogen_pre_configure': True})
 
             else:
                 cprint(
-                    indent('Pre-configure step for {} complete... Skipping...'.format(base_src), 8),
+                    indent('Autogen pre-configure step for {} complete... Skipping...'.format(base_src), 8),
                     'yellow',
                     attrs=['bold']
                 )
